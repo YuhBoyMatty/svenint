@@ -21,7 +21,7 @@ bool GL_Init()
 
 	if ( status != GLEW_OK )
 	{
-		Warning(xs("[Sven Internal] Failed to initialize GLEW. Reason: %s\n"), glewGetErrorString(status));
+		Warning(("[Sven Internal] Failed to initialize GLEW. Reason: %s\n"), glewGetErrorString(status));
 		return false;
 	}
 
@@ -29,7 +29,7 @@ bool GL_Init()
 
 	if ( pfnGL_Bind == NULL )
 	{
-		Warning(xs("Failed to find function \"GL_Bind\"\n"));
+		Warning(("Failed to find function \"GL_Bind\"\n"));
 		return false;
 	}
 

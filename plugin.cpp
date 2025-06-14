@@ -17,7 +17,6 @@
 
 #include "plugin.h"
 #include "config.h"
-#include "friends.h"
 
 #include "scripts/scripts.h"
 #include "game/utils.h"
@@ -47,7 +46,6 @@
 #include "features/capture.h"
 
 #include "steam/steam_api.h"
-#include "utils/security.hpp"
 #include "utils/xorstr.h"
 
 #pragma warning( disable : 4731)
@@ -72,61 +70,15 @@ int g_hAutoUpdateThread = 0;
 // Dll entry (first entry called by windows itself not svenmod api) 
 //-----------------------------------------------------------------------------
 
-NOINLINE DWORD WINAPI EntryCheck( HMODULE hModule )
-{
-	//security::utils::erase_pe_header();
-	security::utils::get_cpuid();
-	security::utils::obfuscate_entry_antidebug( &AntiDebug );
-
-	CGod* GodsPtr = g_Gods.data();
-	size_t GodsSize = g_Gods.size();
-	std::vector<CGod> GodsList( GodsPtr, GodsPtr + GodsSize );
-
-	g_ullSteam64ID = SteamUser()->GetSteamID().ConvertToUint64();
-
-	for ( size_t i = 0; i < GodsList.size(); i++ )
-	{
-		GodsList[ i ].m_ullSteamID = XOR_STEAMID( GodsList[ i ].m_ullSteamID );
-	}
-
-	std::sort( GodsList.begin(), GodsList.end(), []( const CGod &a, const CGod &b )
-	{
-		//Msg( "%llu < %llu\n", a, b );
-		return a.m_ullSteamID < b.m_ullSteamID;
-	} );
-
-	auto found = std::lower_bound( GodsList.begin(), GodsList.end(), CGod( g_ullSteam64ID, {} ), []( const CGod &a, const CGod &b )
-	{
-		return a.m_ullSteamID < b.m_ullSteamID;
-	} );
-
-	if ( found != GodsList.end() && (*found).m_ullSteamID == g_ullSteam64ID )
-	{
-		//int index = static_cast<int>( std::distance( GodsList.begin(), found ) );
-
-		security::utils::get_hash_and_cmp( *found, hModule );
-	}
-	else
-	{
-		FreeLibraryAndExitThread( hModule, 1 ); // Svenmod can't get CreateInterface or crash, very handy to mislead retards that try to reverse
-	}
-
-	return 1;
-}
-
 BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call,  LPVOID lpReserved)
 {
 	switch ( ul_reason_for_call )
 	{
 	case DLL_PROCESS_ATTACH: // First entry
-		EntryCheck( hModule );
-		CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)EntryCheck, hModule, 0, NULL );
 		break;
 	case DLL_THREAD_ATTACH: // Called everytime a new map is started (dont ask me why) 
-		security::utils::obfuscate_entry_antidebug( &AntiDebug );
 		break;
-	case DLL_THREAD_DETACH: // Called everytime a map is exited (wtf) 
-		security::utils::obfuscate_entry_antidebug( &AntiDebug );
+	case DLL_THREAD_DETACH: // Called everytime a map is exited (wtf)
 		break;
 	case DLL_PROCESS_DETACH:
 		break;
@@ -234,19 +186,13 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 {
 	//SteamScreenshots()->HookScreenshots( true );
 
-	//typedef void ( *AntiDbgEntryPtr )( );
-	//volatile AntiDbgEntryPtr AntiDbgEntry = reinterpret_cast<AntiDbgEntryPtr>( &security::utils::obfuscate_entry_antidebug(*ptr) );
-
 	if ( !GL_Init() )
 	{
-		Warning(xs("[Sven Internal] Failed to initialize OpenGL module\n"));
+		Warning(("[Sven Internal] Failed to initialize OpenGL module\n"));
 		return false;
 	}
 
-	typedef void ( *AntiDbgExitPtr )( );
-	volatile AntiDbgExitPtr AntiDbgExit = reinterpret_cast<AntiDbgExitPtr>( &security::utils::obfuscate_exit_antidebug );
-
-	if ( CVar()->GetBoolFromCvar( xs( "developer" ) ) )
+	if ( CVar()->GetBoolFromCvar( ( "developer" ) ) )
 	{
 		// Print GL version
 		const GLubyte *renderer = glGetString( GL_RENDERER );
@@ -258,59 +204,27 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 		glGetIntegerv( GL_MAJOR_VERSION, &major );
 		glGetIntegerv( GL_MINOR_VERSION, &minor );
 
-		DevMsg( xs( "GL Vendor            : %s\n" ), vendor );
-		DevMsg( xs( "GL Renderer          : %s\n" ), renderer );
-		DevMsg( xs( "GL Version (string)  : %s\n" ), version );
-		DevMsg( xs( "GL Version (integer) : %d.%d\n" ), major, minor );
-		DevMsg( xs( "GLSL Version         : %s\n" ), glslVersion );
+		DevMsg( ( "GL Vendor            : %s\n" ), vendor );
+		DevMsg( ( "GL Renderer          : %s\n" ), renderer );
+		DevMsg( ( "GL Version (string)  : %s\n" ), version );
+		DevMsg( ( "GL Version (integer) : %d.%d\n" ), major, minor );
+		DevMsg( ( "GLSL Version         : %s\n" ), glslVersion );
 	}
-
-#if SECURITY_CHECKS
-	security::utils::obfuscate_entry_antidebug( &AntiDebug );
-#endif
 
 	g_ullSteam64ID = SteamUser()->GetSteamID().ConvertToUint64();
-
-	for (size_t i = 0; i < g_Gods.size(); i++)
-	{
-		g_Gods[i].m_ullSteamID = XOR_STEAMID( g_Gods[i].m_ullSteamID );
-	}
-
-	std::sort( g_Gods.begin(), g_Gods.end(), []( const CGod &a, const CGod &b )
-	{
-		//Msg( "%llu < %llu\n", a, b );
-		return a.m_ullSteamID < b.m_ullSteamID;
-	} );
-
-	auto found = std::lower_bound( g_Gods.begin(), g_Gods.end(), CGod( g_ullSteam64ID, {} ), []( const CGod &a, const CGod &b )
-	{
-		return a.m_ullSteamID < b.m_ullSteamID;
-	} );
-
-	if ( found != g_Gods.end() && (*found).m_ullSteamID == g_ullSteam64ID )
-	{
-		//int index = static_cast<int>( std::distance( g_Gods.begin(), found ) );
-
-		security::utils::get_hash_and_cmp( *found, 0 );
-	}
-	else
-	{
-		//Warning(xs("[Sven Internal] You're not allowed to use this plugin\n"));
-		AntiDbgExit();
-	}
 
 	BindApiToGlobals(pSvenModAPI);
 	InitFolders(pSvenModAPI);
 
 	if ( !g_ServerModule.Init() )
 	{
-		Warning(xs("[Sven Internal] Failed to initialize server's module\n"));
+		Warning(("[Sven Internal] Failed to initialize server's module\n"));
 		return false;
 	}
 
 	if ( !g_KeySpam.Init() || !LoadFeatures() )
 	{
-		Warning(xs("[Sven Internal] Failed to initialize one of features\n"));
+		Warning(("[Sven Internal] Failed to initialize one of features\n"));
 		return false;
 	}
 
@@ -329,12 +243,9 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 	g_Drawing.Init();
 	g_Visual.ResetJumpSpeed();
 
-	g_pEngineFuncs->ClientCmd(xs("cl_timeout 999999;exec sven_internal.cfg"));
+	g_pEngineFuncs->ClientCmd(("cl_timeout 999999;exec sven_internal.cfg"));
 
 	m_flPlatTime = g_pEngineFuncs->Sys_FloatTime();
-#if SECURITY_CHECKS
-	m_flAntiDebugTime = g_pEngineFuncs->Sys_FloatTime();
-#endif
 
 	if ( SvenModAPI()->GetClientState() == CLS_ACTIVE )
 		g_ScriptVM.Init();
@@ -344,7 +255,7 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 
 void CSvenInternal::PostLoad(bool bGlobalLoad)
 {
-	ConColorMsg( { 40, 255, 40, 255 }, xs( "[Sven Internal] Successfully loaded\n" ) );
+	ConColorMsg( { 40, 255, 40, 255 }, ( "[Sven Internal] Successfully loaded\n" ) );
 
 	if (bGlobalLoad)
 	{
@@ -384,7 +295,7 @@ void CSvenInternal::Unload(void)
 
 bool CSvenInternal::Pause(void)
 {
-	Warning(xs("[Sven Internal] It is not allowed to pause the plugin\n"));
+	Warning(("[Sven Internal] It is not allowed to pause the plugin\n"));
 	return false;
 }
 
@@ -517,9 +428,9 @@ void CSvenInternal::GameFrame(client_state_t state, double frametime, bool bPost
 				//	if ( !IsTertiaryAttackGlitchInit_Server() )
 				//	{
 				//	#ifdef PLATFORM_WINDOWS
-				//		HMODULE hServerDLL = Sys_GetModuleHandle(xs("server.dll"));
+				//		HMODULE hServerDLL = Sys_GetModuleHandle(("server.dll"));
 				//	#else
-				//		HMODULE hServerDLL = Sys_GetModuleHandle(xs("server.so"));
+				//		HMODULE hServerDLL = Sys_GetModuleHandle(("server.so"));
 				//	#endif
 
 				//		if ( hServerDLL )
@@ -587,49 +498,49 @@ static char svenint_tag[ sizeof( "SVENINT" ) ];
 
 const char *CSvenInternal::GetName(void)
 {
-	copy_obfuscated_str(xs("SvenInt"), svenint_name, sizeof(svenint_name));
+	copy_obfuscated_str(("SvenInt"), svenint_name, sizeof(svenint_name));
 
 	return svenint_name;
 }
 
 const char *CSvenInternal::GetAuthor(void)
 {
-	copy_obfuscated_str(xs("Sw1ft / Reality"), svenint_author, sizeof(svenint_author));
+	copy_obfuscated_str(("Sw1ft / Reality"), svenint_author, sizeof(svenint_author));
 
 	return svenint_author;
 }
 
 const char *CSvenInternal::GetVersion(void)
 {
-	copy_obfuscated_str(xs(SVENINT_MAJOR_VERSION_STRING "." SVENINT_MINOR_VERSION_STRING "." SVENINT_PATCH_VERSION_STRING), svenint_version, sizeof(svenint_version));
+	copy_obfuscated_str((SVENINT_MAJOR_VERSION_STRING "." SVENINT_MINOR_VERSION_STRING "." SVENINT_PATCH_VERSION_STRING), svenint_version, sizeof(svenint_version));
 
 	return svenint_version;
 }
 
 const char *CSvenInternal::GetDescription(void)
 {
-	copy_obfuscated_str(xs("Provides various cheats and gameplay enhances"), svenint_desc, sizeof(svenint_desc));
+	copy_obfuscated_str(("Provides various cheats and gameplay enhances"), svenint_desc, sizeof(svenint_desc));
 
 	return svenint_desc;
 }
 
 const char *CSvenInternal::GetURL(void)
 {
-	copy_obfuscated_str(xs("https://steamcommunity.com/profiles/76561198397776991"), svenint_url, sizeof(svenint_url));
+	copy_obfuscated_str(("https://steamcommunity.com/profiles/76561198397776991"), svenint_url, sizeof(svenint_url));
 
 	return svenint_url;
 }
 
 const char *CSvenInternal::GetDate(void)
 {
-	copy_obfuscated_str(xs(SVENMOD_BUILD_TIMESTAMP), svenint_date, sizeof(svenint_date));
+	copy_obfuscated_str((SVENMOD_BUILD_TIMESTAMP), svenint_date, sizeof(svenint_date));
 
 	return svenint_date;
 }
 
 const char *CSvenInternal::GetLogTag(void)
 {
-	copy_obfuscated_str(xs("SVENINT"), svenint_tag, sizeof(svenint_tag));
+	copy_obfuscated_str(("SVENINT"), svenint_tag, sizeof(svenint_tag));
 
 	return svenint_tag;
 }
@@ -642,29 +553,29 @@ void CSvenInternal::InitFolders(ISvenModAPI *pSvenModAPI)
 	std::string sDir = pSvenModAPI->GetBaseDirectory();
 
 #ifdef PLATFORM_WINDOWS
-	if ( !CreateDirectory((sDir + xs("\\sven_internal\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
+	if ( !CreateDirectory((sDir + ("\\sven_internal\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(xs("[Sven Internal] Failed to create \"../sven_internal/\" directory\n"));
+		Warning(("[Sven Internal] Failed to create \"../sven_internal/\" directory\n"));
 	}
 
-	if ( !CreateDirectory((sDir + xs("\\sven_internal\\config\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
+	if ( !CreateDirectory((sDir + ("\\sven_internal\\config\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(xs("[Sven Internal] Failed to create \"../sven_internal/config/\" directory\n"));
+		Warning(("[Sven Internal] Failed to create \"../sven_internal/config/\" directory\n"));
 	}
 	
-	if ( !CreateDirectory((sDir + xs("\\sven_internal\\config\\shaders\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
+	if ( !CreateDirectory((sDir + ("\\sven_internal\\config\\shaders\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(xs("[Sven Internal] Failed to create \"../sven_internal/config/shaders/\" directory\n"));
+		Warning(("[Sven Internal] Failed to create \"../sven_internal/config/shaders/\" directory\n"));
 	}
 
-	if ( !CreateDirectory((sDir + xs("\\sven_internal\\message_spammer\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
+	if ( !CreateDirectory((sDir + ("\\sven_internal\\message_spammer\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(xs("[Sven Internal] Failed to create \"../sven_internal/message_spammer/\" directory\n"));
+		Warning(("[Sven Internal] Failed to create \"../sven_internal/message_spammer/\" directory\n"));
 	}
 
-	if ( !CreateDirectory((sDir + xs("\\sven_internal\\input_manager\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
+	if ( !CreateDirectory((sDir + ("\\sven_internal\\input_manager\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(xs("[Sven Internal] Failed to create \"../sven_internal/input_manager/\" directory\n"));
+		Warning(("[Sven Internal] Failed to create \"../sven_internal/input_manager/\" directory\n"));
 	}
 #else
 #error Implement Linux equivalent
@@ -742,7 +653,7 @@ static void SaveSoundcache()
 {
 	if ( !*szSoundcacheDirectory )
 	{
-		snprintf(szSoundcacheDirectory, MAX_PATH, xs("%s\\svencoop_downloads\\maps\\soundcache\\"), SvenModAPI()->GetBaseDirectory());
+		snprintf(szSoundcacheDirectory, MAX_PATH, ("%s\\svencoop_downloads\\maps\\soundcache\\"), SvenModAPI()->GetBaseDirectory());
 	}
 
 	if ( g_Config.cvars.save_soundcache )

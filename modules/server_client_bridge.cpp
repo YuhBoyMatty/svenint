@@ -130,9 +130,9 @@ void CServerClientBridge::OnClientPutInServer( edict_t *pPlayer )
 
 void CServerClientBridge::Init( void )
 {
-	if ( g_pEngineFuncs->HookUserMsg(xs("SvenInt"), UserMsgHook_SvenInt) != 0 )
+	if ( g_pEngineFuncs->HookUserMsg(("SvenInt"), UserMsgHook_SvenInt) != 0 )
     {
-        usermsg_t *pUserMsg = const_cast<usermsg_t *>( Utils()->FindUserMessage(xs("SvenInt")) );
+        usermsg_t *pUserMsg = const_cast<usermsg_t *>( Utils()->FindUserMessage(("SvenInt")) );
 
         if ( pUserMsg != NULL )
         {

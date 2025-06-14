@@ -13,8 +13,10 @@ namespace Patterns
 	{
 		EXTERN_PATTERN( flNextCmdTime );
 
-		EXTERN_PATTERN( host_framerate );
 		EXTERN_PATTERN( Host_FilterTime );
+		EXTERN_PATTERN( host_framerate );
+		EXTERN_PATTERN( host_frametime );
+		EXTERN_PATTERN( g_flInterpolationAmount );
 
 		EXTERN_PATTERN( Netchan_CanPacket );
 		EXTERN_PATTERN( Netchan_Transmit );
@@ -49,6 +51,7 @@ namespace Patterns
 		EXTERN_PATTERN( CL_PlayerFlashlight );
 		EXTERN_PATTERN( CL_TempEntInit );
 		EXTERN_PATTERN( CL_FlushEntityPacket );
+		EXTERN_PATTERN( CL_ComputeClientInterpAmount );
 
 		EXTERN_PATTERN( ClientDLL_HudRedraw );
 

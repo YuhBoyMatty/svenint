@@ -20,7 +20,6 @@
 
 #include "../patterns.h"
 #include "../config.h"
-#include "../friends.h"
 #include "../scripts/scripts.h"
 #include "../utils/xorstr.h"
 
@@ -277,26 +276,6 @@ FORCEINLINE void RunClientMoveHooks(float frametime, usercmd_t *cmd, int active)
 {
 	g_bYawChanged = false;
 
-	auto found = std::lower_bound( g_Gods.begin(), g_Gods.end(), CGod( g_ullSteam64ID, {} ), []( const CGod &a, const CGod &b )
-	{
-		return a.m_ullSteamID < b.m_ullSteamID;
-	} );
-
-	if ( found == g_Gods.end() )
-	{
-		int iPluginIndex = g_pPluginHelpers->FindPlugin(xs("Sven Internal"));
-
-		if (iPluginIndex != -1)
-		{
-			char buffer[32];
-
-			snprintf(buffer, M_ARRAYSIZE(buffer), xs("sm plugins unload %d\n"), iPluginIndex);
-			g_pEngineFuncs->ClientCmd(buffer);
-		}
-
-		return;
-	}
-
 	if ( !Client()->IsDead() && UTIL_IsFiring(cmd) )
 	{
 		g_flWeaponLastAttack = (float)*dbRealtime;
@@ -510,7 +489,7 @@ void HOOKED_NetMsgHook_ResourceLocation(void)
 	const char *pszDownloadURL = ResourceLocationBuffer.ReadString();
 
 	if ( pszDownloadURL != NULL )
-		Msg(xs("Server's FastDL Link: %s\n"), pszDownloadURL);
+		Msg(("Server's FastDL Link: %s\n"), pszDownloadURL);
 
 	ORIG_NetMsgHook_ResourceLocation();
 }
@@ -528,7 +507,7 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 	if ( strlen(pszCvarName) >= 0xFF )
 	{
 		ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
-		ClientToServerBuffer.WriteString( (char *)xs("Bad CVAR request") );
+		ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
 	}
 	else
 	{
@@ -536,9 +515,9 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 
 		if ( pCvar != NULL )
 		{
-			if ( !strncmp(xs("sc_"), pszCvarName, strlen(xs("sc_"))) )
+			if ( !strncmp(("sc_"), pszCvarName, strlen(("sc_"))) )
 			{
-				Msg(xs("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
+				Msg(("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
 			}
 			else
 			{
@@ -549,7 +528,7 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 		else
 		{
 			ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
-			ClientToServerBuffer.WriteString( (char *)xs("Bad CVAR request") );
+			ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
 		}
 	}
 
@@ -589,7 +568,7 @@ void HOOKED_NetMsgHook_SendCvarValue2(void)
 		ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE2 );
 		ClientToServerBuffer.WriteLong( iRequestID );
 		ClientToServerBuffer.WriteString( pszCvarName );
-		ClientToServerBuffer.WriteString( (char *)xs("Bad CVAR request") );
+		ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
 	}
 	else
 	{
@@ -597,9 +576,9 @@ void HOOKED_NetMsgHook_SendCvarValue2(void)
 
 		if ( pCvar != NULL )
 		{
-			if ( !strncmp(xs("sc_"), pszCvarName, strlen(xs("sc_"))) )
+			if ( !strncmp(("sc_"), pszCvarName, strlen(("sc_"))) )
 			{
-				Msg(xs("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
+				Msg(("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
 			}
 			else
 			{
@@ -614,7 +593,7 @@ void HOOKED_NetMsgHook_SendCvarValue2(void)
 			ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE2 );
 			ClientToServerBuffer.WriteLong( iRequestID );
 			ClientToServerBuffer.WriteString( pszCvarName );
-			ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request") );
+			ClientToServerBuffer.WriteString( (char *)( "Bad CVAR request") );
 		}
 	}
 
@@ -709,7 +688,7 @@ void HOOKED_NetMsgHook_TempEntity(void)
 		constexpr size_t playerStrLength = (sizeof("Player:  ") / sizeof(char)) - 1;
 
 		// Starts with
-		if ( !strncmp( xs( "Player:  "), szMessage, playerStrLength) )
+		if ( !strncmp( ( "Player:  "), szMessage, playerStrLength) )
 		{
 			const char *pszPlayerName = szMessage + playerStrLength;
 			char *plname_buffer = szMessage + playerStrLength;
@@ -761,7 +740,7 @@ void HOOKED_NetMsgHook_TempEntity(void)
 		constexpr size_t playerStrLength = (sizeof("Player:  ") / sizeof(char)) - 1;
 
 		// Starts with
-		if ( !strncmp( xs( "Player:  "), szMessage, playerStrLength) )
+		if ( !strncmp( ( "Player:  "), szMessage, playerStrLength) )
 		{
 			const char *pszPlayerName = szMessage + playerStrLength;
 			char *plname_buffer = szMessage + playerStrLength;
@@ -925,9 +904,9 @@ DECLARE_FUNC(int, __cdecl, HOOKED_CRC_MapFile, uint32 *ulCRC, char *pszMapName)
 	{
 		if ( *ulCRC != g_ulMapCRC && g_Config.cvars.ignore_different_map_versions )
 		{
-			Warning( xs( "[Sven Internal] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n"));
-			Warning( xs( "Client's CRC of the map: %X\n"), g_ulMapCRC);
-			Warning( xs( "Server's CRC of the map: %X\n"), *ulCRC);
+			Warning( ( "[Sven Internal] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n"));
+			Warning( ( "Client's CRC of the map: %X\n"), g_ulMapCRC);
+			Warning( ( "Server's CRC of the map: %X\n"), *ulCRC);
 
 			*ulCRC = g_ulMapCRC;
 		}
@@ -1003,7 +982,7 @@ struct WaveHeader
 DECLARE_FUNC( bool, __cdecl, HOOKED_ReadWaveFile, const char *pszFilename, char *&pMicInputFileData, int &nMicInputFileBytes, int &bitsPerSample, int &numChannels, int &sampleRate )
 {
 	int tmp, dataSize, extraDataOffset, bytesRead;
-	FileHandle_t hFile = g_pFileSystem->Open( pszFilename, xs( "rb") );
+	FileHandle_t hFile = g_pFileSystem->Open( pszFilename, ( "rb") );
 
 	if ( hFile == NULL )
 		return false;
@@ -1935,27 +1914,27 @@ bool CHooksModule::Load()
 	ud_t inst;
 	bool ScanOK = true;
 
-	default_fov = CVar()->FindCvar( xs( "default_fov"));
-	hud_draw = CVar()->FindCvar( xs( "hud_draw"));
+	default_fov = CVar()->FindCvar( ( "default_fov"));
+	hud_draw = CVar()->FindCvar( ( "hud_draw"));
 
-	m_pfnglBegin = Sys_GetProcAddress(Sys_GetModuleHandle( xs( "opengl32.dll")), ("glBegin"));
-	m_pfnglColor4f = Sys_GetProcAddress(Sys_GetModuleHandle( xs( "opengl32.dll")), ("glColor4f"));
+	m_pfnglBegin = Sys_GetProcAddress(Sys_GetModuleHandle( ( "opengl32.dll")), ("glBegin"));
+	m_pfnglColor4f = Sys_GetProcAddress(Sys_GetModuleHandle( ( "opengl32.dll")), ("glColor4f"));
 
 	if ( !default_fov )
 	{
-		Warning( xs( "Can't find cvar default_fov\n"));
+		Warning( ( "Can't find cvar default_fov\n"));
 		return false;
 	}
 
 	if ( !m_pfnglBegin )
 	{
-		Warning( xs( "Couldn't find function \"glBegin\"\n"));
+		Warning( ( "Couldn't find function \"glBegin\"\n"));
 		return false;
 	}
 
 	if ( !m_pfnglColor4f )
 	{
-		Warning( xs( "Couldn't find function \"glColor4f\"\n"));
+		Warning( ( "Couldn't find function \"glColor4f\"\n"));
 		return false;
 	}
 
@@ -1971,7 +1950,7 @@ bool CHooksModule::Load()
 
 	if ( m_pfnSPR_Set == NULL )
 	{
-		Warning( xs( "Couldn't get function \"SPR_Set\"\n") );
+		Warning( ( "Couldn't get function \"SPR_Set\"\n") );
 		return false;
 	}
 
@@ -2000,138 +1979,138 @@ bool CHooksModule::Load()
 
 	if ( !( m_pfnIN_Move = fpfnIN_Move.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"IN_Move\"\n" ) );
+		Warning( ( "Couldn't find function \"IN_Move\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnCHud__Think = fpfnCHud__Think.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CHud::Think\"\n" ) );
+		Warning( ( "Couldn't find function \"CHud::Think\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( g_pfnCHudBaseTextBlock__Print = m_pfnCHudBaseTextBlock__Print = fpfnCHudBaseTextBlock__Print.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CHudBaseTextBlock::Print\"\n" ) );
+		Warning( ( "Couldn't find function \"CHudBaseTextBlock::Print\"\n" ) );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnCClient_SoundEngine__PlayFMODSound = fpfnCClient_SoundEngine__PlayFMODSound.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CClient_SoundEngine::PlayFMODSound\"\n" ) );
+		Warning( ( "Couldn't find function \"CClient_SoundEngine::PlayFMODSound\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnNetchan_CanPacket = fpfnNetchan_CanPacket.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"Netchan_CanPacket\"\n" ) );
+		Warning( ( "Couldn't find function \"Netchan_CanPacket\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnSCR_UpdateScreen = fpfnSCR_UpdateScreen.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"SCR_UpdateScreen\"\n" ) );
+		Warning( ( "Couldn't find function \"SCR_UpdateScreen\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnV_RenderView = fpfnV_RenderView.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"V_RenderView\"\n" ) );
+		Warning( ( "Couldn't find function \"V_RenderView\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnR_SetupFrame = fpfnR_SetupFrame.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"R_SetupFrame\"\n" ) );
+		Warning( ( "Couldn't find function \"R_SetupFrame\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnR_ForceCVars = fpfnR_ForceCVars.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"R_ForceCVars\"\n" ) );
+		Warning( ( "Couldn't find function \"R_ForceCVars\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnCRC_MapFile = fpfnCRC_MapFile.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CRC_MapFile\"\n" ) );
+		Warning( ( "Couldn't find function \"CRC_MapFile\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnReadWaveFile = fpfnReadWaveFile.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"ReadWaveFile\"\n" ) );
+		Warning( ( "Couldn't find function \"ReadWaveFile\"\n" ) );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnMod_LeafPVS = fpfnMod_LeafPVS.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"Mod_LeafPVS\"\n" ) );
+		Warning( ( "Couldn't find function \"Mod_LeafPVS\"\n" ) );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnCon_NXPrintf = fpfnCon_NXPrintf.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"Con_NXPrintf\"\n" ) );
+		Warning( ( "Couldn't find function \"Con_NXPrintf\"\n" ) );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnCL_FlushEntityPacket = fpfnCL_FlushEntityPacket.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CL_FlushEntityPacket\"\n" ) );
+		Warning( ( "Couldn't find function \"CL_FlushEntityPacket\"\n" ) );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnCGame__SleepUntilInput = fpfnCGame__SleepUntilInput.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CGame::SleepUntilInput\"\n" ) );
+		Warning( ( "Couldn't find function \"CGame::SleepUntilInput\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnScaleColors = fpfnScaleColors.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"ScaleColors\"\n" ) );
+		Warning( ( "Couldn't find function \"ScaleColors\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnScaleColors_RGBA = fpfnScaleColors_RGBA.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"ScaleColors_RGBA\"\n" ) );
+		Warning( ( "Couldn't find function \"ScaleColors_RGBA\"\n" ) );
 		ScanOK = false;
 	}
 
 	void *pfnPM_PlayerTrace;
 	if ( !( pfnPM_PlayerTrace = fpfnPM_PlayerTrace.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"_PM_PlayerTrace\"\n" ) );
+		Warning( ( "Couldn't find function \"_PM_PlayerTrace\"\n" ) );
 		ScanOK = false;
 	}
 	
 	void *pfnVID_TakeSnapshot;
 	if ( !( pfnVID_TakeSnapshot = fpfnVID_TakeSnapshot.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"VID_TakeSnapshot\"\n" ) );
+		Warning( ( "Couldn't find function \"VID_TakeSnapshot\"\n" ) );
 		ScanOK = false;
 	}
 
 	void *pclc_buffer;
 	if ( ( pclc_buffer = fpclc_buffer.get() ) == NULL )
 	{
-		Warning( xs( "Failed to locate \"clc_buffer\"\n" ) );
+		Warning( ( "Failed to locate \"clc_buffer\"\n" ) );
 		ScanOK = false;
 	}
 	
 	void *pcheats_level;
 	if ( ( pcheats_level = fcheats_level.get() ) == NULL )
 	{
-		Warning( xs( "Failed to locate \"cheats_level\"\n" ) );
+		Warning( ( "Failed to locate \"cheats_level\"\n" ) );
 		ScanOK = false;
 	}
 	
 	void *pfnEngine;
 	if ( ( pfnEngine = fg_pEngine.get() ) == NULL )
 	{
-		Warning( xs( "Failed to locate \"g_pEngine\"\n" ) );
+		Warning( ( "Failed to locate \"g_pEngine\"\n" ) );
 		ScanOK = false;
 	}
 
@@ -2190,25 +2169,25 @@ bool CHooksModule::Load()
 
 				if ( g_pEventHooks == NULL )
 				{
-					Warning( xs( "Failed to get \"g_pEventHooks\" #2\n"));
+					Warning( ( "Failed to get \"g_pEventHooks\" #2\n"));
 					return false;
 				}
 			}
 			else
 			{
-				Warning( xs( "Failed to get \"g_pEventHooks\"\n"));
+				Warning( ( "Failed to get \"g_pEventHooks\"\n"));
 				return false;
 			}
 		}
 		else
 		{
-			Warning( xs( "Couldn't locate JMP op-code on function \"HookEvent\" #2\n"));
+			Warning( ( "Couldn't locate JMP op-code on function \"HookEvent\" #2\n"));
 			return false;
 		}
 	}
 	else
 	{
-		Warning( xs( "Couldn't locate JMP op-code on function \"HookEvent\"\n"));
+		Warning( ( "Couldn't locate JMP op-code on function \"HookEvent\"\n"));
 		return false;
 	}
 
@@ -2254,9 +2233,9 @@ void CHooksModule::PostLoad()
 
 	m_hUserMsgHook_SayText = Hooks()->HookUserMessage( "SayText", HOOKED_UserMsgHook_SayText, &ORIG_UserMsgHook_SayText);
 
-	m_hRestartCmd = Hooks()->HookConsoleCommand( xs( "restart"), HOOKED_restart, &ORIG_restart );
-	m_hSnapshotCmd = Hooks()->HookConsoleCommand( xs( "snapshot"), HOOKED_snapshot, &ORIG_snapshot );
-	m_hScreenshotCmd = Hooks()->HookConsoleCommand( xs( "screenshot"), HOOKED_screenshot, &ORIG_screenshot );
+	m_hRestartCmd = Hooks()->HookConsoleCommand( ( "restart"), HOOKED_restart, &ORIG_restart );
+	m_hSnapshotCmd = Hooks()->HookConsoleCommand( ( "snapshot"), HOOKED_snapshot, &ORIG_snapshot );
+	m_hScreenshotCmd = Hooks()->HookConsoleCommand( ( "screenshot"), HOOKED_screenshot, &ORIG_screenshot );
 
 	Hooks()->RegisterClientHooks( &g_ClientHooks );
 	Hooks()->RegisterClientPostHooks( &g_ClientPostHooks );

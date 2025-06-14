@@ -54,7 +54,11 @@ struct player_model_replacement_info_s
 // Vars
 //-----------------------------------------------------------------------------
 
+#if defined(SC_5_25) || defined(SC_5_26)
 constexpr int UserInfo_ModelOffset = 592;
+#else
+#error ("validate offset of userinfo's model")
+#endif
 
 CModelsManager g_ModelsManager;
 CMessageBuffer UpdateUserInfoBuffer;
@@ -483,9 +487,13 @@ bool CModelsManager::Load()
 {
 	ud_t inst;
 
+#if !defined(SC_5_26)
 	void *pUserInfo_Offset = MemoryUtils()->FindPatternWithin(SvenModAPI()->Modules()->Hardware, Patterns::Hardware::UserInfo_Offset,
 															  g_pEngineStudio->SetupPlayerModel,
 															  (unsigned char *)g_pEngineStudio->SetupPlayerModel + 72);
+#else //defined(SC_5_26)
+	void* pUserInfo_Offset = MemoryUtils()->FindPattern(SvenModAPI()->Modules()->Hardware, Patterns::Hardware::UserInfo_Offset);
+#endif //!defined(SC_5_26)
 
 	if ( !pUserInfo_Offset )
 	{
@@ -497,9 +505,15 @@ bool CModelsManager::Load()
 
 	do
 	{
+	#if defined(SC_5_26)
+		if (inst.mnemonic == UD_Ilea && inst.operand[0].type == UD_OP_REG && inst.operand[0].base == UD_R_EAX &&
+			inst.operand[1].type == UD_OP_MEM && inst.operand[1].base == UD_R_EAX && inst.operand[1].offset == 32)
+		{
+	#else
 		if (inst.mnemonic == UD_Ilea && inst.operand[0].type == UD_OP_REG && inst.operand[0].base == UD_R_EDI &&
 			inst.operand[1].type == UD_OP_MEM && inst.operand[1].base == UD_R_EAX && inst.operand[1].offset == 32)
 		{
+	#endif
 			g_pUserInfo = reinterpret_cast<unsigned char *>(inst.operand[1].lval.udword);
 			break;
 		}

@@ -43,7 +43,7 @@ static void Session()
 
 		if ( code != AUResultCode_OK )
 		{
-			AU_Printf_Clr({ 255, 90, 90, 255 }, xs("[SvenInt::AutoUpdate] Communication with server has broken down (code: %d)\n"), code);
+			AU_Printf_Clr({ 255, 90, 90, 255 }, ("[SvenInt::AutoUpdate] Communication with server has broken down (code: %d)\n"), code);
 		}
 
 		if ( !bIsActive )
@@ -53,20 +53,20 @@ static void Session()
 
 static void AutoUpdate_Client()
 {
-	if ( client_server.Initialize(xs(AU_SERVER_IP), AU_SERVER_PORT) )
+	if ( client_server.Initialize((AU_SERVER_IP), AU_SERVER_PORT) )
 	{
 		int connect_result = client_server.Socket()->Connect(client_server.Address(), sizeof(sockaddr_in_t));
 		
 		if ( connect_result != SOCKET_ERROR )
 		{
-			AU_Printf(xs("Connected to server\n"));
+			AU_Printf(("Connected to server\n"));
 
 			Session();
 		}
 		else
 		{
 			//AU_Printf("Failed to connect to server\n");
-			AU_Printf_Clr({ 255, 90, 90, 255 }, xs("[SvenInt::AutoUpdate] Failed to connect to server\n"));
+			AU_Printf_Clr({ 255, 90, 90, 255 }, ("[SvenInt::AutoUpdate] Failed to connect to server\n"));
 		}
 
 		client_server.Shutdown();
@@ -121,7 +121,7 @@ void AutoUpdate_ExtractAndLaunch()
 {
 	if ( g_pUpdateData != NULL && g_ulUpdateSize > 0 )
 	{
-		FILE *file = fopen(xs(AU_UPDATER_FILENAME), xs("wb"));
+		FILE *file = fopen((AU_UPDATER_FILENAME), ("wb"));
 
 		if ( file != NULL )
 		{
@@ -141,16 +141,16 @@ void AutoUpdate_ExtractAndLaunch()
 			//}
 
 			//system( AU_UPDATER_FILENAME );
-			system( xs("start " AU_UPDATER_FILENAME) );
+			system( ("start " AU_UPDATER_FILENAME) );
 		#else
-			chmod( xs(AU_UPDATER_FILENAME), S_IRUSR | S_IXUSR );
-			system( xs("./" AU_UPDATER_FILENAME) );
+			chmod( (AU_UPDATER_FILENAME), S_IRUSR | S_IXUSR );
+			system( ("./" AU_UPDATER_FILENAME) );
 		#endif
 		}
 		else
 		{
 			//AU_Printf("Failed to extract an update\n");
-			AU_Printf_Clr({ 255, 90, 90, 255 }, xs("[SvenInt::AutoUpdate] Failed to extract an update\n"));
+			AU_Printf_Clr({ 255, 90, 90, 255 }, ("[SvenInt::AutoUpdate] Failed to extract an update\n"));
 		}
 	}
 }

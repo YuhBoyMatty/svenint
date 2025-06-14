@@ -56,19 +56,19 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;DBG_ASSERT;DBG_ASSERT_FATAL;AU_CLIENT;WIN32;_DEBUG;SVENINTERNAL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;DBG_ASSERT;DBG_ASSERT_FATAL;SC_5_26;AU_CLIENT;WIN32;_DEBUG;SVENINTERNAL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>SvenMod\public;imgui;imgui_impl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>svenmod\public;glew\include;imgui;imgui_impl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/GR- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>SvenMod\lib\public;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32;steam\lib;svenmod\lib\public;cryptopp\include;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>svenmod.lib;steam_api.lib;OpenGL32.lib;glew32.lib;cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -78,7 +78,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;DBG_ASSERT;DBG_ASSERT_FATAL;AU_CLIENT;WIN32;NDEBUG;SVENINTERNAL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;DBG_ASSERT;DBG_ASSERT_FATAL;AU_CLIENT;SC_5_26;WIN32;NDEBUG;SVENINTERNAL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
@@ -92,11 +92,10 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>glew\lib\Release\Win32;steam\lib;svenmod\lib\public;cryptopp\include;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>svenmod.lib;steam_api.lib;OpenGL32.lib;glew32.lib;cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>D:\GAMES\Steam\steamapps\common\Sven Co-op\svenmod\plugins\$(TargetName)$(TargetExt)</OutputFile>
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
@@ -132,7 +131,6 @@
     <ClCompile Include="features\strafer.cpp" />
     <ClCompile Include="features\thirdperson.cpp" />
     <ClCompile Include="features\visual.cpp" />
-    <ClCompile Include="friends.cpp" />
     <ClCompile Include="game\aim_prediction.cpp" />
     <ClCompile Include="game\class_table.cpp" />
     <ClCompile Include="game\demo_message.cpp" />
@@ -217,7 +215,6 @@
     <ClCompile Include="SvenMod\shared\mathlib.cpp" />
     <ClCompile Include="svenmod\shared\messagebuffer.cpp" />
     <ClCompile Include="svenmod\shared\sys.cpp" />
-    <ClCompile Include="utils\security.cpp" />
     <ClCompile Include="utils\menu_styles.cpp" />
     <ClCompile Include="utils\patcher.cpp" />
     <ClCompile Include="utils\random.cpp" />
@@ -279,7 +276,6 @@
     <ClInclude Include="features\strafer.h" />
     <ClInclude Include="features\thirdperson.h" />
     <ClInclude Include="features\visual.h" />
-    <ClInclude Include="friends.h" />
     <ClInclude Include="game\aim_prediction.h" />
     <ClInclude Include="game\class_table.h" />
     <ClInclude Include="game\demo_message.h" />
@@ -354,7 +350,6 @@
     <ClInclude Include="strafe\strafe.h" />
     <ClInclude Include="strafe\strafe_utils.h" />
     <ClInclude Include="SvenMod\public\hl_sdk\cl_dll\interpolation.h" />
-    <ClInclude Include="utils\security.hpp" />
     <ClInclude Include="utils\menu_fonts.hpp" />
     <ClInclude Include="utils\menu_styles.h" />
     <ClInclude Include="utils\patcher.h" />

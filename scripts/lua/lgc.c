@@ -1660,7 +1660,7 @@ void luaC_runtilstate (lua_State *L, int statesmask) {
 static void incstep (lua_State *L, global_State *g) {
   int stepmul = (getgcparam(g->gcstepmul) | 1);  /* avoid division by 0 */
   l_mem debt = (g->GCdebt / WORK2MEM) * stepmul;
-  l_mem stepsize = (g->gcstepsize <= log2maxs(l_mem))
+  l_mem stepsize = (g->gcstepsize <= log2ma(l_mem))
                  ? ((cast(l_mem, 1) << g->gcstepsize) / WORK2MEM) * stepmul
                  : MAX_LMEM;  /* overflow; keep maximum value */
   do {  /* repeat until pause or enough "credit" (negative debt) */

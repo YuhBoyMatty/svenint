@@ -119,6 +119,35 @@ CON_COMMAND( setpos_exact, "Set local player's position" )
 	}
 }
 
+static Vector savedpos;
+
+CON_COMMAND( savepos, "Save local player's position" )
+{
+	if ( args.ArgC() > 1 && Host_IsServerActive() )
+	{
+		edict_t *pPlayer = g_pServerEngineFuncs->pfnPEntityOfEntIndex( Client()->GetPlayerIndex() );
+
+		if ( !FNullEnt( pPlayer ) && IsValidEntity( pPlayer ) )
+		{
+			savedpos = pPlayer->v.origin;
+			Utils()->PrintChatText( "<SvenInt> Saved current position" );
+		}
+	}
+}
+
+CON_COMMAND( setpos_saved, "Set last saved local player's position" )
+{
+	if ( args.ArgC() > 1 && Host_IsServerActive() )
+	{
+		edict_t *pPlayer = g_pServerEngineFuncs->pfnPEntityOfEntIndex( Client()->GetPlayerIndex() );
+
+		if ( !FNullEnt( pPlayer ) && IsValidEntity( pPlayer ) )
+		{
+			pPlayer->v.origin = savedpos;
+		}
+	}
+}
+
 CON_COMMAND( setvel, "Set local player's position" )
 {
 	if ( args.ArgC() > 1 && Host_IsServerActive() )
