@@ -341,12 +341,6 @@
     <ClCompile Include="autoupdate\client\autoupdate.cpp">
       <Filter>Sven Internal\AutoUpdate</Filter>
     </ClCompile>
-    <ClCompile Include="friends.cpp">
-      <Filter>Sven Internal</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\security.cpp">
-      <Filter>Sven Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="features\shaders.cpp">
       <Filter>Sven Internal\Features</Filter>
     </ClCompile>
@@ -744,12 +738,6 @@
     </ClInclude>
     <ClInclude Include="autoupdate\client\autoupdate.h">
       <Filter>Sven Internal\AutoUpdate</Filter>
-    </ClInclude>
-    <ClInclude Include="friends.h">
-      <Filter>Sven Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\security.hpp">
-      <Filter>Sven Internal\Utils</Filter>
     </ClInclude>
     <ClInclude Include="features\shaders.h">
       <Filter>Sven Internal\Features</Filter>

@@ -105,7 +105,7 @@ public:
 
 
 //#ifdef _DEBUG
-#if ( 0 )
+#if ( 1 )
 #define XorStr(s)	s
 #define xs(_s)		_s
 #define XorStr2(s)	s
@@ -119,7 +119,7 @@ public:
 #define XorStr(s)	(XorCompileTime::XorString<sizeof(s) - 1, __COUNTER__>(s, std::make_index_sequence<sizeof(s) - 1>()).decrypt())
 #define xs(_s)		XorStr(_s)
 #define XorStr2(s)	XorStr(s)
-#define xs2(_s)		xs(_s)
+#define xs2(_s)		(_s)
 #endif
 
 #endif // XORSTR_H

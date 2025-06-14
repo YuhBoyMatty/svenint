@@ -1,4 +1,4 @@
-// The code here is so fucking mess
+// The code here is so fucking mess but I have no intention to refactor it LOL
 
 #pragma warning(disable : 6011)
 
@@ -10,6 +10,7 @@
 #include <dbg.h>
 
 #include <ISvenModAPI.h>
+#include <IDetoursAPI.h>
 #include <IMemoryUtils.h>
 
 #include "../patterns.h"
@@ -39,6 +40,23 @@ static BYTE s_TertiaryAttackPatchedBytes[] =
 	0xC3, // RETURN
 	0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 // NOP
 };
+
+//-----------------------------------------------------------------------------
+// what
+//-----------------------------------------------------------------------------
+
+// xWhitey: Make me 1
+#define HOOK_INTEPR_BOUND ( 0 )
+
+DECLARE_HOOK( void, __cdecl, ORIG_CL_ComputeClientInterpAmount, usercmd_t * );
+
+constexpr unsigned int patchInterpDupeSize = 0x1DF;
+
+static float *pflhost_frametime = NULL;
+static float *pflg_flInterpolationAmount = NULL;
+
+static void *pfnCL_ComputeClientInterpAmount = NULL;
+static DetourHandle_t hCL_ComputeClientInterpAmount = NULL;
 
 //-----------------------------------------------------------------------------
 // Patches module feature
@@ -158,6 +176,18 @@ static void InitTertiaryAttackGlitch()
 {
 	ud_t instruction;
 	DWORD *dwVTable[] = { NULL, NULL, NULL, NULL };
+	
+	constexpr unsigned long tertiaryAttackOffset = 150;
+	
+	constexpr unsigned long offset1 = 0x63;
+	constexpr unsigned long offset2 = 0x63;
+	constexpr unsigned long offset3 = 0x63;
+	
+#if defined(SC_5_26)
+	constexpr unsigned long offset4 = 0x6C;
+#else
+	constexpr unsigned long offset4 = 0x67;
+#endif
 
 	void *weapon_gauss = Sys_GetProcAddress( SvenModAPI()->Modules()->Client, "weapon_gauss" ); // vtable <- (byte *)weapon_gauss + 0x63
 	void *weapon_minigun = Sys_GetProcAddress( SvenModAPI()->Modules()->Client, "weapon_minigun" ); // vtable <- (byte *)weapon_minigun + 0x63
@@ -171,7 +201,7 @@ static void InitTertiaryAttackGlitch()
 	}
 
 	// weapon_gauss
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_gauss + 0x63, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_gauss + offset1, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -180,7 +210,7 @@ static void InitTertiaryAttackGlitch()
 		return Warning("Tertiary Attack Glitch: can't init weapon_gauss\n");
 		
 	// weapon_minigun
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_minigun + 0x63, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_minigun + offset2, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -189,7 +219,7 @@ static void InitTertiaryAttackGlitch()
 		return Warning("Tertiary Attack Glitch: can't init weapon_minigun\n");
 		
 	// weapon_handgrenade
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_handgrenade + 0x63, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_handgrenade + offset3, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -198,7 +228,7 @@ static void InitTertiaryAttackGlitch()
 		return Warning("Tertiary Attack Glitch: can't init weapon_handgrenade\n");
 		
 	// weapon_shockrifle
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_shockrifle + 0x67, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_shockrifle + offset4, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -206,16 +236,16 @@ static void InitTertiaryAttackGlitch()
 	else
 		return Warning("Tertiary Attack Glitch: can't init weapon_shockrifle\n");;
 
-	if ( !InitTertiaryAttackPatch(GaussTertiaryAttack, (void *)dwVTable[0][150]) ) // CBasePlayerWeapon::TertiaryAttack
+	if ( !InitTertiaryAttackPatch(GaussTertiaryAttack, (void *)dwVTable[0][tertiaryAttackOffset]) ) // CBasePlayerWeapon::TertiaryAttack
 		return;
 	
-	if ( !InitTertiaryAttackPatch(MinigunTertiaryAttack, (void *)dwVTable[1][150]) )
+	if ( !InitTertiaryAttackPatch(MinigunTertiaryAttack, (void *)dwVTable[1][tertiaryAttackOffset]) )
 		return;
 	
-	if ( !InitTertiaryAttackPatch(HandGrenadeTertiaryAttack, (void *)dwVTable[2][150]) )
+	if ( !InitTertiaryAttackPatch(HandGrenadeTertiaryAttack, (void *)dwVTable[2][tertiaryAttackOffset]) )
 		return;
 	
-	if ( !InitTertiaryAttackPatch(ShockRifleTertiaryAttack, (void *)dwVTable[3][150]) )
+	if ( !InitTertiaryAttackPatch(ShockRifleTertiaryAttack, (void *)dwVTable[3][tertiaryAttackOffset]) )
 		return;
 
 	s_bTertiaryAttackGlitchInitialized = true;
@@ -225,6 +255,24 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 {
 	ud_t instruction;
 	DWORD *dwVTable[] = { NULL, NULL, NULL, NULL, NULL };
+	
+#if defined(SC_5_26)
+	constexpr unsigned long tertiaryAttackOffset = 153;
+	
+	constexpr unsigned long offset1 = 0x87;
+	constexpr unsigned long offset2 = 0x8B;
+	constexpr unsigned long offset3 = 0x87;
+	constexpr unsigned long offset4 = 0x96;
+	constexpr unsigned long offset5 = 0x8F;
+#else
+	constexpr unsigned long tertiaryAttackOffset = 151;
+
+	constexpr unsigned long offset1 = 0x7B;
+	constexpr unsigned long offset2 = 0x7B;
+	constexpr unsigned long offset3 = 0x7B;
+	constexpr unsigned long offset4 = 0x83;
+	constexpr unsigned long offset5 = 0x83;
+#endif
 
 	void *weapon_gauss = Sys_GetProcAddress( hServerDLL, "weapon_gauss" ); // vtable <- (byte *)weapon_gauss + 0x7B
 	void *weapon_minigun = GetProcAddress( hServerDLL, "weapon_minigun" ); // vtable <- (byte *)weapon_minigun + 0x7B
@@ -238,7 +286,7 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 	}
 
 	// weapon_gauss
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_gauss + 0x7B, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_gauss + offset1, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -247,7 +295,7 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 		return Warning("Tertiary Attack Glitch [S]: can't init weapon_gauss\n");
 
 	// weapon_minigun
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_minigun + 0x7B, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_minigun + offset2, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -256,7 +304,7 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 		return Warning("Tertiary Attack Glitch [S]: can't init weapon_minigun\n");
 
 	// weapon_handgrenade
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_handgrenade + 0x7B, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_handgrenade + offset3, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -265,7 +313,7 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 		return Warning("Tertiary Attack Glitch [S]: can't init weapon_handgrenade\n");
 
 	// weapon_shockrifle
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_shockrifle + 0x83, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_shockrifle + offset4, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -274,7 +322,7 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 		return Warning("Tertiary Attack Glitch [S]: can't init weapon_shockrifle\n");
 
 	// weapon_egon
-	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_egon + 0x83, 32, 15);
+	MemoryUtils()->InitDisasm(&instruction, (BYTE *)weapon_egon + offset5, 32, 15);
 	MemoryUtils()->Disassemble(&instruction);
 
 	if (instruction.mnemonic == UD_Imov && instruction.operand[0].type == UD_OP_MEM && instruction.operand[1].type == UD_OP_IMM)
@@ -282,19 +330,19 @@ void InitTertiaryAttackGlitch_Server(HMODULE hServerDLL)
 	else
 		return Warning("Tertiary Attack Glitch [S]: can't init weapon_egon\n");
 
-	if ( !InitTertiaryAttackPatch(GaussTertiaryAttack_Server, (void *)dwVTable[0][151]) ) // CBasePlayerWeapon::TertiaryAttack
+	if ( !InitTertiaryAttackPatch(GaussTertiaryAttack_Server, (void *)dwVTable[0][tertiaryAttackOffset]) ) // CBasePlayerWeapon::TertiaryAttack
 		return;
 	
-	if ( !InitTertiaryAttackPatch(MinigunTertiaryAttack_Server, (void *)dwVTable[1][151]) )
+	if ( !InitTertiaryAttackPatch(MinigunTertiaryAttack_Server, (void *)dwVTable[1][tertiaryAttackOffset]) )
 		return;
 	
-	if ( !InitTertiaryAttackPatch(HandGrenadeTertiaryAttack_Server, (void *)dwVTable[2][151]) )
+	if ( !InitTertiaryAttackPatch(HandGrenadeTertiaryAttack_Server, (void *)dwVTable[2][tertiaryAttackOffset]) )
 		return;
 	
-	if ( !InitTertiaryAttackPatch(ShockRifleTertiaryAttack_Server, (void *)dwVTable[3][151]) )
+	if ( !InitTertiaryAttackPatch(ShockRifleTertiaryAttack_Server, (void *)dwVTable[3][tertiaryAttackOffset]) )
 		return;
 	
-	if ( !InitTertiaryAttackPatch(GluonGunTertiaryAttack_Server, (void *)dwVTable[4][151]) )
+	if ( !InitTertiaryAttackPatch(GluonGunTertiaryAttack_Server, (void *)dwVTable[4][tertiaryAttackOffset]) )
 		return;
 
 	s_bTertiaryAttackGlitchInitialized_Server = true;
@@ -359,6 +407,7 @@ void CPatchesModule::ResumeThreads()
 
 bool CPatchesModule::PatchInterp()
 {
+#if !HOOK_INTEPR_BOUND
 	DWORD dwProtection;
 
 	void *pPatchInterpString = MemoryUtils()->FindString(SvenModAPI()->Modules()->Hardware, "cl_updaterate min");
@@ -376,18 +425,25 @@ bool CPatchesModule::PatchInterp()
 		Warning("'Patch Interp' failed initialization #2\n");
 		return false;
 	}
+	
+#if defined(SC_5_26)
+	constexpr unsigned int patchstart = 0x1F;
+#else
+	constexpr unsigned int patchstart = 0x1F;
+#endif
 
-	m_pInterpClampBegin = (void *)(pPatchInterp - 0x1F);
-	m_pDupedInterpClamp = (void *)malloc(0x1DF);
+	m_pInterpClampBegin = (void *)(pPatchInterp - patchstart);
+	m_pDupedInterpClamp = (void *)malloc(patchInterpDupeSize);
+
 
 	if (!m_pDupedInterpClamp)
 	{
-		Sys_Error("[Sven Internal] Failed to allocate memory");
+		Sys_Error("[SvenInt] Failed to allocate memory");
 		return false;
 	}
 
-	memcpy(m_pDupedInterpClamp, m_pInterpClampBegin, 0x1DF);
-	VirtualProtect(m_pInterpClampBegin, 0x1DF, PAGE_EXECUTE_READWRITE, &dwProtection);
+	memcpy(m_pDupedInterpClamp, m_pInterpClampBegin, patchInterpDupeSize);
+	VirtualProtect(m_pInterpClampBegin, patchInterpDupeSize, PAGE_EXECUTE_READWRITE, &dwProtection);
 
 	// go back to PUSH opcode
 	pPatchInterp -= 0x1;
@@ -398,14 +454,14 @@ bool CPatchesModule::PatchInterp()
 		return false;
 	}
 
-	if (*(pPatchInterp - 0x1F) != 0x7A) // JP opcode
+	if (*(pPatchInterp - patchstart) != 0x7A) // JP opcode
 	{
 		Warning("'Patch Interp' failed initialization #4\n");
 		return false;
 	}
 
 	// Patch cl_updaterate min.
-	*(pPatchInterp - 0x1F) = 0xEB;
+	*(pPatchInterp - patchstart) = 0xEB;
 	
 	// Go to PUSH string 'cl_updaterate max...'
 	pPatchInterp += 0x3F;
@@ -416,19 +472,23 @@ bool CPatchesModule::PatchInterp()
 		return false;
 	}
 
-	if (*(pPatchInterp - 0x1F) != 0x7A) // JP opcode
+	if (*(pPatchInterp - patchstart) != 0x7A) // JP opcode
 	{
 		Warning("'Patch Interp' failed initialization #6\n");
 		return false;
 	}
 
 	// Patch cl_updaterate max.
-	*(pPatchInterp - 0x1F) = 0xEB;
+	*(pPatchInterp - patchstart) = 0xEB;
 	
 	// Go to PUSH string 'ex_interp forced up...'
 	pPatchInterp += 0x62;
 
+#if defined(SC_5_26)
+	if (*pPatchInterp != 0x68) // check PUSH opcode
+#else
 	if (*pPatchInterp != 0xB8) // check MOV, EAX ... opcode
+#endif
 	{
 		Warning("'Patch Interp' failed initialization #7\n");
 		return false;
@@ -442,19 +502,71 @@ bool CPatchesModule::PatchInterp()
 
 	// Patch ex_interp force up
 	*(pPatchInterp - 0x8) = 0xEB;
+	
+#if defined(SC_5_26)
+	constexpr unsigned long forceDownOffset = 0x1C;
+	constexpr unsigned long forceDownCheckOpcode = 0x0F;
+#else
+	constexpr unsigned long forceDownOffset = 0xD;
+	constexpr unsigned long forceDownCheckOpcode = 0x7E;
+#endif
 
-	if (*(pPatchInterp + 0xD) != 0x7E) // JLE opcode
+	if (*(pPatchInterp + forceDownOffset) != forceDownCheckOpcode) // JLE opcode
 	{
 		Warning("'Patch Interp' failed initialization #9\n");
 		return false;
 	}
 
 	// Patch ex_interp force down
-	*(pPatchInterp + 0xD) = 0xEB;
+	*(pPatchInterp + forceDownOffset) = 0xEB; // TODO FIX MEEEEE    0F 8E BF 00 00 00  use JMP opcode
 
-	VirtualProtect(m_pInterpClampBegin, 0x1DF, dwProtection, &dwProtection);
+	VirtualProtect(m_pInterpClampBegin, patchInterpDupeSize, dwProtection, &dwProtection);
+#endif // #if !HOOK_INTEPR_BOUND
 
 	return true;
+}
+
+DECLARE_FUNC(void, __cdecl, HOOKED_CL_ComputeClientInterpAmount, usercmd_t *cmd)
+{
+	static cvar_t *cl_interp = NULL;
+		
+	if ( cl_interp == NULL )
+	{
+		cl_interp = CVar()->FindCvar("cl_interp");
+	}
+	
+	float interp_sec = cl_interp->value;
+	
+	// CL_DriftInterpolationAmount
+	if ( interp_sec != *pflg_flInterpolationAmount )
+	{
+		float maxmove = *pflhost_frametime * 0.05f;
+		float diff = interp_sec - *pflg_flInterpolationAmount;
+		
+		if ( diff > 0.f )
+		{
+			if ( diff > maxmove )
+				diff = maxmove;
+		}
+		else
+		{
+			diff = -diff;
+			
+			if ( diff > maxmove )
+				diff = -maxmove;
+		}
+		
+		*pflg_flInterpolationAmount += diff;
+	}
+	
+#ifndef boundmax
+#define boundmax( num, high ) ( (num) < (high) ? (num) : (high) )
+#define boundmin( num, low ) ( (num) >= (low) ? (num) : (low) )
+#define bound( low, num, high ) ( boundmin( boundmax(num, high), low ) )
+#endif // boundmax
+	
+	interp_sec = bound( 0.f, *pflg_flInterpolationAmount * 1000.f, 100.f );
+	cmd->lerp_msec = interp_sec;
 }
 
 //-----------------------------------------------------------------------------
@@ -477,6 +589,27 @@ bool CPatchesModule::Load()
 	m_dwCurrentThreadID = GetCurrentThreadId();
 	m_dwCurrentProcessID = GetCurrentProcessId();
 
+	pfnCL_ComputeClientInterpAmount = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::CL_ComputeClientInterpAmount );
+
+	if ( !pfnCL_ComputeClientInterpAmount )
+	{
+		Warning("Cannot locate CL_ComputeClientInterpAmount\n");
+		return false;
+	}
+	
+	void *phost_frametime = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::host_frametime );
+
+	if ( !phost_frametime )
+	{
+		Warning("Cannot locate host_frametime\n");
+		return false;
+	}
+	
+	void *pg_flInterpolationAmount = MemoryUtils()->FindPatternWithin( SvenModAPI()->Modules()->Hardware,
+																		Patterns::Hardware::g_flInterpolationAmount,
+																		pfnCL_ComputeClientInterpAmount,
+																		(unsigned char *)pfnCL_ComputeClientInterpAmount + 0x221 );
+	
 	void *pNextCmdTime = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::flNextCmdTime );
 
 	if ( !pNextCmdTime )
@@ -542,6 +675,12 @@ bool CPatchesModule::Load()
 		Warning("Cannot locate dbRealtime\n");
 		return false;
 	}
+	
+	// host_frametime
+	pflhost_frametime = *(float **)( (unsigned char *)phost_frametime + 0x1 );
+
+	// g_flInterpolationAmount
+	pflg_flInterpolationAmount = *(float **)( (unsigned char *)pg_flInterpolationAmount + 0x1 );
 
 	int dwProtection;
 	MemoryUtils()->VirtualProtect(g_dbGameSpeed, sizeof(double), PAGE_EXECUTE_READWRITE, &dwProtection);
@@ -562,6 +701,12 @@ void CPatchesModule::PostLoad()
 	{
 		Warning("Failed to patch ex_interp and cl_updaterate\n");
 	}
+	
+#if HOOK_INTEPR_BOUND
+	hCL_ComputeClientInterpAmount = DetoursAPI()->DetourFunction( pfnCL_ComputeClientInterpAmount,
+																HOOKED_CL_ComputeClientInterpAmount,
+																GET_FUNC_PTR( ORIG_CL_ComputeClientInterpAmount ) );
+#endif // #if HOOK_INTEPR_BOUND
 }
 
 void CPatchesModule::Unload()
@@ -584,21 +729,29 @@ void CPatchesModule::Unload()
 		DisableTertiaryAttackGlitch_Server();
 	}
 
+#if !HOOK_INTEPR_BOUND
 	if (m_pDupedInterpClamp)
 	{
+	#if 0
 		SuspendThreads();
+	#endif
 
 		DWORD dwProtection;
-		VirtualProtect(m_pInterpClampBegin, 0x1DF, PAGE_EXECUTE_READWRITE, &dwProtection);
+		VirtualProtect(m_pInterpClampBegin, patchInterpDupeSize, PAGE_EXECUTE_READWRITE, &dwProtection);
 
-		memcpy(m_pInterpClampBegin, m_pDupedInterpClamp, 0x1DF);
+		memcpy(m_pInterpClampBegin, m_pDupedInterpClamp, patchInterpDupeSize);
 
-		VirtualProtect(m_pInterpClampBegin, 0x1DF, dwProtection, &dwProtection);
+		VirtualProtect(m_pInterpClampBegin, patchInterpDupeSize, dwProtection, &dwProtection);
 
+	#if 0
 		ResumeThreads();
+	#endif
 
 		free(m_pDupedInterpClamp);
 	}
+#else // !HOOK_INTEPR_BOUND
+	DetoursAPI()->RemoveDetour( hCL_ComputeClientInterpAmount );
+#endif // #if HOOK_INTEPR_BOUND
 }
 
 //-----------------------------------------------------------------------------

@@ -194,7 +194,7 @@ bool CKeySpam::Init()
 {
 	ud_t inst;
 
-	cmd_t *messagemode = CVar()->FindCmd(xs("messagemode"));
+	cmd_t *messagemode = CVar()->FindCmd(("messagemode"));
 
 	if ( !messagemode )
 	{
@@ -213,13 +213,13 @@ bool CKeySpam::Init()
 	}
 	else
 	{
-		Warning(xs("Can't locate \"key_dest\""));
+		Warning(("Can't locate \"key_dest\""));
 		return false;
 	}
 
 	if ( !key_dest )
 	{
-		Warning(xs("Failed to get \"key_dest\""));
+		Warning(("Failed to get \"key_dest\""));
 		return false;
 	}
 

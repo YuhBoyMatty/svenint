@@ -127,15 +127,15 @@ static void CvarChangeHook_fps_max( cvar_t *pCvar, const char *pszOldValue, floa
 		float multiplier = 1.f / timescale;
 
 		sc_st_min_frametime.SetValue( multiplier / pCvar->value );
-		CVar()->SetValue( CVar()->FindCvar( xs( "host_framerate") ), 1.f / pCvar->value );
+		CVar()->SetValue( CVar()->FindCvar( ( "host_framerate") ), 1.f / pCvar->value );
 
-		Utils()->PrintChatText( xs( "<SvenInt> Automatically adjusted timescale %.2f for %d fps\n"), timescale, (int)pCvar->value );
+		Utils()->PrintChatText( ( "<SvenInt> Automatically adjusted timescale %.2f for %d fps\n"), timescale, (int)pCvar->value );
 	}
 }
 
 CON_COMMAND_NO_WRAPPER( sc_st_timer, HIDE_CVAR_INFO( "Show speedrun timer") )
 {
-	Msg( g_Config.cvars.st_timer ? xs( "Speedrun Timer disabled\n") : xs( "Speedrun Timer enabled\n") );
+	Msg( g_Config.cvars.st_timer ? ( "Speedrun Timer disabled\n") : ( "Speedrun Timer enabled\n") );
 	g_Config.cvars.st_timer = !g_Config.cvars.st_timer;
 }
 
@@ -146,8 +146,8 @@ CON_COMMAND_NO_WRAPPER( sc_st_reset_timer, HIDE_CVAR_INFO( "Reset speedrun timer
 
 CON_COMMAND_NO_WRAPPER( sc_st_legit_mode, HIDE_CVAR_INFO( "Forcibly disable all not legit cheats / features in SvenInt") )
 {
-	Msg( xs( "<SvenInt> Legit mode is ON\n") );
-	Utils()->PrintChatText( xs( "<SvenInt> Legit mode is ON") );
+	Msg( ( "<SvenInt> Legit mode is ON\n") );
+	Utils()->PrintChatText( ( "<SvenInt> Legit mode is ON") );
 
 	g_Config.cvars.ragebot = false;
 	g_Config.cvars.silent_aimbot = false;
@@ -185,9 +185,9 @@ CON_COMMAND( sc_st_timescale, HIDE_CVAR_INFO( "Set timescale") )
 	else
 	{
 		if ( sc_st_min_frametime.GetFloat() != 0.f )
-			Msg( xs( "Current timescale: %.3f\n"), 1.f / ( sc_st_min_frametime.GetFloat() * CVar()->FindCvar( xs( "fps_max") )->value ) );
+			Msg( ( "Current timescale: %.3f\n"), 1.f / ( sc_st_min_frametime.GetFloat() * CVar()->FindCvar( ( "fps_max") )->value ) );
 		else
-			Msg( xs( "Current timescale: 1.000\n") );
+			Msg( ( "Current timescale: 1.000\n") );
 	}
 }
 
@@ -224,7 +224,7 @@ CON_COMMAND( sc_st_follow_point, HIDE_CVAR_INFO( "Set local player view angles t
 {
 	if ( args.ArgC() != 5 )
 	{
-		Msg( xs( "Usage: sc_st_follow_point <x> <y> <z> <lerp>\n") );
+		Msg( ( "Usage: sc_st_follow_point <x> <y> <z> <lerp>\n") );
 		s_bFollowPoint = false;
 
 		return;
@@ -247,7 +247,7 @@ CON_COMMAND( sc_st_setangles, HIDE_CVAR_INFO( "Set local player view angles") )
 {
 	if ( args.ArgC() != 4 )
 	{
-		Msg( xs( "Usage: sc_st_setangles <pitch> <yaw> <frames>\n") );
+		Msg( ( "Usage: sc_st_setangles <pitch> <yaw> <frames>\n") );
 		return;
 	}
 
@@ -283,7 +283,7 @@ CON_COMMAND( sc_st_setangles2, HIDE_CVAR_INFO( "Set local player view angles wit
 {
 	if ( args.ArgC() != 4 )
 	{
-		Msg( xs( "Usage: sc_st_setangles <pitch> <yaw> <lerp>\n") );
+		Msg( ( "Usage: sc_st_setangles <pitch> <yaw> <lerp>\n") );
 		s_bSetAngles2 = false;
 		return;
 	}
@@ -340,7 +340,7 @@ CON_COMMAND( sc_test_revive, "" )
 
 		g_pServerEngineFuncs->pfnTraceHull( vecOrigin, vecOrigin, 0 /* dont_ignore_monsters */, 1 /* human_hull */, pPlayer, &tr );
 
-		Msg( xs( "sc_test_revive: Ducking = %d\n"), ( flags & FL_DUCKING ) == FL_DUCKING );
+		Msg( ( "sc_test_revive: Ducking = %d\n"), ( flags & FL_DUCKING ) == FL_DUCKING );
 
 		if ( flags & FL_DUCKING || tr.fStartSolid )
 		{
@@ -355,20 +355,20 @@ CON_COMMAND( sc_test_revive, "" )
 			vecHullMaxs = VEC_HULL_MAX;
 		}
 
-		Msg( xs( "sc_test_revive: TraceHull, blocked = %d\n"), tr.fStartSolid );
+		Msg( ( "sc_test_revive: TraceHull, blocked = %d\n"), tr.fStartSolid );
 
 		Vector vecUpHead = vecOrigin + Vector( 0, 0, 32 ); // idk about name
 
 		g_pServerEngineFuncs->pfnTraceLine( vecUpHead, vecOrigin, 1 /* ignore_monsters */, pPlayer, &tr );
 
-		Msg( xs( "sc_test_revive: TraceLine up, old = (%.3f, %.3f, %.3f), new = (%.3f, %.3f, %.3f)\n"), VectorExpand( vecOrigin ), VectorExpand( tr.vecEndPos ) );
+		Msg( ( "sc_test_revive: TraceLine up, old = (%.3f, %.3f, %.3f), new = (%.3f, %.3f, %.3f)\n"), VectorExpand( vecOrigin ), VectorExpand( tr.vecEndPos ) );
 
 		vecOrigin = tr.vecEndPos;
 
 		// FixPlayerCrouchStuck
 		for ( int i = 0; i < 18; i++ )
 		{
-			Msg( xs( "sc_test_revive: FixPlayerCrouchStuck, vecOrigin.z = %.3f\n"), vecOrigin.z );
+			Msg( ( "sc_test_revive: FixPlayerCrouchStuck, vecOrigin.z = %.3f\n"), vecOrigin.z );
 
 			g_pServerEngineFuncs->pfnTraceHull( vecOrigin, vecOrigin, 0 /* dont_ignore_monsters */, 3 /* head_hull */, pPlayer, &tr );
 
@@ -413,7 +413,7 @@ CON_COMMAND( sc_test_revive, "" )
 			for ( int i = MAX_HULL_BOUND; i <= MAX_HULL_BOUND; i += maxsX )
 			//for ( int i = maxsX; i <= MAX_HULL_BOUND; i += maxsX )
 			{
-				Msg( xs( "sc_test_revive: FixPlayerStuck, hull = %d\n"), i );
+				Msg( ( "sc_test_revive: FixPlayerStuck, hull = %d\n"), i );
 
 				float hull = (float)i;
 
@@ -467,7 +467,7 @@ CON_COMMAND( sc_test_revive, "" )
 		g_pEventAPI->EV_SetTraceHull( PM_HULL_PLAYER ); // human_hull
 		g_pEventAPI->EV_PlayerTrace( vecOrigin, vecOrigin, PM_NORMAL, -1, &tr );
 
-		Msg( xs( "sc_test_revive: Ducking = %d\n"), ( flags & FL_DUCKING ) == FL_DUCKING );
+		Msg( ( "sc_test_revive: Ducking = %d\n"), ( flags & FL_DUCKING ) == FL_DUCKING );
 
 		if ( flags & FL_DUCKING || tr.startsolid )
 		{
@@ -482,7 +482,7 @@ CON_COMMAND( sc_test_revive, "" )
 			vecHullMaxs = VEC_HULL_MAX;
 		}
 
-		Msg( xs( "sc_test_revive: TraceHull, blocked = %d\n"), tr.startsolid );
+		Msg( ( "sc_test_revive: TraceHull, blocked = %d\n"), tr.startsolid );
 
 		Vector vecUpHead = vecOrigin + Vector( 0, 0, 32 ); // idk about name
 
@@ -490,14 +490,14 @@ CON_COMMAND( sc_test_revive, "" )
 		g_pEventAPI->EV_SetTraceHull( PM_HULL_POINT );
 		g_pEventAPI->EV_PlayerTrace( vecUpHead, vecOrigin, PM_NORMAL, -1, &tr );
 
-		Msg( xs( "sc_test_revive: TraceLine up, old = (%.3f, %.3f, %.3f), new = (%.3f, %.3f, %.3f)\n"), VectorExpand( vecOrigin ), VectorExpand( tr.endpos ) );
+		Msg( ( "sc_test_revive: TraceLine up, old = (%.3f, %.3f, %.3f), new = (%.3f, %.3f, %.3f)\n"), VectorExpand( vecOrigin ), VectorExpand( tr.endpos ) );
 
 		vecOrigin = tr.endpos;
 
 		// FixPlayerCrouchStuck
 		for ( int i = 0; i < 18; i++ )
 		{
-			Msg( xs( "sc_test_revive: FixPlayerCrouchStuck, z = %.3f\n"), vecOrigin.z );
+			Msg( ( "sc_test_revive: FixPlayerCrouchStuck, z = %.3f\n"), vecOrigin.z );
 
 			g_pEventAPI->EV_SetTraceHull( PM_HULL_DUCKED_PLAYER ); // head_hull but it's just ducked hull of player
 			g_pEventAPI->EV_PlayerTrace( vecOrigin, vecOrigin, PM_NORMAL, -1, &tr );
@@ -543,7 +543,7 @@ CON_COMMAND( sc_test_revive, "" )
 			for ( int i = MAX_HULL_BOUND; i <= MAX_HULL_BOUND; i += maxsX )
 			//for ( int i = maxsX; i <= MAX_HULL_BOUND; i += maxsX )
 			{
-				Msg( xs( "sc_test_revive: FixPlayerStuck, hull = %d\n"), i );
+				Msg( ( "sc_test_revive: FixPlayerStuck, hull = %d\n"), i );
 
 				float hull = (float)i;
 
@@ -771,7 +771,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_UTIL_GetCircularGaussianSpread, float *x, fl
 	{
 		scriptref_t hCallbackFunction;
 
-		if ( hCallbackFunction = g_ScriptVM.LookupFunction( xs( "OnFireBulletsSpread") ) )
+		if ( hCallbackFunction = g_ScriptVM.LookupFunction( ( "OnFireBulletsSpread") ) )
 		{
 			lua_State *pLuaState = g_ScriptVM.GetVM();
 
@@ -836,7 +836,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CCrossbow__PrimaryAttack, void *thisptr )
 
 	scriptref_t hCallbackFunction;
 
-	if ( hCallbackFunction = g_ScriptVM.LookupFunction( xs( "OnFireCrossbowSpread") ) )
+	if ( hCallbackFunction = g_ScriptVM.LookupFunction( ( "OnFireCrossbowSpread") ) )
 	{
 		lua_State *pLuaState = g_ScriptVM.GetVM();
 
@@ -945,13 +945,13 @@ void CSpeedrunTools::OnFirstClientdataReceived( client_data_t *pcldata, float fl
 		iNihilanthIndex = 0;
 		pNihilanthVars = NULL;
 
-		if ( !stricmp( pszMapname, xs( "hl_c17") ) )
+		if ( !stricmp( pszMapname, ( "hl_c17") ) )
 		{
 			is_hl_c17 = true;
 
 			edict_t *pNihilanth = NULL;
 
-			if ( ( pNihilanth = g_pServerEngineFuncs->pfnFindEntityByString( NULL, xs( "targetname"), xs( "nihilanth") ) ) != NULL )
+			if ( ( pNihilanth = g_pServerEngineFuncs->pfnFindEntityByString( NULL, ( "targetname"), ( "nihilanth") ) ) != NULL )
 			{
 				iNihilanthIndex = g_pServerEngineFuncs->pfnIndexOfEdict( pNihilanth );
 				pNihilanthVars = &pNihilanth->v;
@@ -966,7 +966,7 @@ void CSpeedrunTools::OnFirstClientdataReceived( client_data_t *pcldata, float fl
 		{
 			float x, y;
 
-			int nParamsRead = sscanf( sc_st_map_start_position.GetString(), xs( "%f %f"), &x, &y );
+			int nParamsRead = sscanf( sc_st_map_start_position.GetString(), ( "%f %f"), &x, &y );
 
 			if ( nParamsRead >= 2 )
 			{
@@ -1002,7 +1002,7 @@ void CSpeedrunTools::OnFirstClientdataReceived( client_data_t *pcldata, float fl
 
 				if ( !UTIL_IsAABBIntersectingAABB( vecSpawnMins, vecSpawnMaxs, vecMins, vecMaxs ) )
 				{
-					g_pEngineFuncs->ClientCmd( xs( "restart\nwait") );
+					g_pEngineFuncs->ClientCmd( ( "restart\nwait") );
 					return;
 				}
 
@@ -1410,7 +1410,7 @@ void CSpeedrunTools::StartTimer( void )
 
 		if ( g_Config.cvars.st_timer )
 		{
-			ConColorMsg( { 255, 165, 0, 255 }, xs( "> Started segment (map: %s)\n"), gpGlobals->pStringBase + gpGlobals->mapname );
+			ConColorMsg( { 255, 165, 0, 255 }, ( "> Started segment (map: %s)\n"), gpGlobals->pStringBase + gpGlobals->mapname );
 		}
 	}
 	else
@@ -1440,17 +1440,17 @@ void CSpeedrunTools::StopTimer( void )
 			int seconds = static_cast<int>( flSegmentTime ) % 60;
 			int ms = static_cast<int>( ( flSegmentTime - floorf( flSegmentTime ) ) * 1000.f );
 
-			snprintf( timer_buffer, M_ARRAYSIZE( timer_buffer ), xs( "%d%d:%d%d,%d%d%d"),
+			snprintf( timer_buffer, M_ARRAYSIZE( timer_buffer ), ( "%d%d:%d%d,%d%d%d"),
 					  minutes / 10, minutes % 10,
 					  seconds / 10, seconds % 10,
 					  ms / 100, ( ms / 10 ) % 10, ms % 10 );
 
-			Utils()->PrintChatText( xs( "Finished segment in %s (%.6f) (map: %s)\n"), timer_buffer, flSegmentTime, pszMapname );
+			Utils()->PrintChatText( ( "Finished segment in %s (%.6f) (map: %s)\n"), timer_buffer, flSegmentTime, pszMapname );
 
-			ConColorMsg( { 255, 165, 0, 255 }, xs( "> Finished segment in ") );
+			ConColorMsg( { 255, 165, 0, 255 }, ( "> Finished segment in ") );
 			ConColorMsg( { 179, 255, 32, 255 }, timer_buffer );
-			ConColorMsg( { 122, 200, 0, 255 }, xs( " (%.6f) "), flSegmentTime );
-			ConColorMsg( { 255, 165, 0, 255 }, xs( "(map: %s)\n"), pszMapname );
+			ConColorMsg( { 122, 200, 0, 255 }, ( " (%.6f) "), flSegmentTime );
+			ConColorMsg( { 255, 165, 0, 255 }, ( "(map: %s)\n"), pszMapname );
 
 			g_DemoMessage.WriteSegmentInfo( flSegmentTime, timer_buffer, pszMapname );
 		}
@@ -1479,7 +1479,7 @@ void CSpeedrunTools::CheckPlayerHulls_Server( void )
 		CBasePlayer *pPlayer = NULL;
 		CBaseDeadPlayer *pDeadPlayer = NULL;
 
-		while ( !FNullEnt( pEntity = g_pServerEngineFuncs->pfnFindEntityByString( pEntity, xs( "classname"), xs( "deadplayer") ) ) )
+		while ( !FNullEnt( pEntity = g_pServerEngineFuncs->pfnFindEntityByString( pEntity, ( "classname"), ( "deadplayer") ) ) )
 		{
 			if ( pEntity->v.effects & EF_NODRAW )
 				continue;
@@ -1517,7 +1517,7 @@ void CSpeedrunTools::CheckPlayerHulls_Server( void )
 				CBasePlayer__IsAlive = (Signatures::BasePlayer::IsAlive)MemoryUtils()->GetVirtualFunction( pPlayer, Offsets::BasePlayer::IsAlive );
 				CBasePlayer__IsConnected = (Signatures::BasePlayer::IsConnected)MemoryUtils()->GetVirtualFunction( pPlayer, Offsets::BasePlayer::IsConnected );
 
-				AssertFatalMsg( CBasePlayer__IsAlive && CBasePlayer__IsConnected, xs( "CBasePlayer::IsAlive && CBasePlayer::IsConnected" ));
+				AssertFatalMsg( CBasePlayer__IsAlive && CBasePlayer__IsConnected, ( "CBasePlayer::IsAlive && CBasePlayer::IsConnected" ));
 			}
 
 			if ( !CBasePlayer__IsConnected( pPlayer ) || !CBasePlayer__IsAlive( pPlayer ) )
@@ -2701,12 +2701,12 @@ void CSpeedrunTools::SetTimescale( float timescale )
 	}
 	else if ( timescale > 1.f )
 	{
-		Msg( xs( "Timescale can't be bigger than 1\n" ));
+		Msg( ( "Timescale can't be bigger than 1\n" ));
 		return;
 	}
 	else if ( timescale <= 0.f )
 	{
-		Msg( xs( "Timescale must be bigger than 0\n") );
+		Msg( ( "Timescale must be bigger than 0\n") );
 		return;
 	}
 
@@ -2715,7 +2715,7 @@ void CSpeedrunTools::SetTimescale( float timescale )
 	sc_st_min_frametime.SetValue( multiplier / fps_max->value );
 	CVar()->SetValue( host_framerate, 1.f / fps_max->value );
 
-	Utils()->PrintChatText( xs( "<SvenInt> Timescale has been set to %.2f\n"), timescale );
+	Utils()->PrintChatText( ( "<SvenInt> Timescale has been set to %.2f\n"), timescale );
 }
 
 //-----------------------------------------------------------------------------
@@ -2734,9 +2734,9 @@ void CSpeedrunTools::SetTimescale_Comm( bool notify, float framerate, float fpsm
 	if ( notify )
 	{
 		if ( min_frametime != 0.f )
-			Utils()->PrintChatText( xs( "<SvenInt-Comm> Timescale has been changed to %.2f\n"), 1.f / ( min_frametime * fpsmax ) );
+			Utils()->PrintChatText( ( "<SvenInt-Comm> Timescale has been changed to %.2f\n"), 1.f / ( min_frametime * fpsmax ) );
 		else
-			Utils()->PrintChatText( xs( "<SvenInt-Comm> Timescale has been changed to 1.0\n") );
+			Utils()->PrintChatText( ( "<SvenInt-Comm> Timescale has been changed to 1.0\n") );
 	}
 
 	s_bIgnoreCvarChange = false;
@@ -2763,15 +2763,15 @@ void CSpeedrunTools::ShowViewangles( int r, int g, int b )
 
 		NormalizeAngles( va );
 
-		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "View angles:") );
+		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "View angles:") );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Pitch: %.6f"), va.x );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Pitch: %.6f"), va.x );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Yaw: %.6f"), va.y );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Yaw: %.6f"), va.y );
 	}
 }
 
@@ -2802,15 +2802,15 @@ void CSpeedrunTools::ShowPosition( int r, int g, int b )
 				origin += g_pPlayerMove->view_ofs;
 		}
 
-		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Origin:") );
+		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Origin:") );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "X: %.6f"), origin.x );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "X: %.6f"), origin.x );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Y: %.6f"), origin.y );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Y: %.6f"), origin.y );
 
 		y += height;
 
@@ -2837,27 +2837,27 @@ void CSpeedrunTools::ShowVelocity( int r, int g, int b )
 		else
 			velocity = g_pPlayerMove->velocity;
 
-		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Velocity:" ));
+		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Velocity:" ));
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "X: %.6f"), velocity.x );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "X: %.6f"), velocity.x );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Y: %.6f"), velocity.y );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Y: %.6f"), velocity.y );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Z: %.6f"), velocity.z );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Z: %.6f"), velocity.z );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "XY: %.6f"), velocity.Length2D() );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "XY: %.6f"), velocity.Length2D() );
 
 		y += height;
 
-		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "XYZ: %.6f"), velocity.Length() );
+		g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "XYZ: %.6f"), velocity.Length() );
 	}
 }
 
@@ -2874,7 +2874,7 @@ void CSpeedrunTools::ShowGaussBoostInfo( int r, int g, int b )
 	{
 		if ( sk_plr_secondarygauss == NULL )
 		{
-			sk_plr_secondarygauss = CVar()->FindCvar( xs( "sk_plr_secondarygauss" ));
+			sk_plr_secondarygauss = CVar()->FindCvar( ( "sk_plr_secondarygauss" ));
 
 			if ( sk_plr_secondarygauss == NULL )
 				return;
@@ -2888,7 +2888,7 @@ void CSpeedrunTools::ShowGaussBoostInfo( int r, int g, int b )
 
 		Vector velocity = ( g_bPlayingbackDemo ? refparams.simvel : g_pPlayerMove->velocity );
 
-		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Gauss boost info:") );
+		g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Gauss boost info:") );
 
 		y += height;
 
@@ -2901,13 +2901,13 @@ void CSpeedrunTools::ShowGaussBoostInfo( int r, int g, int b )
 			else if ( flYaw < -180.f )
 				flYaw += 360.f;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Boost with optimal yaw: %.6f"), flYaw );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Boost with optimal yaw: %.6f"), flYaw );
 		}
 		else
 		{
 			flYaw = ( g_bPlayingbackDemo ? refparams.viewangles[ 1 ] : g_pPlayerMove->angles.y );
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Boost with optimal yaw: %.6f"), flYaw );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Boost with optimal yaw: %.6f"), flYaw );
 		}
 
 		y += height;
@@ -2951,43 +2951,43 @@ void CSpeedrunTools::ShowGaussBoostInfo( int r, int g, int b )
 
 			flBoost = flDamage * 5;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Optimal resulting speed [back boost]: %.6f"), velocity.Length2D() + flBoost );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Optimal resulting speed [back boost]: %.6f"), velocity.Length2D() + flBoost );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Overdose: %.6f" ), 10.f - m_flStartChargeTime );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Overdose: %.6f" ), 10.f - m_flStartChargeTime );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Damage: %.6f" ), flDamage );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Damage: %.6f" ), flDamage );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Boost: %.6f" ), flBoost );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Boost: %.6f" ), flBoost );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Ammo consumed: %.2f" ), flAmmoConsumed );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Ammo consumed: %.2f" ), flAmmoConsumed );
 		}
 		else
 		{
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Optimal resulting speed [back boost]: N/A" ) );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Optimal resulting speed [back boost]: N/A" ) );
 
 			y += height;
 
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Overdose: 0.000000" ) );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Overdose: 0.000000" ) );
 
 			y += height;
 
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Damage: 0.000000" ) );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Damage: 0.000000" ) );
 
 			y += height;
 
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Boost: 0.000000" ) );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Boost: 0.000000" ) );
 
 			y += height;
 
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Ammo consumed: 0.00" ) );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Ammo consumed: 0.00" ) );
 		}
 	}
 }
@@ -3056,21 +3056,21 @@ void CSpeedrunTools::ShowSelfgaussInfo( int r, int g, int b )
 		{
 			const char *HITGROUP_STRING[] =
 			{
-				xs( "Generic" ),
-				xs( "Head" ),
-				xs( "Chest" ),
-				xs( "Stomach" ),
-				xs( "Left Arm" ),
-				xs( "Right Arm" ),
-				xs( "Left Leg" ),
-				xs( "Right Leg" )
+				( "Generic" ),
+				( "Head" ),
+				( "Chest" ),
+				( "Stomach" ),
+				( "Left Arm" ),
+				( "Right Arm" ),
+				( "Left Leg" ),
+				( "Right Leg" )
 			};
 
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Selfgauss:") );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Selfgauss:") );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Threshold: %.6f"), flThreshold );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Threshold: %.6f"), flThreshold );
 
 			y += height;
 
@@ -3079,11 +3079,11 @@ void CSpeedrunTools::ShowSelfgaussInfo( int r, int g, int b )
 				iHitGroup = 0;
 			}
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Hit Group: %s"), HITGROUP_STRING[ iHitGroup ] );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Hit Group: %s"), HITGROUP_STRING[ iHitGroup ] );
 		}
 		else
 		{
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Cannot selfgauss") );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Cannot selfgauss") );
 		}
 	}
 }
@@ -3126,7 +3126,7 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 				int ent = g_pServerEngineFuncs->pfnIndexOfEdict( pEntity );
 				bool bPlayer = ( ent >= 1 && ent <= g_pEngineFuncs->GetMaxClients() );
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Entity: %d"), ent );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Entity: %d"), ent );
 				y += height;
 
 				if ( bPlayer )
@@ -3138,28 +3138,28 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 						g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, pPlayerInfo->name );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "HP: %.6f"), pEntity->v.health );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "HP: %.6f"), pEntity->v.health );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Armor: %.6f" ), pEntity->v.armorvalue );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Armor: %.6f" ), pEntity->v.armorvalue );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Model: %s" ), pPlayerInfo->model );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Model: %s" ), pPlayerInfo->model );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Top Color: %d" ), pPlayerInfo->topcolor );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Top Color: %d" ), pPlayerInfo->topcolor );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Bottom Color: %d" ), pPlayerInfo->bottomcolor );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Bottom Color: %d" ), pPlayerInfo->bottomcolor );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Steam64ID: %llu" ), pPlayerInfo->m_nSteamID );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Steam64ID: %llu" ), pPlayerInfo->m_nSteamID );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Pitch: %.6f" ), pEntity->v.v_angle.x );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Pitch: %.6f" ), pEntity->v.v_angle.x );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Yaw: %.6f" ), pEntity->v.v_angle.y );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Yaw: %.6f" ), pEntity->v.v_angle.y );
 						y += height;
 					}
 				}
@@ -3172,40 +3172,40 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 
 					if ( pEntity->v.target != 0 )
 					{
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Target: %s"), gpGlobals->pStringBase + pEntity->v.target );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Target: %s"), gpGlobals->pStringBase + pEntity->v.target );
 						y += height;
 					}
 
 					if ( pEntity->v.targetname != 0 )
 					{
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Name: %s"), gpGlobals->pStringBase + pEntity->v.targetname );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Name: %s"), gpGlobals->pStringBase + pEntity->v.targetname );
 						y += height;
 					}
 
-					const char *pszModelName = ( ent == 0 ? xs( "N/A") : ( pEntity->v.model ? gpGlobals->pStringBase + pEntity->v.model : xs( "N/A") ) );
+					const char *pszModelName = ( ent == 0 ? ( "N/A") : ( pEntity->v.model ? gpGlobals->pStringBase + pEntity->v.model : ( "N/A") ) );
 
-					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Model: %s"), pszModelName );
+					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Model: %s"), pszModelName );
 					y += height;
 
-					if ( strstr( pszClassname, xs( "func_door") ) )
+					if ( strstr( pszClassname, ( "func_door") ) )
 					{
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Usable: %s"), pEntity->v.spawnflags & 256 ? xs( "Yes") :xs( "No") );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Usable: %s"), pEntity->v.spawnflags & 256 ? ( "Yes") :( "No") );
 						y += height;
 
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Monsters: %s open"), pEntity->v.spawnflags & 512 ? xs( "Can't") : xs( "Can") );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Monsters: %s open"), pEntity->v.spawnflags & 512 ? ( "Can't") : ( "Can") );
 						y += height;
 					}
 
-					if ( strstr( pszClassname, xs( "func_door") ) || !strncmp( pszClassname, xs( "func_rotating"), 13 ) || !strncmp( pszClassname, xs( "func_train"), 10 ) )
+					if ( strstr( pszClassname, ( "func_door") ) || !strncmp( pszClassname, ( "func_rotating"), 13 ) || !strncmp( pszClassname, ( "func_train"), 10 ) )
 					{
-						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Damage: %.6f"), pEntity->v.dmg );
+						g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Damage: %.6f"), pEntity->v.dmg );
 						y += height;
 					}
 
-					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "HP: %.6f"), pEntity->v.health );
+					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "HP: %.6f"), pEntity->v.health );
 					y += height;
 
-					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Yaw: %.6f"), pEntity->v.angles.y );
+					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Yaw: %.6f"), pEntity->v.angles.y );
 					y += height;
 				}
 
@@ -3216,26 +3216,26 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 				else
 					origin = pEntity->v.origin;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "X: %.6f" ), origin.x );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "X: %.6f" ), origin.x );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Y: %.6f"), origin.y );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Y: %.6f"), origin.y );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Z: %.6f" ), origin.z );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Z: %.6f" ), origin.z );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "X Vel: %.6f" ), pEntity->v.velocity.x );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "X Vel: %.6f" ), pEntity->v.velocity.x );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Y Vel: %.6f" ), pEntity->v.velocity.y );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Y Vel: %.6f" ), pEntity->v.velocity.y );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Z Vel: %.6f" ), pEntity->v.velocity.z );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Z Vel: %.6f" ), pEntity->v.velocity.z );
 			}
 			else
 			{
-				g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Entity: N/A" ) );
+				g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Entity: N/A" ) );
 			}
 		}
 		else
@@ -3312,7 +3312,7 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 
 				cl_entity_t *pEntity = g_pEngineFuncs->GetEntityByIndex( ent );
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Entity: %d"), ent );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Entity: %d"), ent );
 				y += height;
 
 				if ( ent == 0 || pEntity->player )
@@ -3326,55 +3326,55 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 							g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, pPlayerInfo->name );
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "HP: %.6f" ), PlayerUtils()->GetHealth(ent));
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "HP: %.6f" ), PlayerUtils()->GetHealth(ent));
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Armor: %.6f" ), PlayerUtils()->GetArmor( ent ) );
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Armor: %.6f" ), PlayerUtils()->GetArmor( ent ) );
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Model: %s" ), pPlayerInfo->model );
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Model: %s" ), pPlayerInfo->model );
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Top Color: %d" ), pPlayerInfo->topcolor );
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Top Color: %d" ), pPlayerInfo->topcolor );
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Bottom Color: %d" ), pPlayerInfo->bottomcolor );
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Bottom Color: %d" ), pPlayerInfo->bottomcolor );
 							y += height;
 
-							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Steam64ID: %llu" ), pPlayerInfo->m_nSteamID );
+							g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Steam64ID: %llu" ), pPlayerInfo->m_nSteamID );
 							y += height;
 						}
 					}
 					else
 					{
-						g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "worldspawn" ) );
+						g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "worldspawn" ) );
 						y += height;
 					}
 				}
 
 				if ( !pEntity->player )
 				{
-					const char *pszModelName = ( ent == 0 ? xs( "N/A" ) : ( pEntity->model ? pEntity->model->name : xs( "N/A" ) ) );
+					const char *pszModelName = ( ent == 0 ? ( "N/A" ) : ( pEntity->model ? pEntity->model->name : ( "N/A" ) ) );
 
-					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Model: %s"), pszModelName );
+					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Model: %s"), pszModelName );
 					y += height;
 				}
 				else
 				{
-					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Pitch: %.6f"), pEntity->curstate.angles.x * ( 89.0f / 9.8876953125f ) );
+					g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Pitch: %.6f"), pEntity->curstate.angles.x * ( 89.0f / 9.8876953125f ) );
 					y += height;
 				}
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Yaw: %.6f"), pEntity->curstate.angles.y );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Yaw: %.6f"), pEntity->curstate.angles.y );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "X: %.6f"), pEntity->curstate.origin.x );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "X: %.6f"), pEntity->curstate.origin.x );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Y: %.6f"), pEntity->curstate.origin.y );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Y: %.6f"), pEntity->curstate.origin.y );
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Z: %.6f"), pEntity->curstate.origin.z );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Z: %.6f"), pEntity->curstate.origin.z );
 				//y += height;
 
 				//g_Drawing.DrawStringEx(m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, "X Vel: 0.000000");
@@ -3387,7 +3387,7 @@ void CSpeedrunTools::ShowEntityInfo( int r, int g, int b )
 			}
 			else
 			{
-				g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Entity: N/A") );
+				g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Entity: N/A") );
 			}
 		}
 	}
@@ -3412,29 +3412,29 @@ void CSpeedrunTools::ShowReviveInfo( int r, int g, int b )
 			{
 				player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo( m_pReviveTarget->index - 1 );
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Target: %s (%d)"),
-										 pPlayerInfo ? pPlayerInfo->name : xs( "N/A"), m_pReviveTarget->index );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Target: %s (%d)"),
+										 pPlayerInfo ? pPlayerInfo->name : ( "N/A"), m_pReviveTarget->index );
 			}
 			else
 			{
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Target: %s (%d)"),
-										 m_pReviveTarget->model ? m_pReviveTarget->model->name : xs( "DEADPLAYER"), m_pReviveTarget->index );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Target: %s (%d)"),
+										 m_pReviveTarget->model ? m_pReviveTarget->model->name : ( "DEADPLAYER"), m_pReviveTarget->index );
 			}
 		}
 		else
 		{
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Target: N/A" ));
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Target: N/A" ));
 		}
 
 		y += height;
 
 		if ( m_flReviveDistance >= 0.f )
 		{
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Distance: %.2f"), m_flReviveDistance );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Distance: %.2f"), m_flReviveDistance );
 		}
 		else
 		{
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Distance: N/A") );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Distance: N/A") );
 		}
 
 		m_bShowReviveInfo = false;
@@ -3460,18 +3460,18 @@ void CSpeedrunTools::ShowReviveBoostInfo( int r, int g, int b )
 			{
 				player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo( m_pReviveBoostTarget->index - 1 );
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Boost Target: %s (%d)"),
-										 pPlayerInfo ? pPlayerInfo->name : xs( "N/A"), m_pReviveBoostTarget->index );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Boost Target: %s (%d)"),
+										 pPlayerInfo ? pPlayerInfo->name : ( "N/A"), m_pReviveBoostTarget->index );
 			}
 			else
 			{
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Boost Target: %s (%d)"),
-										 m_pReviveBoostTarget->model ? m_pReviveBoostTarget->model->name : xs( "DEADPLAYER"), m_pReviveBoostTarget->index );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Boost Target: %s (%d)"),
+										 m_pReviveBoostTarget->model ? m_pReviveBoostTarget->model->name : ( "DEADPLAYER"), m_pReviveBoostTarget->index );
 			}
 		}
 		else
 		{
-			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Revive Boost Target: N/A") );
+			g_Drawing.DrawStringEx( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Revive Boost Target: N/A") );
 		}
 
 		y += height;
@@ -3481,15 +3481,15 @@ void CSpeedrunTools::ShowReviveBoostInfo( int r, int g, int b )
 			float flVerticalEfficiency = fabs( 100.f * m_flReviveBoostAngle );
 			float flHorizontalEfficiency = 100.f - flVerticalEfficiency;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Distance: %.2f"), m_flReviveBoostDistance );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Distance: %.2f"), m_flReviveBoostDistance );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Vertical Boost Efficiency: %.2f %%"), flVerticalEfficiency );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Vertical Boost Efficiency: %.2f %%"), flVerticalEfficiency );
 
 			y += height;
 
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Horizontal Boost Efficiency: %.2f %%"), flHorizontalEfficiency );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Horizontal Boost Efficiency: %.2f %%"), flHorizontalEfficiency );
 
 			y += height;
 
@@ -3500,34 +3500,34 @@ void CSpeedrunTools::ShowReviveBoostInfo( int r, int g, int b )
 				if ( pPlayer == NULL )
 					return;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Vertical Speed: %.2f"), fabs( pPlayer->v.velocity.z ) );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Vertical Speed: %.2f"), fabs( pPlayer->v.velocity.z ) );
 
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Horizontal Speed: %.2f"), pPlayer->v.velocity.Length2D() );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Horizontal Speed: %.2f"), pPlayer->v.velocity.Length2D() );
 
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Overall Speed: %.2f"), pPlayer->v.velocity.Length() );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Overall Speed: %.2f"), pPlayer->v.velocity.Length() );
 			}
 			else
 			{
 				Vector vecVelocity = ( g_bPlayingbackDemo ? refparams.simvel : g_pPlayerMove->velocity );
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Vertical Speed: %.2f"), fabs( vecVelocity.z ) );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Vertical Speed: %.2f"), fabs( vecVelocity.z ) );
 
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Horizontal Speed: %.2f"), vecVelocity.Length2D() );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Horizontal Speed: %.2f"), vecVelocity.Length2D() );
 
 				y += height;
 
-				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Overall Speed: %.2f"), vecVelocity.Length() );
+				g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Overall Speed: %.2f"), vecVelocity.Length() );
 			}
 		}
 		else
 		{
-			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, xs( "Distance: N/A") );
+			g_Drawing.DrawStringExF( m_engineFont, x, y, r, g, b, 255, width, height, FONT_ALIGN_LEFT, ( "Distance: N/A") );
 		}
 
 		m_bShowReviveBoostInfo = false;
@@ -3585,7 +3585,7 @@ bool CSpeedrunTools::Load( void )
 {
 	ud_t inst;
 	bool ScanOK = true;
-	HMODULE hServerDLL = Sys_GetModuleHandle( xs( "server.dll" ) );
+	HMODULE hServerDLL = Sys_GetModuleHandle( ( "server.dll" ) );
 
 	auto fpfnCBaseEntity__FireBullets = MemoryUtils()->FindPatternAsync( hServerDLL, Patterns::Server::CBaseEntity__FireBullets );
 	auto fpfnUTIL_GetCircularGaussianSpread = MemoryUtils()->FindPatternAsync( hServerDLL, Patterns::Server::UTIL_GetCircularGaussianSpread );
@@ -3594,25 +3594,25 @@ bool CSpeedrunTools::Load( void )
 
 	if ( !( m_pfnCBaseEntity__FireBullets = fpfnCBaseEntity__FireBullets.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CBaseEntity::FireBullets\"\n") );
+		Warning( ( "Couldn't find function \"CBaseEntity::FireBullets\"\n") );
 		ScanOK = false;
 	}
 	
 	if ( !( m_pfnUTIL_GetCircularGaussianSpread = fpfnUTIL_GetCircularGaussianSpread.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"UTIL_GetCircularGaussianSpread\"\n") );
+		Warning( ( "Couldn't find function \"UTIL_GetCircularGaussianSpread\"\n") );
 		ScanOK = false;
 	}
 	
 	//if ( !( m_pfnCCrossbow__PrimaryAttack = fpfnCCrossbow__PrimaryAttack.get() ) )
 	//{
-	//	Warning( xs( "Couldn't find function \"CCrossbow::PrimaryAttack\"\n") );
+	//	Warning( ( "Couldn't find function \"CCrossbow::PrimaryAttack\"\n") );
 	//	ScanOK = false;
 	//}
 
 	if ( !( m_pfnHost_FilterTime = fpfnHost_FilterTime.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"Host_FilterTime\"\n") );
+		Warning( ( "Couldn't find function \"Host_FilterTime\"\n") );
 		ScanOK = false;
 	}
 
@@ -3626,7 +3626,7 @@ bool CSpeedrunTools::Load( void )
 
 	if ( !m_pJumpOpCode )
 	{
-		Warning( xs( "Failed to locate jump condition of \"host_framerate\"\n") );
+		Warning( ( "Failed to locate jump condition of \"host_framerate\"\n") );
 		return false;
 	}
 
@@ -3641,7 +3641,7 @@ bool CSpeedrunTools::Load( void )
 	}
 	else
 	{
-		Warning( xs( "Failed to locate JMP op-code for function \"DrawConsoleString\"\n" ));
+		Warning( ( "Failed to locate JMP op-code for function \"DrawConsoleString\"\n" ));
 		return false;
 	}
 
@@ -3662,7 +3662,7 @@ bool CSpeedrunTools::Load( void )
 
 	if ( VGUI2_GetEngineFont == NULL )
 	{
-		Warning( xs( "Failed to get function \"VGUI2_GetEngineFont\"\n" ));
+		Warning( ( "Failed to get function \"VGUI2_GetEngineFont\"\n" ));
 		return false;
 	}
 
@@ -3678,10 +3678,10 @@ bool CSpeedrunTools::Load( void )
 void CSpeedrunTools::PostLoad( void )
 {
 	if ( host_framerate == NULL )
-		host_framerate = CVar()->FindCvar( xs( "host_framerate") );
+		host_framerate = CVar()->FindCvar( ( "host_framerate") );
 
 	if ( fps_max == NULL )
-		fps_max = CVar()->FindCvar( xs( "fps_max" ));
+		fps_max = CVar()->FindCvar( ( "fps_max" ));
 
 	Hooks()->HookCvarChange( fps_max, CvarChangeHook_fps_max );
 

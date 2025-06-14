@@ -530,7 +530,7 @@ bool CEdgePixelsPlayer::Load( void )
 
 	if ( !( m_pfnCL_TempEntInit = fCL_TempEntInit.get() ) )
 	{
-		Warning( xs( "Couldn't find function \"CL_TempEntInit\"\n" ) );
+		Warning( ( "Couldn't find function \"CL_TempEntInit\"\n" ) );
 		bScanOK = false;
 	}
 
@@ -570,12 +570,12 @@ bool CEdgePixelsPlayer::Load( void )
 		}
 		else
 		{
-			Warning( xs( "Failed to allocate memory for \"gTempEnts\"\n" ) );
+			Warning( ( "Failed to allocate memory for \"gTempEnts\"\n" ) );
 		}
 	}
 	else
 	{
-		Warning( xs( "Couldn't find variable \"gpTempEntFree\"\n" ) );
+		Warning( ( "Couldn't find variable \"gpTempEntFree\"\n" ) );
 	}
 #endif
 
