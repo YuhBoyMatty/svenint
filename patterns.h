@@ -51,6 +51,7 @@ namespace Patterns
 		EXTERN_PATTERN( CL_PlayerFlashlight );
 		EXTERN_PATTERN( CL_TempEntInit );
 		EXTERN_PATTERN( CL_FlushEntityPacket );
+		EXTERN_PATTERN( CL_EmitEntities );
 		EXTERN_PATTERN( CL_ComputeClientInterpAmount );
 
 		EXTERN_PATTERN( ClientDLL_HudRedraw );

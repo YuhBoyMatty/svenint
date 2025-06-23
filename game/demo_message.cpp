@@ -49,13 +49,22 @@ bool CDemoMessageHandler::ReadClientDLLMessage( int size, unsigned char *buffer 
 			g_Visual.SetDemoMessageSpeed( msgBuffer.ReadFloat() );
 			break;
 		}
-		
+
 		case SVENINT_DEMOMSG_EDGE_PIXELS_PLAYER:
 		{
 			extern ConVar sc_epp_play_in_demo;
 
 			if ( !sc_epp_play_in_demo.GetBool() )
+			{
+				//if ( !!msgBuffer.ReadByte() )
+				//	g_pEngineFuncs->ClientCmd( "StopSong" );
+				//else
+				//	g_pEngineFuncs->ClientCmd( "PlayMedia \"Bad Apple!!.mp3\"" );
+
+				if ( !( !!msgBuffer.ReadByte() ) )
+					Utils()->PrintChatText( "* Now Playing: C:\\Music\\Bad Apple!!.mp3" );
 				break;
+			}
 
 			bool bStop = !!msgBuffer.ReadByte();
 
@@ -64,6 +73,8 @@ bool CDemoMessageHandler::ReadClientDLLMessage( int size, unsigned char *buffer 
 				g_EdgePixelsPlayer.Stop();
 				break;
 			}
+
+			Utils()->PrintChatText( "* Now Playing: C:\\Music\\Bad Apple!!.mp3" );
 
 			union
 			{
@@ -85,7 +96,7 @@ bool CDemoMessageHandler::ReadClientDLLMessage( int size, unsigned char *buffer 
 			dbl.m_llu.low = msgBuffer.ReadLong();
 			dbl.m_llu.high = msgBuffer.ReadLong();
 			width = dbl.m_dbl;
-			
+
 			dbl.m_llu.low = msgBuffer.ReadLong();
 			dbl.m_llu.high = msgBuffer.ReadLong();
 			height = dbl.m_dbl;
@@ -145,20 +156,20 @@ void CDemoMessageHandler::WriteSegmentInfo( float flTime, const char *pszFormatt
 
 void CDemoMessageHandler::WriteVelometerSpeed( float flSpeed )
 {
-/*
-	if ( g_bPlayingbackDemo )
-		return;
+	/*
+		if ( g_bPlayingbackDemo )
+			return;
 
-	demoMsg.Init( demobuffer, M_ARRAYSIZE( demobuffer ) );
+		demoMsg.Init( demobuffer, M_ARRAYSIZE( demobuffer ) );
 
-	demoMsg.WriteLong( TYPE_CUSTOM_MSG );
-	demoMsg.WriteShort( SVENINT_DEMOMSG_VELOMETER );
-	demoMsg.WriteFloat( flSpeed );
+		demoMsg.WriteLong( TYPE_CUSTOM_MSG );
+		demoMsg.WriteShort( SVENINT_DEMOMSG_VELOMETER );
+		demoMsg.WriteFloat( flSpeed );
 
-	demobuffer[ M_ARRAYSIZE( demobuffer ) - 1 ] = 0;
+		demobuffer[ M_ARRAYSIZE( demobuffer ) - 1 ] = 0;
 
-	g_pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );
-*/
+		g_pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );
+	*/
 }
 
 //-----------------------------------------------------------------------------
@@ -191,7 +202,7 @@ void CDemoMessageHandler::WriteEdgePixelsPlayer( const char *pszFilename, double
 	dbl.m_dbl = width;
 	demoMsg.WriteLong( dbl.m_llu.low );
 	demoMsg.WriteLong( dbl.m_llu.high );
-	
+
 	dbl.m_dbl = height;
 	demoMsg.WriteLong( dbl.m_llu.low );
 	demoMsg.WriteLong( dbl.m_llu.high );
@@ -226,7 +237,7 @@ void CDemoMessageHandler::WriteEdgePixelsPlayerStop( void )
 	demoMsg.WriteShort( SVENINT_DEMOMSG_EDGE_PIXELS_PLAYER );
 
 	demoMsg.WriteByte( 1 );
-	
+
 	demobuffer[ M_ARRAYSIZE( demobuffer ) - 1 ] = 0;
 
 	g_pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );

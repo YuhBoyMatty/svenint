@@ -20,6 +20,7 @@
 
 #include "../patterns.h"
 #include "../config.h"
+#include "../friends.h"
 #include "../scripts/scripts.h"
 #include "../utils/xorstr.h"
 
@@ -59,43 +60,44 @@
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC_PTR(int, __cdecl, ORIG_StudioDrawPlayer, int, entity_state_t *);
+DECLARE_FUNC_PTR( int, __cdecl, ORIG_StudioDrawPlayer, int, entity_state_t * );
 
-DECLARE_HOOK(void, __cdecl, IN_Move, float, usercmd_t *);
+DECLARE_HOOK( void, __cdecl, IN_Move, float, usercmd_t * );
 
-DECLARE_CLASS_HOOK(void, CHud__Think, CHud *);
-DECLARE_CLASS_HOOK(void, CHudBaseTextBlock__Print, CHudBaseTextBlock *, const char *, int, int);
+DECLARE_CLASS_HOOK( void, CHud__Think, CHud * );
+DECLARE_CLASS_HOOK( void, CHudBaseTextBlock__Print, CHudBaseTextBlock *, const char *, int, int );
 
 DECLARE_CLASS_HOOK( void, CClient_SoundEngine__PlayFMODSound, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex, float flOffset );
 
-DECLARE_HOOK(qboolean, __cdecl, Netchan_CanPacket, netchan_t *);
-DECLARE_HOOK(void, __cdecl, ScaleColors, int *r, int *g, int *b, int alpha);
-DECLARE_HOOK(void, __cdecl, ScaleColors_RGBA, Color *clr);
-DECLARE_HOOK(void, __cdecl, SPR_Set, VHSPRITE hPic, int r, int g, int b);
+DECLARE_HOOK( qboolean, __cdecl, Netchan_CanPacket, netchan_t * );
+DECLARE_HOOK( void, __cdecl, ScaleColors, int *r, int *g, int *b, int alpha );
+DECLARE_HOOK( void, __cdecl, ScaleColors_RGBA, Color *clr );
+DECLARE_HOOK( void, __cdecl, SPR_Set, VHSPRITE hPic, int r, int g, int b );
 
-DECLARE_HOOK(cvar_t *, __cdecl, Cvar_FindVar, const char *pszName);
+DECLARE_HOOK( cvar_t *, __cdecl, Cvar_FindVar, const char *pszName );
 
-DECLARE_HOOK(void, APIENTRY, glBegin, GLenum);
-DECLARE_HOOK(void, APIENTRY, glColor4f, GLfloat, GLfloat, GLfloat, GLfloat);
+DECLARE_HOOK( void, APIENTRY, glBegin, GLenum );
+DECLARE_HOOK( void, APIENTRY, glColor4f, GLfloat, GLfloat, GLfloat, GLfloat );
 
-DECLARE_HOOK(void, __cdecl, SCR_UpdateScreen);
+DECLARE_HOOK( void, __cdecl, SCR_UpdateScreen );
 
-DECLARE_HOOK(void, __cdecl, V_RenderView);
-DECLARE_HOOK(void, __cdecl, R_RenderScene);
-DECLARE_HOOK(void, __cdecl, R_SetupFrame);
-DECLARE_HOOK(void, __cdecl, R_ForceCVars, int);
+DECLARE_HOOK( void, __cdecl, V_RenderView );
+DECLARE_HOOK( void, __cdecl, R_RenderScene );
+DECLARE_HOOK( void, __cdecl, R_SetupFrame );
+DECLARE_HOOK( void, __cdecl, R_ForceCVars, int );
 
-DECLARE_HOOK(int, __cdecl, CRC_MapFile, uint32 *ulCRC, char *pszMapName);
+DECLARE_HOOK( int, __cdecl, CRC_MapFile, uint32 *ulCRC, char *pszMapName );
 DECLARE_HOOK( bool, __cdecl, ReadWaveFile, const char *pszFilename, char *&pMicInputFileData, int &nMicInputFileBytes, int &bitsPerSample, int &numChannels, int &sampleRate );
 
-DECLARE_HOOK(void *, __cdecl, Mod_LeafPVS, mleaf_t *leaf, model_t *model);
-DECLARE_HOOK(void, __cdecl, Con_NXPrintf, struct con_nprint_s *info, char *fmt, ...);
-DECLARE_HOOK(void, __cdecl, CL_FlushEntityPacket, void *msg);
+DECLARE_HOOK( void *, __cdecl, Mod_LeafPVS, mleaf_t *leaf, model_t *model );
+DECLARE_HOOK( void, __cdecl, Con_NXPrintf, struct con_nprint_s *info, char *fmt, ... );
+DECLARE_HOOK( void, __cdecl, CL_FlushEntityPacket, void *msg );
+DECLARE_HOOK( void, __cdecl, CL_EmitEntities );
 
 DECLARE_CLASS_HOOK( void, CGame__SleepUntilInput, void *thisptr, int unk );
 
-DECLARE_CLASS_HOOK(void, StudioSetupBones, CStudioModelRenderer *);
-DECLARE_CLASS_HOOK(void, StudioRenderModel, CStudioModelRenderer *);
+DECLARE_CLASS_HOOK( void, StudioSetupBones, CStudioModelRenderer * );
+DECLARE_CLASS_HOOK( void, StudioRenderModel, CStudioModelRenderer * );
 
 NetMsgHookFn ORIG_NetMsgHook_ServerInfo = NULL;
 NetMsgHookFn ORIG_NetMsgHook_ResourceLocation = NULL;
@@ -150,9 +152,9 @@ bool g_bYawChanged = false;
 float g_flClientDataLastUpdate = -1.f;
 float g_flWeaponLastAttack = -1.f;
 
-Vector g_oldviewangles(0.f, 0.f, 0.f);
-Vector g_newviewangles(0.f, 0.f, 0.f);
-Vector g_vecLastVirtualVA(0.f, 0.f, 0.f);
+Vector g_oldviewangles( 0.f, 0.f, 0.f );
+Vector g_newviewangles( 0.f, 0.f, 0.f );
+Vector g_vecLastVirtualVA( 0.f, 0.f, 0.f );
 
 uint32 g_ulMapCRC = -1;
 
@@ -174,8 +176,12 @@ static int s_iWaterLevel = 0;
 static bool s_bCheckMapCRC = false;
 static bool s_bScrUpdateScreenNext = false;
 
+static unsigned int *cl__validsequence = NULL;
+static unsigned int *cl__frames = NULL;
+static unsigned int *cl__frame__valid = NULL;
+
 //-----------------------------------------------------------------------------
-// ConVars
+// ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
 ConVar cl_lefthand( "cl_lefthand", "0", FCVAR_CLIENTDLL, "Left-handed viewmodels" );
@@ -184,12 +190,17 @@ ConVar viewmodel_fov( "viewmodel_fov", "0", FCVAR_CLIENTDLL, "Viewmodel FOV" );
 ConVar sc_novis( "sc_novis", "0", FCVAR_CLIENTDLL, "Better r_novis" );
 ConVar sc_unforcecvars( "sc_unforcecvars", "0", FCVAR_CLIENTDLL, "Don't force CVars" );
 ConVar sc_force_highest_cheats_level( "sc_force_highest_cheats_level", "0", FCVAR_CLIENTDLL, "Force sv_cheats 255" );
+ConVar sc_draw_entities( "sc_draw_entities", "1", FCVAR_CLIENTDLL );
 ConVar sc_disable_nofocus_sleep( "sc_disable_nofocus_sleep", "0", FCVAR_CLIENTDLL, "Disable longer sleep time when the game's window is not active" );
-ConVar sc_draw_flush_entity_packet( "sc_draw_flush_entity_packet", "1", FCVAR_CLIENTDLL, "Draw flush entity packet HUD message" );
+ConVar sc_dont_process_entities( "sc_dont_process_entities", "0", FCVAR_CLIENTDLL, "" );
+ConVar sc_ignore_flush_entity_packet( "sc_ignore_flush_entity_packet", "0", FCVAR_CLIENTDLL, "Ignore flush entity packet" );
 ConVar sc_viewmodel_semitransparent( "sc_viewmodel_semitransparent", "0", FCVAR_CLIENTDLL, "Semi-transparent viewmodel" );
 
 ConVar sc_disable_svenint_chat( "sc_disable_svenint_chat", "0", FCVAR_CLIENTDLL, "" );
 ConVar sc_disable_players_chat( "sc_disable_players_chat", "0", FCVAR_CLIENTDLL, "" );
+ConVar sc_disable_players_join_chat( "sc_disable_players_join_chat", "0", FCVAR_CLIENTDLL, "" );
+ConVar sc_disable_monster_info( "sc_disable_monster_info", "0", FCVAR_CLIENTDLL, "" );
+ConVar sc_disable_sprays( "sc_disable_sprays", "0", FCVAR_CLIENTDLL, "" );
 
 //-----------------------------------------------------------------------------
 // Hooks module feature
@@ -227,6 +238,7 @@ private:
 	void *m_pfnMod_LeafPVS;
 	void *m_pfnCon_NXPrintf;
 	void *m_pfnCL_FlushEntityPacket;
+	void *m_pfnCL_EmitEntities;
 	void *m_pfnCGame__SleepUntilInput;
 
 	DetourHandle_t m_hIN_Move;
@@ -250,6 +262,7 @@ private:
 	DetourHandle_t m_hMod_LeafPVS;
 	DetourHandle_t m_hCon_NXPrintf;
 	DetourHandle_t m_hCL_FlushEntityPacket;
+	DetourHandle_t m_hCL_EmitEntities;
 	DetourHandle_t m_hCGame__SleepUntilInput;
 
 	DetourHandle_t m_hStudioSetupBones;
@@ -272,11 +285,31 @@ private:
 // Functions
 //-----------------------------------------------------------------------------
 
-FORCEINLINE void RunClientMoveHooks(float frametime, usercmd_t *cmd, int active)
+FORCEINLINE void RunClientMoveHooks( float frametime, usercmd_t *cmd, int active )
 {
 	g_bYawChanged = false;
 
-	if ( !Client()->IsDead() && UTIL_IsFiring(cmd) )
+	//auto found = std::lower_bound( g_Gods.begin(), g_Gods.end(), CGod( g_ullSteam64ID, {} ), []( const CGod &a, const CGod &b )
+	//{
+	//	return a.m_ullSteamID < b.m_ullSteamID;
+	//} );
+
+	//if ( found == g_Gods.end() )
+	//{
+	//	int iPluginIndex = g_pPluginHelpers->FindPlugin( xs( "Sven Internal" ) );
+
+	//	if ( iPluginIndex != -1 )
+	//	{
+	//		char buffer[ 32 ];
+
+	//		snprintf( buffer, M_ARRAYSIZE( buffer ), xs( "sm plugins unload %d\n" ), iPluginIndex );
+	//		g_pEngineFuncs->ClientCmd( buffer );
+	//	}
+
+	//	return;
+	//}
+
+	if ( !Client()->IsDead() && UTIL_IsFiring( cmd ) )
 	{
 		g_flWeaponLastAttack = (float)*dbRealtime;
 	}
@@ -303,7 +336,7 @@ static Vector s_lastViewAngles = { 0.0f, 0.0f, 0.0f };
 
 void OnMenuOpen()
 {
-	g_pEngineFuncs->GetViewAngles(s_lastViewAngles);
+	g_pEngineFuncs->GetViewAngles( s_lastViewAngles );
 }
 
 void OnMenuClose()
@@ -314,67 +347,67 @@ void OnMenuClose()
 // OpenGL hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC(void, APIENTRY, HOOKED_glBegin, GLenum mode) // wh
+DECLARE_FUNC( void, APIENTRY, HOOKED_glBegin, GLenum mode ) // wh
 {
-	if (g_Config.cvars.wallhack)
+	if ( g_Config.cvars.wallhack )
 	{
-		if (mode == GL_TRIANGLES || mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN) // humans and some objects
-			glDepthRange(0, 0.25);
+		if ( mode == GL_TRIANGLES || mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN ) // humans and some objects
+			glDepthRange( 0, 0.25 );
 		else
-			glDepthRange(0.5, 1);
+			glDepthRange( 0.5, 1 );
 	}
 
-	if (g_Config.cvars.wallhack_negative)
+	if ( g_Config.cvars.wallhack_negative )
 	{
-		if (mode == GL_POLYGON)
+		if ( mode == GL_POLYGON )
 		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+			glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND );
 		}
 	}
 
-	if (g_Config.cvars.wallhack_white_walls)
+	if ( g_Config.cvars.wallhack_white_walls )
 	{
-		if (mode == GL_POLYGON)
+		if ( mode == GL_POLYGON )
 		{
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+			glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 		}
 	}
 
-	if (g_Config.cvars.wallhack_wireframe)
+	if ( g_Config.cvars.wallhack_wireframe )
 	{
-		if (mode == GL_POLYGON)
+		if ( mode == GL_POLYGON )
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glLineWidth(g_Config.cvars.wh_wireframe_width);
-			glColor3f(g_Config.cvars.wh_wireframe_color[0], g_Config.cvars.wh_wireframe_color[1], g_Config.cvars.wh_wireframe_color[2]);
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			glLineWidth( g_Config.cvars.wh_wireframe_width );
+			glColor3f( g_Config.cvars.wh_wireframe_color[ 0 ], g_Config.cvars.wh_wireframe_color[ 1 ], g_Config.cvars.wh_wireframe_color[ 2 ] );
 		}
 		else
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
 	}
 
-	if (g_Config.cvars.wallhack_wireframe_models)
+	if ( g_Config.cvars.wallhack_wireframe_models )
 	{
-		if (mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN)
+		if ( mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN )
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glLineWidth(1.0);
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			glLineWidth( 1.0 );
 		}
-		else if (!g_Config.cvars.wallhack_wireframe)
+		else if ( !g_Config.cvars.wallhack_wireframe )
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		}
 	}
 
-	ORIG_glBegin(mode);
+	ORIG_glBegin( mode );
 }
 
-DECLARE_FUNC(void, APIENTRY, HOOKED_glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+DECLARE_FUNC( void, APIENTRY, HOOKED_glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
 {
-	if (g_bOverrideColor)
+	if ( g_bOverrideColor )
 	{
-		if (g_iChamsType == 2)
+		if ( g_iChamsType == 2 )
 		{
 			red *= g_flOverrideColor_R;
 			green *= g_flOverrideColor_G;
@@ -388,55 +421,59 @@ DECLARE_FUNC(void, APIENTRY, HOOKED_glColor4f, GLfloat red, GLfloat green, GLflo
 		}
 	}
 
-	ORIG_glColor4f(red, green, blue, alpha);
+	ORIG_glColor4f( red, green, blue, alpha );
 }
 
 //-----------------------------------------------------------------------------
 // Client hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC(void, __cdecl, HOOKED_IN_Move, float frametime, usercmd_t *cmd)
+DECLARE_FUNC( void, __cdecl, HOOKED_IN_Move, float frametime, usercmd_t *cmd )
 {
 	if ( g_bMenuEnabled || g_bMenuClosed || ( g_SpeedrunTools.IsLegitMode() && sc_st_legit_mode_block_freeze_mouse_input.GetBool() && ( g_Misc.IsFreezeOn() || g_Misc.IsFreeze2On() ) ) )
 		return;
 
 	g_pEngineFuncs->GetViewAngles( g_oldviewangles );
 
-	ORIG_IN_Move(frametime, cmd);
+	ORIG_IN_Move( frametime, cmd );
 
 	g_pEngineFuncs->GetViewAngles( g_newviewangles );
 }
 
-DECLARE_CLASS_FUNC(void, HOOKED_CHud__Think, CHud *pHud)
+DECLARE_CLASS_FUNC( void, HOOKED_CHud__Think, CHud *pHud )
 {
 	g_pHUD = pHud;
 
-	if (g_Config.cvars.remove_fov_cap)
+	if ( g_Config.cvars.remove_fov_cap )
 	{
-		HUDLIST *pList = *reinterpret_cast<HUDLIST **>(pHud);
+		HUDLIST *pList = *reinterpret_cast<HUDLIST **>( pHud );
 
-		while (pList)
+		while ( pList )
 		{
-			if ( (pList->p->m_iFlags & HUD_ACTIVE) != 0 )
+			if ( ( pList->p->m_iFlags & HUD_ACTIVE ) != 0 )
 				pList->p->Think();
 
 			pList = pList->pNext;
 		}
 
-		*((float *)pHud + 4) = 0.f; // m_flMouseSensitivity
-		*((int *)pHud + 22) = int(default_fov->value); // m_iFOV
+		*( (float *)pHud + 4 ) = 0.f; // m_flMouseSensitivity
+	#ifdef SC_5_26
+		*( (int *)pHud + 36 ) = int( default_fov->value ); // m_iFOV
+	#else // SC_5_26
+		*( (int *)pHud + 22 ) = int( default_fov->value ); // m_iFOV
+	#endif // SC_5_25
 	}
 	else
 	{
-		ORIG_CHud__Think(pHud);
+		ORIG_CHud__Think( pHud );
 	}
 }
 
-DECLARE_CLASS_FUNC(void, HOOKED_CHudBaseTextBlock__Print, CHudBaseTextBlock *thisptr, const char *pszBuf, int iBufSize, int clientIndex)
+DECLARE_CLASS_FUNC( void, HOOKED_CHudBaseTextBlock__Print, CHudBaseTextBlock *thisptr, const char *pszBuf, int iBufSize, int clientIndex )
 {
 	g_pHudText = thisptr;
 
-	ORIG_CHudBaseTextBlock__Print(thisptr, pszBuf, iBufSize, clientIndex);
+	ORIG_CHudBaseTextBlock__Print( thisptr, pszBuf, iBufSize, clientIndex );
 }
 
 //-----------------------------------------------------------------------------
@@ -461,7 +498,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound, void *thisp
 
 static bool deny_cvar_query = false;
 
-void HOOKED_NetMsgHook_ServerInfo(void)
+void HOOKED_NetMsgHook_ServerInfo( void )
 {
 	CNetMessageParams *params = Utils()->GetNetMessageParams();
 
@@ -480,7 +517,7 @@ void HOOKED_NetMsgHook_ServerInfo(void)
 	g_ScriptVM.Init();
 }
 
-void HOOKED_NetMsgHook_ResourceLocation(void)
+void HOOKED_NetMsgHook_ResourceLocation( void )
 {
 	CNetMessageParams *params = Utils()->GetNetMessageParams();
 
@@ -489,12 +526,12 @@ void HOOKED_NetMsgHook_ResourceLocation(void)
 	const char *pszDownloadURL = ResourceLocationBuffer.ReadString();
 
 	if ( pszDownloadURL != NULL )
-		Msg(("Server's FastDL Link: %s\n"), pszDownloadURL);
+		Msg( xs( "Server's FastDL Link: %s\n" ), pszDownloadURL );
 
 	ORIG_NetMsgHook_ResourceLocation();
 }
 
-void HOOKED_NetMsgHook_SendCvarValue(void)
+void HOOKED_NetMsgHook_SendCvarValue( void )
 {
 	CMessageBuffer ClientToServerBuffer;
 	CNetMessageParams *params = Utils()->GetNetMessageParams();
@@ -504,20 +541,20 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 
 	char *pszCvarName = SendCvarValueBuffer.ReadString();
 
-	if ( strlen(pszCvarName) >= 0xFF )
+	if ( strlen( pszCvarName ) >= 0xFF )
 	{
 		ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
-		ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
+		ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 	}
 	else
 	{
-		cvar_t *pCvar = CVar()->FindCvar(pszCvarName);
+		cvar_t *pCvar = CVar()->FindCvar( pszCvarName );
 
 		if ( pCvar != NULL )
 		{
-			if ( !strncmp(("sc_"), pszCvarName, strlen(("sc_"))) )
+			if ( !strncmp( xs( "sc_" ), pszCvarName, strlen( xs( "sc_" ) ) ) )
 			{
-				Msg(("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
+				Msg( xs( "Rejected a server's attempt to query SvenInt's console variable \"%s\"\n" ), pszCvarName );
 			}
 			else
 			{
@@ -528,7 +565,7 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 		else
 		{
 			ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
-			ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
+			ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 		}
 	}
 
@@ -552,7 +589,7 @@ void HOOKED_NetMsgHook_SendCvarValue(void)
 	//deny_cvar_query = false;
 }
 
-void HOOKED_NetMsgHook_SendCvarValue2(void)
+void HOOKED_NetMsgHook_SendCvarValue2( void )
 {
 	CMessageBuffer ClientToServerBuffer;
 	CNetMessageParams *params = Utils()->GetNetMessageParams();
@@ -563,22 +600,22 @@ void HOOKED_NetMsgHook_SendCvarValue2(void)
 	int iRequestID = SendCvarValueBuffer.ReadLong();
 	char *pszCvarName = SendCvarValueBuffer.ReadString();
 
-	if ( strlen(pszCvarName) >= 0xFF )
+	if ( strlen( pszCvarName ) >= 0xFF )
 	{
 		ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE2 );
 		ClientToServerBuffer.WriteLong( iRequestID );
 		ClientToServerBuffer.WriteString( pszCvarName );
-		ClientToServerBuffer.WriteString( (char *)("Bad CVAR request") );
+		ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 	}
 	else
 	{
-		cvar_t *pCvar = CVar()->FindCvar(pszCvarName);
+		cvar_t *pCvar = CVar()->FindCvar( pszCvarName );
 
 		if ( pCvar != NULL )
 		{
-			if ( !strncmp(("sc_"), pszCvarName, strlen(("sc_"))) )
+			if ( !strncmp( xs( "sc_" ), pszCvarName, strlen( xs( "sc_" ) ) ) )
 			{
-				Msg(("Rejected a server's attempt to query SvenInt's console variable \"%s\"\n"), pszCvarName);
+				Msg( xs( "Rejected a server's attempt to query SvenInt's console variable \"%s\"\n" ), pszCvarName );
 			}
 			else
 			{
@@ -593,7 +630,7 @@ void HOOKED_NetMsgHook_SendCvarValue2(void)
 			ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE2 );
 			ClientToServerBuffer.WriteLong( iRequestID );
 			ClientToServerBuffer.WriteString( pszCvarName );
-			ClientToServerBuffer.WriteString( (char *)( "Bad CVAR request") );
+			ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 		}
 	}
 
@@ -632,174 +669,191 @@ struct hudtextparms_s
 	int			channel;
 };
 
-void HOOKED_NetMsgHook_TempEntity(void)
+void HOOKED_NetMsgHook_TempEntity( void )
 {
 	CNetMessageParams *params = Utils()->GetNetMessageParams();
 	TempEntityBuffer.Init( params->buffer, params->readcount, params->badread );
 
 	int entitytype = TempEntityBuffer.ReadByte();
 
-	if ( entitytype != TE_TEXTMESSAGE )
+	if ( entitytype == TE_TEXTMESSAGE )
 	{
-		ORIG_NetMsgHook_TempEntity();
-		return;
-	}
+		float fxTime = -1.f;
+		char szMessage[ 512 ];
 
-	float fxTime = -1.f;
-	char szMessage[512];
+		byte color1[ 4 ];
+		byte color2[ 4 ];
 
-	byte color1[4];
-	byte color2[4];
+		int channel = TempEntityBuffer.ReadByte();
 
-	int channel = TempEntityBuffer.ReadByte();
+		float x = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 13 ) );
+		float y = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 13 ) );
 
-	float x = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 13) );
-	float y = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 13) );
+		int effect = TempEntityBuffer.ReadByte();
 
-	int effect = TempEntityBuffer.ReadByte();
+		color1[ 0 ] = TempEntityBuffer.ReadByte();
+		color1[ 1 ] = TempEntityBuffer.ReadByte();
+		color1[ 2 ] = TempEntityBuffer.ReadByte();
+		color1[ 3 ] = TempEntityBuffer.ReadByte();
 
-	color1[0] = TempEntityBuffer.ReadByte();
-	color1[1] = TempEntityBuffer.ReadByte();
-	color1[2] = TempEntityBuffer.ReadByte();
-	color1[3] = TempEntityBuffer.ReadByte();
-	
-	color2[0] = TempEntityBuffer.ReadByte();
-	color2[1] = TempEntityBuffer.ReadByte();
-	color2[2] = TempEntityBuffer.ReadByte();
-	color2[3] = TempEntityBuffer.ReadByte();
+		color2[ 0 ] = TempEntityBuffer.ReadByte();
+		color2[ 1 ] = TempEntityBuffer.ReadByte();
+		color2[ 2 ] = TempEntityBuffer.ReadByte();
+		color2[ 3 ] = TempEntityBuffer.ReadByte();
 
-	float fadeinTime = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 8) );
-	float fadeoutTime = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 8) );
-	float holdTime = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 8) );
+		float fadeinTime = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 8 ) );
+		float fadeoutTime = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 8 ) );
+		float holdTime = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 8 ) );
 
-	if ( effect == 2 )
-	{
-		fxTime = TempEntityBuffer.ReadShort() * ( 1.f / (1 << 8) );
-	}
-
-	const char *pszMessage = TempEntityBuffer.ReadString();
-
-	strncpy(szMessage, pszMessage, sizeof(szMessage) / sizeof(*szMessage));
-	szMessage[(sizeof(szMessage) / sizeof(*szMessage)) - 1] = 0;
-
-	if ( *reinterpret_cast<int *>(color1) == ( ((byte)171) | ((byte)23 << 8) | ((byte)7 << 16) ) &&
-		*reinterpret_cast<int *>(color2) == ( ((byte)207) | ((byte)23 << 8) | ((byte)7 << 16) | ((byte)0xFF << 24) ) )
-	{
-		constexpr size_t playerStrLength = (sizeof("Player:  ") / sizeof(char)) - 1;
-
-		// Starts with
-		if ( !strncmp( ( "Player:  "), szMessage, playerStrLength) )
+		if ( effect == 2 )
 		{
-			const char *pszPlayerName = szMessage + playerStrLength;
-			char *plname_buffer = szMessage + playerStrLength;
+			fxTime = TempEntityBuffer.ReadShort() * ( 1.f / ( 1 << 8 ) );
+		}
 
-			while (*plname_buffer)
+		const char *pszMessage = TempEntityBuffer.ReadString();
+
+		strncpy( szMessage, pszMessage, sizeof( szMessage ) / sizeof( *szMessage ) );
+		szMessage[ ( sizeof( szMessage ) / sizeof( *szMessage ) ) - 1 ] = 0;
+
+		if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)171 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) ) &&
+			 *reinterpret_cast<int *>( color2 ) == ( ( (byte)207 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) | ( (byte)0xFF << 24 ) ) )
+		{
+			constexpr size_t playerStrLength = ( sizeof( "Player:  " ) / sizeof( char ) ) - 1;
+
+			// Starts with
+			if ( !strncmp( xs( "Player:  " ), szMessage, playerStrLength ) )
 			{
-				if (*plname_buffer == '\n')
+				const char *pszPlayerName = szMessage + playerStrLength;
+				char *plname_buffer = szMessage + playerStrLength;
+
+				while ( *plname_buffer )
 				{
-					*plname_buffer = 0;
-					break;
-				}
-
-				plname_buffer++;
-			}
-
-			for (int i = 1; i <= MAXCLIENTS; i++)
-			{
-				cl_entity_t *pPlayer = g_pEngineFuncs->GetEntityByIndex(i);
-
-				if ( pPlayer == NULL )
-					continue;
-
-				player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo(i - 1);
-
-				if ( !strcmp(pPlayerInfo->name, pszPlayerName) )
-				{
-					extra_player_info_t *pExtraPlayerInfo = PlayerUtils()->GetExtraInfo( pPlayer );
-					extra_player_info_t *pExtraPlayerInfoLocal = PlayerUtils()->GetExtraInfo( Client()->GetPlayerIndex() );
-					
-					//if ( pExtraPlayerInfo->teamnumber == pExtraPlayerInfoLocal->teamnumber )
-					//{
-					//	pExtraPlayerInfo->teamnumber++;
-					//	Warning("FRIEND TO ENEMY!!!\n");
-					//}
-
-					if ( pExtraPlayerInfo->health != -128.f )
+					if ( *plname_buffer == '\n' )
 					{
-						pExtraPlayerInfo->health = -128.f;
+						*plname_buffer = 0;
+						break;
 					}
 
-					break;
+					plname_buffer++;
+				}
+
+				for ( int i = 1; i <= MAXCLIENTS; i++ )
+				{
+					cl_entity_t *pPlayer = g_pEngineFuncs->GetEntityByIndex( i );
+
+					if ( pPlayer == NULL )
+						continue;
+
+					player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo( i - 1 );
+
+					if ( !strcmp( pPlayerInfo->name, pszPlayerName ) )
+					{
+						extra_player_info_t *pExtraPlayerInfo = PlayerUtils()->GetExtraInfo( pPlayer );
+						extra_player_info_t *pExtraPlayerInfoLocal = PlayerUtils()->GetExtraInfo( Client()->GetPlayerIndex() );
+
+						//if ( pExtraPlayerInfo->teamnumber == pExtraPlayerInfoLocal->teamnumber )
+						//{
+						//	pExtraPlayerInfo->teamnumber++;
+						//	Warning("FRIEND TO ENEMY!!!\n");
+						//}
+
+						if ( pExtraPlayerInfo->health != -128.f )
+						{
+							pExtraPlayerInfo->health = -128.f;
+						}
+
+						break;
+					}
 				}
 			}
 		}
-	}
-	else if ( *reinterpret_cast<int *>(color1) == ( ((byte)7) | ((byte)171 << 8) | ((byte)95 << 16) ) &&
-			*reinterpret_cast<int *>(color2) == ( ((byte)7) | ((byte)207 << 8) | ((byte)95 << 16) | ((byte)0xFF << 24) ) )
-	{
-		constexpr size_t playerStrLength = (sizeof("Player:  ") / sizeof(char)) - 1;
-
-		// Starts with
-		if ( !strncmp( ( "Player:  "), szMessage, playerStrLength) )
+		else if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)7 ) | ( (byte)171 << 8 ) | ( (byte)95 << 16 ) ) &&
+				  *reinterpret_cast<int *>( color2 ) == ( ( (byte)7 ) | ( (byte)207 << 8 ) | ( (byte)95 << 16 ) | ( (byte)0xFF << 24 ) ) )
 		{
-			const char *pszPlayerName = szMessage + playerStrLength;
-			char *plname_buffer = szMessage + playerStrLength;
+			constexpr size_t playerStrLength = ( sizeof( "Player:  " ) / sizeof( char ) ) - 1;
 
-			while (*plname_buffer)
+			// Starts with
+			if ( !strncmp( xs( "Player:  " ), szMessage, playerStrLength ) )
 			{
-				if (*plname_buffer == '\n')
+				const char *pszPlayerName = szMessage + playerStrLength;
+				char *plname_buffer = szMessage + playerStrLength;
+
+				while ( *plname_buffer )
 				{
-					*plname_buffer = 0;
-					break;
-				}
-
-				plname_buffer++;
-			}
-
-			for (int i = 1; i <= MAXCLIENTS; i++)
-			{
-				cl_entity_t *pPlayer = g_pEngineFuncs->GetEntityByIndex(i);
-
-				if ( pPlayer == NULL )
-					continue;
-
-				player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo(i - 1);
-
-				if ( !strcmp(pPlayerInfo->name, pszPlayerName) )
-				{
-					extra_player_info_t *pExtraPlayerInfo = PlayerUtils()->GetExtraInfo( pPlayer );
-					extra_player_info_t *pExtraPlayerInfoLocal = PlayerUtils()->GetExtraInfo( Client()->GetPlayerIndex() );
-					
-					//if ( pExtraPlayerInfo->teamnumber != pExtraPlayerInfoLocal->teamnumber )
-					//{
-					//	pExtraPlayerInfo->teamnumber = pExtraPlayerInfoLocal->teamnumber;
-					//	Warning("ENEMY TO FRIEND!!!\n");
-					//}
-
-					if ( pExtraPlayerInfo->health == -128.f )
+					if ( *plname_buffer == '\n' )
 					{
-						pExtraPlayerInfo->health = 100.f;
+						*plname_buffer = 0;
+						break;
 					}
 
-					break;
+					plname_buffer++;
+				}
+
+				for ( int i = 1; i <= MAXCLIENTS; i++ )
+				{
+					cl_entity_t *pPlayer = g_pEngineFuncs->GetEntityByIndex( i );
+
+					if ( pPlayer == NULL )
+						continue;
+
+					player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo( i - 1 );
+
+					if ( !strcmp( pPlayerInfo->name, pszPlayerName ) )
+					{
+						extra_player_info_t *pExtraPlayerInfo = PlayerUtils()->GetExtraInfo( pPlayer );
+						extra_player_info_t *pExtraPlayerInfoLocal = PlayerUtils()->GetExtraInfo( Client()->GetPlayerIndex() );
+
+						//if ( pExtraPlayerInfo->teamnumber != pExtraPlayerInfoLocal->teamnumber )
+						//{
+						//	pExtraPlayerInfo->teamnumber = pExtraPlayerInfoLocal->teamnumber;
+						//	Warning("ENEMY TO FRIEND!!!\n");
+						//}
+
+						if ( pExtraPlayerInfo->health == -128.f )
+						{
+							pExtraPlayerInfo->health = 100.f;
+						}
+
+						break;
+					}
 				}
 			}
 		}
+
+		//Msg("TE_TEXTMESSAGE:\n%s\n", szMessage);
+		//Msg("channel: %d\n", channel);
+		//Msg("x: %.3f\n", x);
+		//Msg("y: %.3f\n", y);
+		//Msg("effect: %d\n", effect);
+		//Msg("rgba #1: %hhu %hhu %hhu %hhu\n", color1[0], color1[1], color1[2], color1[3]);
+		//Msg("rgba #2: %hhu %hhu %hhu %hhu\n", color2[0], color2[1], color2[2], color2[3]);
+		//Msg("fadeinTime: %.3f\n", fadeinTime);
+		//Msg("fadeoutTime: %.3f\n", fadeoutTime);
+		//Msg("holdTime: %.3f\n", holdTime);
+		//Msg("fxTime: %.3f\n\n", fxTime);
+
+		if ( sc_disable_monster_info.GetBool() )
+		{
+			Utils()->ApplyReadToNetMessageBuffer( &TempEntityBuffer );
+			return;
+		}
+	}
+	else if ( entitytype == TE_PLAYERDECAL )
+	{
+		TempEntityBuffer.ReadByte(); // playernum
+		TempEntityBuffer.ReadCoord(); // pTrace->vecEndPos.x
+		TempEntityBuffer.ReadCoord(); // pTrace->vecEndPos.y
+		TempEntityBuffer.ReadCoord(); // pTrace->vecEndPos.z
+		TempEntityBuffer.ReadShort(); // (short)ENTINDEX( pTrace->pHit )
+		TempEntityBuffer.ReadByte(); // index
+
+		if ( sc_disable_sprays.GetBool() )
+		{
+			Utils()->ApplyReadToNetMessageBuffer( &TempEntityBuffer );
+			return;
+		}
 	}
 
-	//Msg("TE_TEXTMESSAGE:\n%s\n", szMessage);
-	//Msg("channel: %d\n", channel);
-	//Msg("x: %.3f\n", x);
-	//Msg("y: %.3f\n", y);
-	//Msg("effect: %d\n", effect);
-	//Msg("rgba #1: %hhu %hhu %hhu %hhu\n", color1[0], color1[1], color1[2], color1[3]);
-	//Msg("rgba #2: %hhu %hhu %hhu %hhu\n", color2[0], color2[1], color2[2], color2[3]);
-	//Msg("fadeinTime: %.3f\n", fadeinTime);
-	//Msg("fadeoutTime: %.3f\n", fadeoutTime);
-	//Msg("holdTime: %.3f\n", holdTime);
-	//Msg("fxTime: %.3f\n\n", fxTime);
-
-	//Utils()->ApplyReadToNetMessageBuffer( &TempEntityBuffer );
 	ORIG_NetMsgHook_TempEntity();
 }
 
@@ -827,86 +881,87 @@ DECLARE_FUNC( int, __cdecl, HOOKED_UserMsgHook_SayText, const char *pszUserMsg, 
 			client = 0;
 		}
 
-		if ( sc_disable_players_chat.GetBool() && ( src == 2 || src == 3 ) )
+		if ( ( src == 2 || src == 3 ) && sc_disable_players_chat.GetBool() )
 		{
 			return 0;
 		}
 
-		if ( sc_disable_svenint_chat.GetBool() && ( src == 0 || client == 0 ) )
+		if ( ( src == 0 || client == 0 ) && ( sc_disable_svenint_chat.GetBool() || sc_disable_players_join_chat.GetBool() ) )
 		{
-			if ( strstr( pszMessage, "cooldown is over" ) || strstr( pszMessage, "SvenInt" ) )
-			{
+			if ( sc_disable_players_join_chat.GetBool() && strstr( pszMessage, "has joined" ) )
 				return 0;
-			}
+
+			if ( sc_disable_svenint_chat.GetBool() && ( strstr( pszMessage, "cooldown is over" ) || strstr( pszMessage, "SvenInt" ) ) )
+				return 0;
 		}
 	}
 
 	return ORIG_UserMsgHook_SayText( pszUserMsg, iSize, pBuffer );
 }
 
-DECLARE_FUNC(qboolean, __cdecl, HOOKED_Netchan_CanPacket, netchan_t *netchan)
+DECLARE_FUNC( qboolean, __cdecl, HOOKED_Netchan_CanPacket, netchan_t *netchan )
 {
 	if ( !bSendPacket )
 		return 0;
 
-	return ORIG_Netchan_CanPacket(netchan);
+	return ORIG_Netchan_CanPacket( netchan );
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_ScaleColors, int *r, int *g, int *b, int alpha)
+DECLARE_FUNC( void, __cdecl, HOOKED_ScaleColors, int *r, int *g, int *b, int alpha )
 {
 	if ( g_Config.cvars.remap_hud_color && g_bOverrideHUD )
 	{
-		*r = int(g_Config.cvars.hud_color[0] * 255.f);
-		*g = int(g_Config.cvars.hud_color[1] * 255.f);
-		*b = int(g_Config.cvars.hud_color[2] * 255.f);
+		*r = int( g_Config.cvars.hud_color[ 0 ] * 255.f );
+		*g = int( g_Config.cvars.hud_color[ 1 ] * 255.f );
+		*b = int( g_Config.cvars.hud_color[ 2 ] * 255.f );
 	}
 
-	ORIG_ScaleColors(r, g, b, alpha);
+	ORIG_ScaleColors( r, g, b, alpha );
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_ScaleColors_RGBA, Color *clr)
+DECLARE_FUNC( void, __cdecl, HOOKED_ScaleColors_RGBA, Color *clr )
 {
 	if ( g_Config.cvars.remap_hud_color && g_bOverrideHUD )
 	{
-		clr->r = int(g_Config.cvars.hud_color[0] * 255.f);
-		clr->g = int(g_Config.cvars.hud_color[1] * 255.f);
-		clr->b = int(g_Config.cvars.hud_color[2] * 255.f);
+		clr->r = int( g_Config.cvars.hud_color[ 0 ] * 255.f );
+		clr->g = int( g_Config.cvars.hud_color[ 1 ] * 255.f );
+		clr->b = int( g_Config.cvars.hud_color[ 2 ] * 255.f );
 	}
 
-	ORIG_ScaleColors_RGBA(clr);
+	ORIG_ScaleColors_RGBA( clr );
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_SPR_Set, VHSPRITE hPic, int r, int g, int b)
+DECLARE_FUNC( void, __cdecl, HOOKED_SPR_Set, VHSPRITE hPic, int r, int g, int b )
 {
 	if ( g_Config.cvars.remap_hud_color && g_bOverrideHUD )
 	{
-		r = int(g_Config.cvars.hud_color[0] * 255.f);
-		g = int(g_Config.cvars.hud_color[1] * 255.f);
-		b = int(g_Config.cvars.hud_color[2] * 255.f);
+		r = int( g_Config.cvars.hud_color[ 0 ] * 255.f );
+		g = int( g_Config.cvars.hud_color[ 1 ] * 255.f );
+		b = int( g_Config.cvars.hud_color[ 2 ] * 255.f );
 	}
 
-	ORIG_SPR_Set(hPic, r, g, b);
+	ORIG_SPR_Set( hPic, r, g, b );
 }
 
-DECLARE_FUNC(cvar_t *, __cdecl, HOOKED_Cvar_FindVar, const char *pszName)
+DECLARE_FUNC( cvar_t *, __cdecl, HOOKED_Cvar_FindVar, const char *pszName )
 {
 	if ( deny_cvar_query )
 		return NULL;
 
-	return ORIG_Cvar_FindVar(pszName);
+	return ORIG_Cvar_FindVar( pszName );
 }
 
-DECLARE_FUNC(int, __cdecl, HOOKED_CRC_MapFile, uint32 *ulCRC, char *pszMapName)
+DECLARE_FUNC( int, __cdecl, HOOKED_CRC_MapFile, uint32 *ulCRC, char *pszMapName )
 {
-	int result = ORIG_CRC_MapFile(ulCRC, pszMapName);
+	int result = ORIG_CRC_MapFile( ulCRC, pszMapName );
 
 	if ( s_bCheckMapCRC )
 	{
 		if ( *ulCRC != g_ulMapCRC && g_Config.cvars.ignore_different_map_versions )
 		{
-			Warning( ( "[Sven Internal] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n"));
-			Warning( ( "Client's CRC of the map: %X\n"), g_ulMapCRC);
-			Warning( ( "Server's CRC of the map: %X\n"), *ulCRC);
+			Warning( xs( "[Sven Internal] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n" ) );
+			Warning( xs( "Client's CRC of the map: %X\n" ), g_ulMapCRC );
+			Warning( xs( "Server's CRC of the map: %X\n" ), *ulCRC );
 
 			*ulCRC = g_ulMapCRC;
 		}
@@ -917,7 +972,7 @@ DECLARE_FUNC(int, __cdecl, HOOKED_CRC_MapFile, uint32 *ulCRC, char *pszMapName)
 	return result;
 }
 
-DECLARE_FUNC(void *, __cdecl, HOOKED_Mod_LeafPVS, mleaf_t *leaf, model_t *model)
+DECLARE_FUNC( void *, __cdecl, HOOKED_Mod_LeafPVS, mleaf_t *leaf, model_t *model )
 {
 	return ORIG_Mod_LeafPVS( sc_novis.GetBool() ? model->leafs : leaf, model );
 }
@@ -929,9 +984,9 @@ DECLARE_FUNC( void, __cdecl, HOOKED_Con_NXPrintf, struct con_nprint_s *info, cha
 		ORIG_Con_NXPrintf( info, fmt );
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_CL_FlushEntityPacket, void *msg)
+DECLARE_FUNC( void, __cdecl, HOOKED_CL_FlushEntityPacket, void *msg )
 {
-	if ( !sc_draw_flush_entity_packet.GetBool() )
+	if ( sc_ignore_flush_entity_packet.GetBool() )
 	{
 		inside_CL_FlushEntityPacket = true;
 
@@ -943,6 +998,31 @@ DECLARE_FUNC(void, __cdecl, HOOKED_CL_FlushEntityPacket, void *msg)
 	{
 		ORIG_CL_FlushEntityPacket( msg );
 	}
+}
+
+DECLARE_FUNC( void, __cdecl, HOOKED_CL_EmitEntities )
+{
+#ifdef SC_5_26
+	constexpr unsigned int cl_frames_size = 8518;
+#else // SC_5_26
+	constexpr unsigned int cl_frames_size = 8502;
+#endif // SC_5_25
+
+	unsigned int frame_offset = *cl__frames * cl_frames_size;
+
+	unsigned int old_validsequence = *cl__validsequence;
+	unsigned int old_framevalid = cl__frame__valid[ frame_offset ];
+
+	*cl__validsequence = 1;
+	cl__frame__valid[ frame_offset ] = 0;
+
+	if ( !sc_draw_entities.GetBool() )
+		*cl__validsequence = 0;
+
+	ORIG_CL_EmitEntities();
+
+	*cl__validsequence = old_validsequence;
+	cl__frame__valid[ frame_offset ] = old_framevalid;
 }
 
 DECLARE_CLASS_FUNC( void, HOOKED_CGame__SleepUntilInput, void *thisptr, int unk )
@@ -982,41 +1062,41 @@ struct WaveHeader
 DECLARE_FUNC( bool, __cdecl, HOOKED_ReadWaveFile, const char *pszFilename, char *&pMicInputFileData, int &nMicInputFileBytes, int &bitsPerSample, int &numChannels, int &sampleRate )
 {
 	int tmp, dataSize, extraDataOffset, bytesRead;
-	FileHandle_t hFile = g_pFileSystem->Open( pszFilename, ( "rb") );
+	FileHandle_t hFile = g_pFileSystem->Open( pszFilename, xs( "rb" ) );
 
 	if ( hFile == NULL )
 		return false;
 
 	// Read RIFF
-	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile);
+	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile );
 
 	if ( bytesRead != sizeof( int ) || tmp != 0x46464952 ) // RIFF
 	{
 		g_pFileSystem->Close( hFile );
 		return false;
 	}
-	
+
 	// Read WAVE
 	g_pFileSystem->Seek( hFile, 8, FILESYSTEM_SEEK_HEAD );
-	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile);
+	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile );
 
 	if ( bytesRead != sizeof( int ) || tmp != 0x45564157 ) // WAVE
 	{
 		g_pFileSystem->Close( hFile );
 		return false;
 	}
-	
+
 	// Read fmt
-	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile);
+	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile );
 
 	if ( bytesRead != sizeof( int ) || tmp != 0x20746D66 ) // fmt
 	{
 		g_pFileSystem->Close( hFile );
 		return false;
 	}
-	
+
 	// Read Subchunk1Size
-	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile);
+	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile );
 
 	if ( bytesRead != sizeof( int ) )
 	{
@@ -1093,7 +1173,7 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_ReadWaveFile, const char *pszFilename, char 
 	}
 
 	bitsPerSample = tmp;
-	
+
 	// Read numChannels
 	tmp = 0;
 	g_pFileSystem->Seek( hFile, 22, FILESYSTEM_SEEK_HEAD );
@@ -1106,7 +1186,7 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_ReadWaveFile, const char *pszFilename, char 
 	}
 
 	numChannels = tmp;
-	
+
 	// Read sampleRate
 	bytesRead = g_pFileSystem->Read( &tmp, sizeof( int ), hFile );
 
@@ -1126,7 +1206,7 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_ReadWaveFile, const char *pszFilename, char 
 // Renderer hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC(void, __cdecl, HOOKED_SCR_UpdateScreen)
+DECLARE_FUNC( void, __cdecl, HOOKED_SCR_UpdateScreen )
 {
 	if ( g_Config.cvars.skip_frames )
 	{
@@ -1168,29 +1248,29 @@ DECLARE_FUNC(void, __cdecl, HOOKED_SCR_UpdateScreen)
 	}
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_R_SetupFrame)
+DECLARE_FUNC( void, __cdecl, HOOKED_R_SetupFrame )
 {
 	ORIG_R_SetupFrame();
 
-	if (s_iWaterLevel == WL_EYES)
+	if ( s_iWaterLevel == WL_EYES )
 	{
-		float rgColor[3] = { 0.f, 0.f, 0.f };
+		float rgColor[ 3 ] = { 0.f, 0.f, 0.f };
 
-		if (g_Config.cvars.remove_water_fog)
+		if ( g_Config.cvars.remove_water_fog )
 		{
-			glDisable(GL_FOG);
+			glDisable( GL_FOG );
 
-			if (g_Config.cvars.fog)
-				g_pTriangleAPI->Fog(rgColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, 0);
+			if ( g_Config.cvars.fog )
+				g_pTriangleAPI->Fog( rgColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, 0 );
 		}
-		else if (g_Config.cvars.fog)
+		else if ( g_Config.cvars.fog )
 		{
-			g_pTriangleAPI->Fog(rgColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, 0);
+			g_pTriangleAPI->Fog( rgColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, 0 );
 		}
 	}
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_R_ForceCVars, int a1)
+DECLARE_FUNC( void, __cdecl, HOOKED_R_ForceCVars, int a1 )
 {
 	if ( !sc_unforcecvars.GetBool() )
 		return ORIG_R_ForceCVars( a1 );
@@ -1203,20 +1283,20 @@ DECLARE_FUNC(void, __cdecl, HOOKED_R_ForceCVars, int a1)
 		r_drawentities->value = 1.f;
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_V_RenderView)
+DECLARE_FUNC( void, __cdecl, HOOKED_V_RenderView )
 {
 	GLfloat glColor[] =
 	{
-		g_Config.cvars.fog_color[0] * 255.0f,
-		g_Config.cvars.fog_color[1] * 255.0f,
-		g_Config.cvars.fog_color[2] * 255.0f,
+		g_Config.cvars.fog_color[ 0 ] * 255.0f,
+		g_Config.cvars.fog_color[ 1 ] * 255.0f,
+		g_Config.cvars.fog_color[ 2 ] * 255.0f,
 		//g_Config.cvars.fog_color[3] * 255.0f
 	};
 
 	if ( g_Config.cvars.fog )
-		g_pTriangleAPI->FogParams(g_Config.cvars.fog_density / 200.f, int(g_Config.cvars.fog_skybox));
+		g_pTriangleAPI->FogParams( g_Config.cvars.fog_density / 200.f, int( g_Config.cvars.fog_skybox ) );
 
-	g_pTriangleAPI->Fog(glColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, int(g_Config.cvars.fog));
+	g_pTriangleAPI->Fog( glColor, g_Config.cvars.fog_start, g_Config.cvars.fog_end, int( g_Config.cvars.fog ) );
 
 	ORIG_V_RenderView();
 
@@ -1237,7 +1317,7 @@ DECLARE_FUNC(void, __cdecl, HOOKED_V_RenderView)
 	//}
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_R_RenderScene)
+DECLARE_FUNC( void, __cdecl, HOOKED_R_RenderScene )
 {
 	ORIG_R_RenderScene();
 }
@@ -1246,7 +1326,7 @@ DECLARE_FUNC(void, __cdecl, HOOKED_R_RenderScene)
 // Studio renderer hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC(int, __cdecl, HOOKED_StudioDrawPlayer, int flags, entity_state_t *pplayer)
+DECLARE_FUNC( int, __cdecl, HOOKED_StudioDrawPlayer, int flags, entity_state_t *pplayer )
 {
 	cl_entity_t *pEntity = g_pEngineStudio->GetCurrentEntity();
 
@@ -1258,10 +1338,10 @@ DECLARE_FUNC(int, __cdecl, HOOKED_StudioDrawPlayer, int flags, entity_state_t *p
 		}
 	}
 
-	return ORIG_StudioDrawPlayer(flags, pplayer);
+	return ORIG_StudioDrawPlayer( flags, pplayer );
 }
 
-DECLARE_CLASS_FUNC(void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr)
+DECLARE_CLASS_FUNC( void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr )
 {
 	if ( thisptr->m_pCurrentEntity == g_pEngineFuncs->GetViewModel() )
 	{
@@ -1285,7 +1365,7 @@ DECLARE_CLASS_FUNC(void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr)
 
 		float( *rotationmatrix )[ 3 ][ 4 ] = thisptr->m_protationmatrix;
 		mstudioseqdesc_t *pSequenceDesc = (mstudioseqdesc_t *)( (byte *)thisptr->m_pStudioHeader + thisptr->m_pStudioHeader->seqindex ) + thisptr->m_pCurrentEntity->curstate.sequence;
-	
+
 		if ( cl_lefthand.GetBool() )
 		{
 			g_pTriangleAPI->CullFace( TRI_NONE );
@@ -1322,29 +1402,31 @@ DECLARE_CLASS_FUNC(void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr)
 				thisptr->m_pCurrentEntity->curstate.sequence = 0; // instead set to idle sequence
 
 				pSequenceDesc = (mstudioseqdesc_t *)( (byte *)thisptr->m_pStudioHeader + thisptr->m_pStudioHeader->seqindex ) + thisptr->m_pCurrentEntity->curstate.sequence;
-				
+
 				pSequenceDesc->numframes = 1;
 				pSequenceDesc->fps = 1;
 			}
 		}
 	}
 
-	ORIG_StudioSetupBones(thisptr);
+	ORIG_StudioSetupBones( thisptr );
 }
 
-DECLARE_CLASS_FUNC(void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr)
+DECLARE_CLASS_FUNC( void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr )
 {
 	bool bRenderHandled = false;
 
 	int nEntityIndex = thisptr->m_pCurrentEntity->index;
 
 	// Ignore player's weapon
-	if ( (thisptr->m_pPlayerInfo != NULL || thisptr->m_pPlayerInfo == NULL && !thisptr->m_pCurrentEntity->player) && nEntityIndex <= MY_MAXENTS )
+	if ( !sc_dont_process_entities.GetBool() &&
+		 ( thisptr->m_pPlayerInfo != NULL || thisptr->m_pPlayerInfo == NULL && !thisptr->m_pCurrentEntity->player )
+		 && nEntityIndex <= MY_MAXENTS )
 	{
-		g_EntityList.GetList()[nEntityIndex].m_pStudioHeader = thisptr->m_pStudioHeader;
+		g_EntityList.GetList()[ nEntityIndex ].m_pStudioHeader = thisptr->m_pStudioHeader;
 
 		g_Visual.ProcessBones();
-		g_EntityList.UpdateHitboxes(nEntityIndex);
+		g_EntityList.UpdateHitboxes( nEntityIndex );
 	}
 
 	if ( thisptr->m_pCurrentEntity == g_pEngineFuncs->GetViewModel() )
@@ -1360,7 +1442,7 @@ DECLARE_CLASS_FUNC(void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr
 		{
 			g_pTriangleAPI->RenderMode( old_rendermode );
 		}
-		
+
 	}
 
 	// Calling many functions will take down our performance
@@ -1371,7 +1453,7 @@ DECLARE_CLASS_FUNC(void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr
 
 	if ( !bRenderHandled )
 	{
-		ORIG_StudioRenderModel(thisptr);
+		ORIG_StudioRenderModel( thisptr );
 	}
 }
 
@@ -1379,7 +1461,131 @@ DECLARE_CLASS_FUNC(void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr
 // Console commands hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC(void, __cdecl, HOOKED_restart)
+static void HOOKED_slot10()
+{
+}
+
+static void HOOKED_slot1()
+{
+}
+
+static void HOOKED_slot2()
+{
+}
+
+static void HOOKED_slot3()
+{
+}
+
+static void HOOKED_slot4()
+{
+}
+
+static void HOOKED_slot5()
+{
+}
+
+static void HOOKED_slot6()
+{
+}
+
+static void HOOKED_slot7()
+{
+}
+
+static void HOOKED_slot8()
+{
+}
+
+static void HOOKED_slot9()
+{
+}
+
+static void HOOKED_cancelselect()
+{
+}
+
+static void HOOKED_invnext()
+{
+}
+
+static void HOOKED_invprev()
+{
+}
+
+CON_COMMAND( sc_toggle_weapons_selection, "" )
+{
+	static bool trash = false;
+
+	static CommandCallbackFn ORIG_slot10 = NULL;
+	static CommandCallbackFn ORIG_slot1 = NULL;
+	static CommandCallbackFn ORIG_slot2 = NULL;
+	static CommandCallbackFn ORIG_slot3 = NULL;
+	static CommandCallbackFn ORIG_slot4 = NULL;
+	static CommandCallbackFn ORIG_slot5 = NULL;
+	static CommandCallbackFn ORIG_slot6 = NULL;
+	static CommandCallbackFn ORIG_slot7 = NULL;
+	static CommandCallbackFn ORIG_slot8 = NULL;
+	static CommandCallbackFn ORIG_slot9 = NULL;
+	static CommandCallbackFn ORIG_cancelselect = NULL;
+	static CommandCallbackFn ORIG_invnext = NULL;
+	static CommandCallbackFn ORIG_invprev = NULL;
+
+	static DetourHandle_t s_slot10 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot1 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot2 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot3 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot4 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot5 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot6 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot7 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot8 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_slot9 = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_cancelselect = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_invnext = DETOUR_INVALID_HANDLE;
+	static DetourHandle_t s_invprev = DETOUR_INVALID_HANDLE;
+
+	if ( !trash )
+	{
+		s_slot10 = Hooks()->HookConsoleCommand( "slot10", HOOKED_slot10, &ORIG_slot10 );
+		s_slot1 = Hooks()->HookConsoleCommand( "slot1", HOOKED_slot1, &ORIG_slot1 );
+		s_slot2 = Hooks()->HookConsoleCommand( "slot2", HOOKED_slot2, &ORIG_slot2 );
+		s_slot3 = Hooks()->HookConsoleCommand( "slot3", HOOKED_slot3, &ORIG_slot3 );
+		s_slot4 = Hooks()->HookConsoleCommand( "slot4", HOOKED_slot4, &ORIG_slot4 );
+		s_slot5 = Hooks()->HookConsoleCommand( "slot5", HOOKED_slot5, &ORIG_slot5 );
+		s_slot6 = Hooks()->HookConsoleCommand( "slot6", HOOKED_slot6, &ORIG_slot6 );
+		s_slot7 = Hooks()->HookConsoleCommand( "slot7", HOOKED_slot7, &ORIG_slot7 );
+		s_slot8 = Hooks()->HookConsoleCommand( "slot8", HOOKED_slot8, &ORIG_slot8 );
+		s_slot9 = Hooks()->HookConsoleCommand( "slot9", HOOKED_slot9, &ORIG_slot9 );
+		s_cancelselect = Hooks()->HookConsoleCommand( "cancelselect", HOOKED_cancelselect, &ORIG_cancelselect );
+		s_invnext = Hooks()->HookConsoleCommand( "invnext", HOOKED_invnext, &ORIG_invnext );
+		s_invprev = Hooks()->HookConsoleCommand( "invprev", HOOKED_invprev, &ORIG_invprev );
+
+		Msg( xs( "Weapons Selection is OFF\n" ) );
+	}
+	else
+	{
+		Hooks()->UnhookConsoleCommand( s_slot10 );
+		Hooks()->UnhookConsoleCommand( s_slot1 );
+		Hooks()->UnhookConsoleCommand( s_slot2 );
+		Hooks()->UnhookConsoleCommand( s_slot3 );
+		Hooks()->UnhookConsoleCommand( s_slot4 );
+		Hooks()->UnhookConsoleCommand( s_slot5 );
+		Hooks()->UnhookConsoleCommand( s_slot6 );
+		Hooks()->UnhookConsoleCommand( s_slot7 );
+		Hooks()->UnhookConsoleCommand( s_slot8 );
+		Hooks()->UnhookConsoleCommand( s_slot9 );
+		Hooks()->UnhookConsoleCommand( s_cancelselect );
+		Hooks()->UnhookConsoleCommand( s_invnext );
+		Hooks()->UnhookConsoleCommand( s_invprev );
+
+		Msg( xs( "Weapons Selection is ON\n" ) );
+	}
+
+	trash = !trash;
+}
+
+DECLARE_FUNC( void, __cdecl, HOOKED_restart )
 {
 	if ( !Host_IsServerActive() )
 		return;
@@ -1389,14 +1595,14 @@ DECLARE_FUNC(void, __cdecl, HOOKED_restart)
 	ORIG_restart();
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_snapshot)
+DECLARE_FUNC( void, __cdecl, HOOKED_snapshot )
 {
 	g_bScreenshot = true;
 
 	ORIG_snapshot();
 }
 
-DECLARE_FUNC(void, __cdecl, HOOKED_screenshot)
+DECLARE_FUNC( void, __cdecl, HOOKED_screenshot )
 {
 	g_bScreenshot = true;
 
@@ -1407,7 +1613,7 @@ DECLARE_FUNC(void, __cdecl, HOOKED_screenshot)
 // Client DLL hooks
 //-----------------------------------------------------------------------------
 
-HOOK_RESULT CClientHooks::HUD_VidInit(void)
+HOOK_RESULT CClientHooks::HUD_VidInit( void )
 {
 	//g_Drawing.SetupFonts();
 
@@ -1429,49 +1635,49 @@ HOOK_RESULT CClientHooks::HUD_VidInit(void)
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_Redraw(float time, int intermission)
+HOOK_RESULT CClientHooks::HUD_Redraw( float time, int intermission )
 {
 	g_DynamicGlow.OnHUDRedraw();
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_UpdateClientData(int *changed, client_data_t *pcldata, float flTime)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_UpdateClientData( int *changed, client_data_t *pcldata, float flTime )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_PlayerMove(playermove_t *ppmove, int server)
+HOOK_RESULT CClientHooks::HUD_PlayerMove( playermove_t *ppmove, int server )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::IN_ActivateMouse(void)
+HOOK_RESULT CClientHooks::IN_ActivateMouse( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::IN_DeactivateMouse(void)
+HOOK_RESULT CClientHooks::IN_DeactivateMouse( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::IN_MouseEvent(int mstate)
+HOOK_RESULT CClientHooks::IN_MouseEvent( int mstate )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::IN_ClearStates(void)
+HOOK_RESULT CClientHooks::IN_ClearStates( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::IN_Accumulate(void)
+HOOK_RESULT CClientHooks::IN_Accumulate( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::CL_CreateMove(float frametime, usercmd_t *cmd, int active)
+HOOK_RESULT CClientHooks::CL_CreateMove( float frametime, usercmd_t *cmd, int active )
 {
 	static int s_nWaitFrames = 0;
 
@@ -1493,86 +1699,87 @@ HOOK_RESULT CClientHooks::CL_CreateMove(float frametime, usercmd_t *cmd, int act
 		SetCursorPos( Utils()->GetScreenWidth() / 2, Utils()->GetScreenHeight() / 2 );
 	}
 
-	g_EntityList.Update();
+	if ( !sc_dont_process_entities.GetBool() )
+		g_EntityList.Update();
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::CL_IsThirdPerson(int *thirdperson)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::CL_IsThirdPerson( int *thirdperson )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::KB_Find(kbutton_t **button, const char *name)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::KB_Find( kbutton_t **button, const char *name )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::CAM_Think(void)
+HOOK_RESULT CClientHooks::CAM_Think( void )
 {
 	s_bScrUpdateScreenNext = true;
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::V_CalcRefdef(ref_params_t *pparams)
+HOOK_RESULT CClientHooks::V_CalcRefdef( ref_params_t *pparams )
 {
 	s_iWaterLevel = pparams->waterlevel;
 
-	g_Aim.Pre_V_CalcRefdef(pparams);
-	g_Visual.V_CalcRefdef(pparams);
-	g_Bsp.V_CalcRefdef();
+	g_Aim.Pre_V_CalcRefdef( pparams );
+	g_Visual.V_CalcRefdef( pparams );
+	//g_Bsp.V_CalcRefdef();
 	g_SpeedrunTools.V_CalcRefDef();
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_AddEntity(int *visible, int type, cl_entity_t *ent, const char *modelname)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_AddEntity( int *visible, int type, cl_entity_t *ent, const char *modelname )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_CreateEntities(void)
+HOOK_RESULT CClientHooks::HUD_CreateEntities( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_DrawNormalTriangles(void)
+HOOK_RESULT CClientHooks::HUD_DrawNormalTriangles( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_DrawTransparentTriangles(void)
+HOOK_RESULT CClientHooks::HUD_DrawTransparentTriangles( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_StudioEvent(const mstudioevent_t *studio_event, const cl_entity_t *entity)
+HOOK_RESULT CClientHooks::HUD_StudioEvent( const mstudioevent_t *studio_event, const cl_entity_t *entity )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_PostRunCmd(local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed)
+HOOK_RESULT CClientHooks::HUD_PostRunCmd( local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_TxferLocalOverrides(entity_state_t *state, const clientdata_t *client)
+HOOK_RESULT CClientHooks::HUD_TxferLocalOverrides( entity_state_t *state, const clientdata_t *client )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_ProcessPlayerState(entity_state_t *dst, const entity_state_t *src)
+HOOK_RESULT CClientHooks::HUD_ProcessPlayerState( entity_state_t *dst, const entity_state_t *src )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_TxferPredictionData(entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd)
+HOOK_RESULT CClientHooks::HUD_TxferPredictionData( entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::Demo_ReadBuffer(int size, unsigned const char *buffer)
+HOOK_RESULT CClientHooks::Demo_ReadBuffer( int size, unsigned const char *buffer )
 {
 	if ( g_DemoMessage.ReadClientDLLMessage( size, const_cast<unsigned char *>( buffer ) ) )
 		return HOOK_STOP;
@@ -1580,17 +1787,17 @@ HOOK_RESULT CClientHooks::Demo_ReadBuffer(int size, unsigned const char *buffer)
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_ConnectionlessPacket(int *valid_packet, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_ConnectionlessPacket( int *valid_packet, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_GetHullBounds(int *hullnumber_exist, int hullnumber, float *mins, float *maxs)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_GetHullBounds( int *hullnumber_exist, int hullnumber, float *mins, float *maxs )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_Frame(double time)
+HOOK_RESULT CClientHooks::HUD_Frame( double time )
 {
 	if ( sc_force_highest_cheats_level.GetBool() )
 		*cheats_level = 255;
@@ -1598,7 +1805,7 @@ HOOK_RESULT CClientHooks::HUD_Frame(double time)
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_Key_Event(int *process_key, int down, int keynum, const char *pszCurrentBinding)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_Key_Event( int *process_key, int down, int keynum, const char *pszCurrentBinding )
 {
 	if ( g_bMenuEnabled && keynum != '`' ) // tilde
 	{
@@ -1606,11 +1813,11 @@ HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_Key_Event(int *process_key, int 
 		return HOOK_STOP;
 	}
 
-	g_VotePopup.OnKeyPress(down, keynum);
+	g_VotePopup.OnKeyPress( down, keynum );
 
 	if ( g_CamHack.IsEnabled() )
 	{
-		if ( g_CamHack.OnKeyPress(down, keynum) )
+		if ( g_CamHack.OnKeyPress( down, keynum ) )
 		{
 			*process_key = 0;
 			return HOOK_STOP;
@@ -1618,7 +1825,7 @@ HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_Key_Event(int *process_key, int 
 	}
 	else if ( g_Config.cvars.thirdperson && g_Config.cvars.thirdperson_edit_mode )
 	{
-		if ( g_ThirdPerson.OnKeyPress(down, keynum)) 
+		if ( g_ThirdPerson.OnKeyPress( down, keynum ) )
 		{
 			*process_key = 0;
 			return HOOK_STOP;
@@ -1628,27 +1835,27 @@ HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_Key_Event(int *process_key, int 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_TempEntUpdate(double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int (*Callback_AddVisibleEntity)(cl_entity_t *pEntity), void (*Callback_TempEntPlaySound)(TEMPENTITY *pTemp, float damp))
+HOOK_RESULT CClientHooks::HUD_TempEntUpdate( double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ), void ( *Callback_TempEntPlaySound )( TEMPENTITY *pTemp, float damp ) )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_GetUserEntity(cl_entity_t **ent, int index)
+HOOK_RESULT HOOK_RETURN_VALUE CClientHooks::HUD_GetUserEntity( cl_entity_t **ent, int index )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_VoiceStatus(int entindex, qboolean bTalking)
+HOOK_RESULT CClientHooks::HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_DirectorMessage(unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags)
+HOOK_RESULT CClientHooks::HUD_DirectorMessage( unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientHooks::HUD_ChatInputPosition(int *x, int *y)
+HOOK_RESULT CClientHooks::HUD_ChatInputPosition( int *x, int *y )
 {
 	return HOOK_CONTINUE;
 }
@@ -1657,85 +1864,85 @@ HOOK_RESULT CClientHooks::HUD_ChatInputPosition(int *x, int *y)
 // Client DLL post hooks
 //-----------------------------------------------------------------------------
 
-HOOK_RESULT CClientPostHooks::HUD_VidInit(void)
+HOOK_RESULT CClientPostHooks::HUD_VidInit( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_Redraw(float time, int intermission)
+HOOK_RESULT CClientPostHooks::HUD_Redraw( float time, int intermission )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_UpdateClientData(int *changed, client_data_t *pcldata, float flTime)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_UpdateClientData( int *changed, client_data_t *pcldata, float flTime )
 {
-	if (*changed)
+	if ( *changed )
 		g_flClientDataLastUpdate = flTime;
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_PlayerMove(playermove_t *ppmove, int server)
+HOOK_RESULT CClientPostHooks::HUD_PlayerMove( playermove_t *ppmove, int server )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::IN_ActivateMouse(void)
+HOOK_RESULT CClientPostHooks::IN_ActivateMouse( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::IN_DeactivateMouse(void)
+HOOK_RESULT CClientPostHooks::IN_DeactivateMouse( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::IN_MouseEvent(int mstate)
+HOOK_RESULT CClientPostHooks::IN_MouseEvent( int mstate )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::IN_ClearStates(void)
+HOOK_RESULT CClientPostHooks::IN_ClearStates( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::IN_Accumulate(void)
+HOOK_RESULT CClientPostHooks::IN_Accumulate( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::CL_CreateMove(float frametime, usercmd_t *cmd, int active)
+HOOK_RESULT CClientPostHooks::CL_CreateMove( float frametime, usercmd_t *cmd, int active )
 {
-	RunClientMoveHooks(frametime, cmd, active);
+	RunClientMoveHooks( frametime, cmd, active );
 
 	g_vecLastVirtualVA = cmd->viewangles;
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::CL_IsThirdPerson(int *thirdperson)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::CL_IsThirdPerson( int *thirdperson )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::KB_Find(kbutton_t **button, const char *name)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::KB_Find( kbutton_t **button, const char *name )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::CAM_Think(void)
+HOOK_RESULT CClientPostHooks::CAM_Think( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::V_CalcRefdef(ref_params_t *pparams)
+HOOK_RESULT CClientPostHooks::V_CalcRefdef( ref_params_t *pparams )
 {
-	g_CamHack.V_CalcRefdef(pparams);
-	g_ThirdPerson.V_CalcRefdef(pparams);
-	g_Misc.V_CalcRefdef(pparams);
-	g_Aim.Post_V_CalcRefdef(pparams);
-	g_FirstPersonRoaming.V_CalcRefdef(pparams);
+	g_CamHack.V_CalcRefdef( pparams );
+	g_ThirdPerson.V_CalcRefdef( pparams );
+	g_Misc.V_CalcRefdef( pparams );
+	g_Aim.Post_V_CalcRefdef( pparams );
+	g_FirstPersonRoaming.V_CalcRefdef( pparams );
 
 	memcpy( &refparams, pparams, sizeof( ref_params_t ) );
 
@@ -1752,104 +1959,104 @@ HOOK_RESULT CClientPostHooks::V_CalcRefdef(ref_params_t *pparams)
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_AddEntity(int *visible, int type, cl_entity_t *ent, const char *modelname)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_AddEntity( int *visible, int type, cl_entity_t *ent, const char *modelname )
 {
-	g_DynamicGlow.OnAddEntityPost(*visible, type, ent, modelname);
-	g_Misc.OnAddEntityPost(*visible, type, ent, modelname);
+	g_DynamicGlow.OnAddEntityPost( *visible, type, ent, modelname );
+	g_Misc.OnAddEntityPost( *visible, type, ent, modelname );
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_CreateEntities(void)
+HOOK_RESULT CClientPostHooks::HUD_CreateEntities( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_DrawNormalTriangles(void)
+HOOK_RESULT CClientPostHooks::HUD_DrawNormalTriangles( void )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_DrawTransparentTriangles(void)
+HOOK_RESULT CClientPostHooks::HUD_DrawTransparentTriangles( void )
 {
-	//g_Bsp.OnRenderScene();
+	g_Bsp.HUD_DrawTransparentTriangles();
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_StudioEvent(const mstudioevent_t *studio_event, const cl_entity_t *entity)
+HOOK_RESULT CClientPostHooks::HUD_StudioEvent( const mstudioevent_t *studio_event, const cl_entity_t *entity )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_PostRunCmd(local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed)
+HOOK_RESULT CClientPostHooks::HUD_PostRunCmd( local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed )
 {
-	g_Misc.HUD_PostRunCmd(from, to, cmd, runfuncs, time, random_seed);
+	g_Misc.HUD_PostRunCmd( from, to, cmd, runfuncs, time, random_seed );
 
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_TxferLocalOverrides(entity_state_t *state, const clientdata_t *client)
+HOOK_RESULT CClientPostHooks::HUD_TxferLocalOverrides( entity_state_t *state, const clientdata_t *client )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_ProcessPlayerState(entity_state_t *dst, const entity_state_t *src)
+HOOK_RESULT CClientPostHooks::HUD_ProcessPlayerState( entity_state_t *dst, const entity_state_t *src )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_TxferPredictionData(entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd)
+HOOK_RESULT CClientPostHooks::HUD_TxferPredictionData( entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::Demo_ReadBuffer(int size, unsigned const char *buffer)
+HOOK_RESULT CClientPostHooks::Demo_ReadBuffer( int size, unsigned const char *buffer )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_ConnectionlessPacket(int *valid_packet, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_ConnectionlessPacket( int *valid_packet, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_GetHullBounds(int *hullnumber_exist, int hullnumber, float *mins, float *maxs)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_GetHullBounds( int *hullnumber_exist, int hullnumber, float *mins, float *maxs )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_Frame(double time)
+HOOK_RESULT CClientPostHooks::HUD_Frame( double time )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_Key_Event(int *process_key, int down, int keynum, const char *pszCurrentBinding)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_Key_Event( int *process_key, int down, int keynum, const char *pszCurrentBinding )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_TempEntUpdate(double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int (*Callback_AddVisibleEntity)(cl_entity_t *pEntity), void (*Callback_TempEntPlaySound)(TEMPENTITY *pTemp, float damp))
+HOOK_RESULT CClientPostHooks::HUD_TempEntUpdate( double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ), void ( *Callback_TempEntPlaySound )( TEMPENTITY *pTemp, float damp ) )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_GetUserEntity(cl_entity_t **ent, int index)
+HOOK_RESULT HOOK_RETURN_VALUE CClientPostHooks::HUD_GetUserEntity( cl_entity_t **ent, int index )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_VoiceStatus(int entindex, qboolean bTalking)
+HOOK_RESULT CClientPostHooks::HUD_VoiceStatus( int entindex, qboolean bTalking )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_DirectorMessage(unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags)
+HOOK_RESULT CClientPostHooks::HUD_DirectorMessage( unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags )
 {
 	return HOOK_CONTINUE;
 }
 
-HOOK_RESULT CClientPostHooks::HUD_ChatInputPosition(int *x, int *y)
+HOOK_RESULT CClientPostHooks::HUD_ChatInputPosition( int *x, int *y )
 {
 	return HOOK_CONTINUE;
 }
@@ -1890,6 +2097,7 @@ CHooksModule::CHooksModule()
 	m_pfnMod_LeafPVS = NULL;
 	m_pfnCon_NXPrintf = NULL;
 	m_pfnCL_FlushEntityPacket = NULL;
+	m_pfnCL_EmitEntities = NULL;
 	m_pfnCGame__SleepUntilInput = NULL;
 
 	m_hNetchan_CanPacket = 0;
@@ -1914,27 +2122,27 @@ bool CHooksModule::Load()
 	ud_t inst;
 	bool ScanOK = true;
 
-	default_fov = CVar()->FindCvar( ( "default_fov"));
-	hud_draw = CVar()->FindCvar( ( "hud_draw"));
+	default_fov = CVar()->FindCvar( xs( "default_fov" ) );
+	hud_draw = CVar()->FindCvar( xs( "hud_draw" ) );
 
-	m_pfnglBegin = Sys_GetProcAddress(Sys_GetModuleHandle( ( "opengl32.dll")), ("glBegin"));
-	m_pfnglColor4f = Sys_GetProcAddress(Sys_GetModuleHandle( ( "opengl32.dll")), ("glColor4f"));
+	m_pfnglBegin = Sys_GetProcAddress( Sys_GetModuleHandle( xs( "opengl32.dll" ) ), ( "glBegin" ) );
+	m_pfnglColor4f = Sys_GetProcAddress( Sys_GetModuleHandle( xs( "opengl32.dll" ) ), ( "glColor4f" ) );
 
 	if ( !default_fov )
 	{
-		Warning( ( "Can't find cvar default_fov\n"));
+		Warning( xs( "Can't find cvar default_fov\n" ) );
 		return false;
 	}
 
 	if ( !m_pfnglBegin )
 	{
-		Warning( ( "Couldn't find function \"glBegin\"\n"));
+		Warning( xs( "Couldn't find function \"glBegin\"\n" ) );
 		return false;
 	}
 
 	if ( !m_pfnglColor4f )
 	{
-		Warning( ( "Couldn't find function \"glColor4f\"\n"));
+		Warning( xs( "Couldn't find function \"glColor4f\"\n" ) );
 		return false;
 	}
 
@@ -1950,7 +2158,7 @@ bool CHooksModule::Load()
 
 	if ( m_pfnSPR_Set == NULL )
 	{
-		Warning( ( "Couldn't get function \"SPR_Set\"\n") );
+		Warning( xs( "Couldn't get function \"SPR_Set\"\n" ) );
 		return false;
 	}
 
@@ -1968,6 +2176,7 @@ bool CHooksModule::Load()
 	auto fpfnMod_LeafPVS = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::Mod_LeafPVS );
 	auto fpfnCon_NXPrintf = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::Con_NXPrintf );
 	auto fpfnCL_FlushEntityPacket = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::CL_FlushEntityPacket );
+	auto fpfnCL_EmitEntities = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::CL_EmitEntities );
 	auto fpfnCGame__SleepUntilInput = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::CGame__SleepUntilInput );
 	auto fpfnScaleColors = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::ScaleColors );
 	auto fpfnScaleColors_RGBA = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::ScaleColors_RGBA );
@@ -1979,138 +2188,144 @@ bool CHooksModule::Load()
 
 	if ( !( m_pfnIN_Move = fpfnIN_Move.get() ) )
 	{
-		Warning( ( "Couldn't find function \"IN_Move\"\n" ) );
+		Warning( xs( "Couldn't find function \"IN_Move\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnCHud__Think = fpfnCHud__Think.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CHud::Think\"\n" ) );
+		Warning( xs( "Couldn't find function \"CHud::Think\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( g_pfnCHudBaseTextBlock__Print = m_pfnCHudBaseTextBlock__Print = fpfnCHudBaseTextBlock__Print.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CHudBaseTextBlock::Print\"\n" ) );
+		Warning( xs( "Couldn't find function \"CHudBaseTextBlock::Print\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	if ( !( m_pfnCClient_SoundEngine__PlayFMODSound = fpfnCClient_SoundEngine__PlayFMODSound.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CClient_SoundEngine::PlayFMODSound\"\n" ) );
+		Warning( xs( "Couldn't find function \"CClient_SoundEngine::PlayFMODSound\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnNetchan_CanPacket = fpfnNetchan_CanPacket.get() ) )
 	{
-		Warning( ( "Couldn't find function \"Netchan_CanPacket\"\n" ) );
+		Warning( xs( "Couldn't find function \"Netchan_CanPacket\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnSCR_UpdateScreen = fpfnSCR_UpdateScreen.get() ) )
 	{
-		Warning( ( "Couldn't find function \"SCR_UpdateScreen\"\n" ) );
+		Warning( xs( "Couldn't find function \"SCR_UpdateScreen\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnV_RenderView = fpfnV_RenderView.get() ) )
 	{
-		Warning( ( "Couldn't find function \"V_RenderView\"\n" ) );
+		Warning( xs( "Couldn't find function \"V_RenderView\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnR_SetupFrame = fpfnR_SetupFrame.get() ) )
 	{
-		Warning( ( "Couldn't find function \"R_SetupFrame\"\n" ) );
+		Warning( xs( "Couldn't find function \"R_SetupFrame\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnR_ForceCVars = fpfnR_ForceCVars.get() ) )
 	{
-		Warning( ( "Couldn't find function \"R_ForceCVars\"\n" ) );
+		Warning( xs( "Couldn't find function \"R_ForceCVars\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnCRC_MapFile = fpfnCRC_MapFile.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CRC_MapFile\"\n" ) );
+		Warning( xs( "Couldn't find function \"CRC_MapFile\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnReadWaveFile = fpfnReadWaveFile.get() ) )
 	{
-		Warning( ( "Couldn't find function \"ReadWaveFile\"\n" ) );
+		Warning( xs( "Couldn't find function \"ReadWaveFile\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	if ( !( m_pfnMod_LeafPVS = fpfnMod_LeafPVS.get() ) )
 	{
-		Warning( ( "Couldn't find function \"Mod_LeafPVS\"\n" ) );
+		Warning( xs( "Couldn't find function \"Mod_LeafPVS\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	if ( !( m_pfnCon_NXPrintf = fpfnCon_NXPrintf.get() ) )
 	{
-		Warning( ( "Couldn't find function \"Con_NXPrintf\"\n" ) );
+		Warning( xs( "Couldn't find function \"Con_NXPrintf\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	if ( !( m_pfnCL_FlushEntityPacket = fpfnCL_FlushEntityPacket.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CL_FlushEntityPacket\"\n" ) );
+		Warning( xs( "Couldn't find function \"CL_FlushEntityPacket\"\n" ) );
 		ScanOK = false;
 	}
-	
+
+	if ( !( m_pfnCL_EmitEntities = fpfnCL_EmitEntities.get() ) )
+	{
+		Warning( xs( "Couldn't find function \"CL_EmitEntities\"\n" ) );
+		ScanOK = false;
+	}
+
 	if ( !( m_pfnCGame__SleepUntilInput = fpfnCGame__SleepUntilInput.get() ) )
 	{
-		Warning( ( "Couldn't find function \"CGame::SleepUntilInput\"\n" ) );
+		Warning( xs( "Couldn't find function \"CGame::SleepUntilInput\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnScaleColors = fpfnScaleColors.get() ) )
 	{
-		Warning( ( "Couldn't find function \"ScaleColors\"\n" ) );
+		Warning( xs( "Couldn't find function \"ScaleColors\"\n" ) );
 		ScanOK = false;
 	}
 
 	if ( !( m_pfnScaleColors_RGBA = fpfnScaleColors_RGBA.get() ) )
 	{
-		Warning( ( "Couldn't find function \"ScaleColors_RGBA\"\n" ) );
+		Warning( xs( "Couldn't find function \"ScaleColors_RGBA\"\n" ) );
 		ScanOK = false;
 	}
 
 	void *pfnPM_PlayerTrace;
 	if ( !( pfnPM_PlayerTrace = fpfnPM_PlayerTrace.get() ) )
 	{
-		Warning( ( "Couldn't find function \"_PM_PlayerTrace\"\n" ) );
+		Warning( xs( "Couldn't find function \"_PM_PlayerTrace\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	void *pfnVID_TakeSnapshot;
 	if ( !( pfnVID_TakeSnapshot = fpfnVID_TakeSnapshot.get() ) )
 	{
-		Warning( ( "Couldn't find function \"VID_TakeSnapshot\"\n" ) );
+		Warning( xs( "Couldn't find function \"VID_TakeSnapshot\"\n" ) );
 		ScanOK = false;
 	}
 
 	void *pclc_buffer;
 	if ( ( pclc_buffer = fpclc_buffer.get() ) == NULL )
 	{
-		Warning( ( "Failed to locate \"clc_buffer\"\n" ) );
+		Warning( xs( "Failed to locate \"clc_buffer\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	void *pcheats_level;
 	if ( ( pcheats_level = fcheats_level.get() ) == NULL )
 	{
-		Warning( ( "Failed to locate \"cheats_level\"\n" ) );
+		Warning( xs( "Failed to locate \"cheats_level\"\n" ) );
 		ScanOK = false;
 	}
-	
+
 	void *pfnEngine;
 	if ( ( pfnEngine = fg_pEngine.get() ) == NULL )
 	{
-		Warning( ( "Failed to locate \"g_pEngine\"\n" ) );
+		Warning( xs( "Failed to locate \"g_pEngine\"\n" ) );
 		ScanOK = false;
 	}
 
@@ -2123,7 +2338,7 @@ bool CHooksModule::Load()
 	clc_buffer = *reinterpret_cast<sizebuf_t **>( (unsigned char *)pclc_buffer + 1 );
 	cheats_level = *reinterpret_cast<int **>( (unsigned char *)pcheats_level + 2 );
 	g_pEngine = **reinterpret_cast<CEngine ***>( (unsigned char *)pfnEngine + 2 );
-	
+
 	//MemoryUtils()->InitDisasm( &inst, g_pEngineFuncs->GetCvarPointer, 32, 17 );
 
 	//if ( MemoryUtils()->Disassemble(&inst) )
@@ -2142,54 +2357,58 @@ bool CHooksModule::Load()
 
 	unsigned char *pfnHookEvent = (unsigned char *)g_pEngineFuncs->HookEvent;
 
-	MemoryUtils()->InitDisasm(&inst, pfnHookEvent, 32, 16);
+	MemoryUtils()->InitDisasm( &inst, pfnHookEvent, 32, 16 );
 
-	if ( MemoryUtils()->Disassemble(&inst) )
+	if ( MemoryUtils()->Disassemble( &inst ) )
 	{
 		if ( inst.mnemonic == UD_Ijmp )
 		{
-			DEFINE_PATTERN(g_pEventHooks_sig, "56 8B 35 ? ? ? ? 85 F6 74 ? 8B 46 04");
+			DEFINE_PATTERN( g_pEventHooks_sig, "56 8B 35 ? ? ? ? 85 F6 74 ? 8B 46 04" );
 
 			void *pHookEvent = MemoryUtils()->CalcAbsoluteAddress( pfnHookEvent );
 			pHookEvent = MemoryUtils()->FindPatternWithin( SvenModAPI()->Modules()->Hardware, g_pEventHooks_sig, pHookEvent, (unsigned char *)pHookEvent + 128 );
 
 			if ( pHookEvent != NULL )
 			{
-				MemoryUtils()->InitDisasm(&inst, pHookEvent, 32, 32);
+				MemoryUtils()->InitDisasm( &inst, pHookEvent, 32, 32 );
 
 				do
 				{
-					if ( inst.mnemonic == UD_Imov && inst.operand[0].type == UD_OP_REG && inst.operand[0].base == UD_R_ESI && inst.operand[1].type == UD_OP_MEM )
+					if ( inst.mnemonic == UD_Imov && inst.operand[ 0 ].type == UD_OP_REG && inst.operand[ 0 ].base == UD_R_ESI && inst.operand[ 1 ].type == UD_OP_MEM )
 					{
-						g_pEventHooks = reinterpret_cast<event_t *>(inst.operand[1].lval.udword);
+						g_pEventHooks = reinterpret_cast<event_t *>( inst.operand[ 1 ].lval.udword );
 						break;
 					}
 
-				} while ( MemoryUtils()->Disassemble(&inst) );
+				} while ( MemoryUtils()->Disassemble( &inst ) );
 
 				if ( g_pEventHooks == NULL )
 				{
-					Warning( ( "Failed to get \"g_pEventHooks\" #2\n"));
+					Warning( xs( "Failed to get \"g_pEventHooks\" #2\n" ) );
 					return false;
 				}
 			}
 			else
 			{
-				Warning( ( "Failed to get \"g_pEventHooks\"\n"));
+				Warning( xs( "Failed to get \"g_pEventHooks\"\n" ) );
 				return false;
 			}
 		}
 		else
 		{
-			Warning( ( "Couldn't locate JMP op-code on function \"HookEvent\" #2\n"));
+			Warning( xs( "Couldn't locate JMP op-code on function \"HookEvent\" #2\n" ) );
 			return false;
 		}
 	}
 	else
 	{
-		Warning( ( "Couldn't locate JMP op-code on function \"HookEvent\"\n"));
+		Warning( xs( "Couldn't locate JMP op-code on function \"HookEvent\"\n" ) );
 		return false;
 	}
+
+	cl__validsequence = *reinterpret_cast<unsigned int **>( (unsigned char *)m_pfnCL_EmitEntities + 0x23 );
+	cl__frames = *reinterpret_cast<unsigned int **>( (unsigned char *)m_pfnCL_EmitEntities + 0x30 );
+	cl__frame__valid = *reinterpret_cast<unsigned int **>( (unsigned char *)m_pfnCL_EmitEntities + 0x3A );
 
 	return true;
 }
@@ -2220,6 +2439,7 @@ void CHooksModule::PostLoad()
 	m_hMod_LeafPVS = DetoursAPI()->DetourFunction( m_pfnMod_LeafPVS, HOOKED_Mod_LeafPVS, GET_FUNC_PTR( ORIG_Mod_LeafPVS ) );
 	m_hCon_NXPrintf = DetoursAPI()->DetourFunction( m_pfnCon_NXPrintf, HOOKED_Con_NXPrintf, GET_FUNC_PTR( ORIG_Con_NXPrintf ) );
 	m_hCL_FlushEntityPacket = DetoursAPI()->DetourFunction( m_pfnCL_FlushEntityPacket, HOOKED_CL_FlushEntityPacket, GET_FUNC_PTR( ORIG_CL_FlushEntityPacket ) );
+	m_hCL_EmitEntities = DetoursAPI()->DetourFunction( m_pfnCL_EmitEntities, HOOKED_CL_EmitEntities, GET_FUNC_PTR( ORIG_CL_EmitEntities ) );
 	m_hCGame__SleepUntilInput = DetoursAPI()->DetourFunction( m_pfnCGame__SleepUntilInput, HOOKED_CGame__SleepUntilInput, GET_FUNC_PTR( ORIG_CGame__SleepUntilInput ) );
 
 	m_hStudioSetupBones = DetoursAPI()->DetourVirtualFunction( g_pStudioRenderer, 7, HOOKED_StudioSetupBones, GET_FUNC_PTR( ORIG_StudioSetupBones ) );
@@ -2231,11 +2451,11 @@ void CHooksModule::PostLoad()
 	m_hNetMsgHook_SendCvarValue2 = Hooks()->HookNetworkMessage( SVC_SENDCVARVALUE2, HOOKED_NetMsgHook_SendCvarValue2, &ORIG_NetMsgHook_SendCvarValue2 );
 	m_hNetMsgHook_TempEntity = Hooks()->HookNetworkMessage( SVC_TEMPENTITY, HOOKED_NetMsgHook_TempEntity, &ORIG_NetMsgHook_TempEntity );
 
-	m_hUserMsgHook_SayText = Hooks()->HookUserMessage( "SayText", HOOKED_UserMsgHook_SayText, &ORIG_UserMsgHook_SayText);
+	m_hUserMsgHook_SayText = Hooks()->HookUserMessage( xs( "SayText" ), HOOKED_UserMsgHook_SayText, &ORIG_UserMsgHook_SayText );
 
-	m_hRestartCmd = Hooks()->HookConsoleCommand( ( "restart"), HOOKED_restart, &ORIG_restart );
-	m_hSnapshotCmd = Hooks()->HookConsoleCommand( ( "snapshot"), HOOKED_snapshot, &ORIG_snapshot );
-	m_hScreenshotCmd = Hooks()->HookConsoleCommand( ( "screenshot"), HOOKED_screenshot, &ORIG_screenshot );
+	m_hRestartCmd = Hooks()->HookConsoleCommand( xs( "restart" ), HOOKED_restart, &ORIG_restart );
+	m_hSnapshotCmd = Hooks()->HookConsoleCommand( xs( "snapshot" ), HOOKED_snapshot, &ORIG_snapshot );
+	m_hScreenshotCmd = Hooks()->HookConsoleCommand( xs( "screenshot" ), HOOKED_screenshot, &ORIG_screenshot );
 
 	Hooks()->RegisterClientHooks( &g_ClientHooks );
 	Hooks()->RegisterClientPostHooks( &g_ClientPostHooks );
@@ -2266,6 +2486,7 @@ void CHooksModule::Unload()
 	DetoursAPI()->RemoveDetour( m_hMod_LeafPVS );
 	DetoursAPI()->RemoveDetour( m_hCon_NXPrintf );
 	DetoursAPI()->RemoveDetour( m_hCL_FlushEntityPacket );
+	DetoursAPI()->RemoveDetour( m_hCL_EmitEntities );
 	DetoursAPI()->RemoveDetour( m_hCGame__SleepUntilInput );
 
 	DetoursAPI()->RemoveDetour( m_hStudioSetupBones );

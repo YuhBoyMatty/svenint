@@ -613,6 +613,9 @@ bool CConfig::Load()
 			ConfigManager()->ImportParam( "ShowTriggerTeleport", cvars.show_trigger_teleport );
 			ConfigManager()->ImportParam( "ShowTriggerChangelevel", cvars.show_trigger_changelevel );
 			ConfigManager()->ImportParam( "ShowTriggerAntirush", cvars.show_trigger_antirush );
+			ConfigManager()->ImportParam( "TriggerPulsate", cvars.trigger_pulsate );
+			ConfigManager()->ImportParam( "TriggerPulsateOffset", cvars.trigger_pulsate_offset );
+			ConfigManager()->ImportParam( "TriggerPulsateSpeed", cvars.trigger_pulsate_speed );
 			ConfigManager()->ImportParam( "TriggerOnceColor_R", cvars.trigger_once_color[ 0 ] );
 			ConfigManager()->ImportParam( "TriggerOnceColor_G", cvars.trigger_once_color[ 1 ] );
 			ConfigManager()->ImportParam( "TriggerOnceColor_B", cvars.trigger_once_color[ 2 ] );
@@ -1522,6 +1525,9 @@ void CConfig::Save()
 			ConfigManager()->ExportParam( "ShowTriggerTeleport", cvars.show_trigger_teleport );
 			ConfigManager()->ExportParam( "ShowTriggerChangelevel", cvars.show_trigger_changelevel );
 			ConfigManager()->ExportParam( "ShowTriggerAntirush", cvars.show_trigger_antirush );
+			ConfigManager()->ExportParam( "TriggerPulsate", cvars.trigger_pulsate );
+			ConfigManager()->ExportParam( "TriggerPulsateOffset", cvars.trigger_pulsate_offset );
+			ConfigManager()->ExportParam( "TriggerPulsateSpeed", cvars.trigger_pulsate_speed );
 			ConfigManager()->ExportParam( "TriggerOnceColor_R", cvars.trigger_once_color[ 0 ] );
 			ConfigManager()->ExportParam( "TriggerOnceColor_G", cvars.trigger_once_color[ 1 ] );
 			ConfigManager()->ExportParam( "TriggerOnceColor_B", cvars.trigger_once_color[ 2 ] );

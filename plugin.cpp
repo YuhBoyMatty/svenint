@@ -2,6 +2,8 @@
 #error "RTTI enabled"
 #endif
 
+#define AUTOUPDATE_ENABLE ( 0 )
+
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -272,13 +274,17 @@ void CSvenInternal::PostLoad(bool bGlobalLoad)
 
 	g_CamHack.Init();
 
+#if AUTOUPDATE_ENABLE
 	g_hAutoUpdateThread = AutoUpdate();
+#endif
 }
 
 void CSvenInternal::Unload(void)
 {
+#if AUTOUPDATE_ENABLE
 	if ( g_bAutoUpdateInProcess )
 		CloseHandle( (HANDLE)g_hAutoUpdateThread );
+#endif
 
 	GL_Shutdown();
 
@@ -290,7 +296,9 @@ void CSvenInternal::Unload(void)
 
 	ConVar_Unregister();
 
+#if AUTOUPDATE_ENABLE
 	AutoUpdate_ExtractAndLaunch();
+#endif
 }
 
 bool CSvenInternal::Pause(void)

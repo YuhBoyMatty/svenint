@@ -312,14 +312,18 @@ public:
 		bool show_trigger_changelevel = true;
 		bool show_trigger_antirush = true;
 
-		float trigger_once_color[4] = { 1.0f, 1.0f, 0.0f, 0.25f };
-		float trigger_multiple_color[4] = { 1.0f, 1.0f, 0.0f, 0.25f };
-		float trigger_hurt_color[4] = { 1.0f, 0.0f, 0.0f, 0.25f };
-		float trigger_hurt_heal_color[4] = { 0.0f, 1.0f, 0.0f, 0.25f };
-		float trigger_push_color[4] = { 1.0f, 0.5f, 0.0f, 0.25f };
-		float trigger_teleport_color[4] = { 0.9084f, 0.0f, 0.9084f, 0.25f };
-		float trigger_changelevel_color[4] = { 1.0f, 1.0f, 1.0f, 0.25f };
-		float trigger_antirush_color[4] = { 0.0f, 0.25f, 1.0f, 0.25f };
+		bool trigger_pulsate = true;
+		float trigger_pulsate_offset = 5.f;
+		float trigger_pulsate_speed = 8.f;
+
+		float trigger_once_color[ 4 ] = { 1.0f, 1.0f, 0.0f, 32.f / 255.f };
+		float trigger_multiple_color[ 4 ] = { 1.0f, 1.0f, 0.0f, 32.f / 255.f };
+		float trigger_hurt_color[ 4 ] = { 1.0f, 0.0f, 0.0f, 32.f / 255.f };
+		float trigger_hurt_heal_color[ 4 ] = { 0.0f, 1.0f, 0.0f, 32.f / 255.f };
+		float trigger_push_color[ 4 ] = { 1.0f, 0.5f, 0.0f, 32.f / 255.f };
+		float trigger_teleport_color[ 4 ] = { 0.9084f, 0.0f, 0.9084f, 32.f / 255.f };
+		float trigger_changelevel_color[ 4 ] = { 1.0f, 1.0f, 1.0f, 32.f / 255.f };
+		float trigger_antirush_color[ 4 ] = { 0.0f, 0.25f, 1.0f, 32.f / 255.f };
 
 		//-----------------------------------------------------------------------------
 		// Flashlight

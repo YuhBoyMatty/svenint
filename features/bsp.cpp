@@ -30,9 +30,9 @@
 
 struct membuf : std::streambuf
 {
-	membuf(unsigned char *begin, int len)
+	membuf( unsigned char *begin, int len )
 	{
-		this->setg((char *)begin, (char *)begin, (char *)begin + len);
+		this->setg( (char *)begin, (char *)begin, (char *)begin + len );
 	}
 };
 
@@ -58,107 +58,107 @@ static std::vector<FuncWall> vFuncWalls;
 class CDrawTransModel : public IDrawContext
 {
 public:
-	CDrawTransModel(int modelindex);
+	CDrawTransModel( int modelindex );
 
-	virtual void	Draw(void);
-	virtual bool	ShouldStopDraw(void);
+	virtual void	Draw( void );
+	virtual bool	ShouldStopDraw( void );
 
-	virtual const Vector &GetDrawOrigin(void) const;
+	virtual const Vector &GetDrawOrigin( void ) const;
 
 private:
 	int m_modelindex;
 	Vector m_vecMidPoint;
 };
 
-CDrawTransModel::CDrawTransModel(int modelindex)
+CDrawTransModel::CDrawTransModel( int modelindex )
 {
 	m_modelindex = modelindex;
 
 	bspheader_t *header = (bspheader_t *)bsp;
 
-	lump_t *lump_models = &header->lumps[LUMP_MODELS];
+	lump_t *lump_models = &header->lumps[ LUMP_MODELS ];
 
-	bspmodel_t *models = (bspmodel_t *)(bsp + lump_models->fileofs);
-	int models_count = lump_models->filelen / sizeof(bspmodel_t);
+	bspmodel_t *models = (bspmodel_t *)( bsp + lump_models->fileofs );
+	int models_count = lump_models->filelen / sizeof( bspmodel_t );
 
-	bspmodel_t *model = &models[m_modelindex];
+	bspmodel_t *model = &models[ m_modelindex ];
 
 	Vector vecOrigin = *(Vector *)model->origin;
 	Vector vecMins = *(Vector *)model->mins;
 	Vector vecMaxs = *(Vector *)model->maxs;
 
 	m_vecMidPoint = vecOrigin + vecMins;
-	m_vecMidPoint += ((vecOrigin + vecMaxs) - (vecOrigin + vecMins)) * 0.5f;
+	m_vecMidPoint += ( ( vecOrigin + vecMaxs ) - ( vecOrigin + vecMins ) ) * 0.5f;
 }
 
 void CDrawTransModel::Draw()
 {
-	glEnable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable( GL_BLEND );
+	glDisable( GL_ALPHA_TEST );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-	glDisable(GL_TEXTURE_2D);
+	glDisable( GL_TEXTURE_2D );
 
 	bspheader_t *header = (bspheader_t *)bsp;
 
-	lump_t *lump_models = &header->lumps[LUMP_MODELS];
-	lump_t *lump_nodes = &header->lumps[LUMP_NODES];
-	lump_t *lump_faces = &header->lumps[LUMP_FACES];
-	lump_t *lump_edges = &header->lumps[LUMP_EDGES];
-	lump_t *lump_surfedges = &header->lumps[LUMP_SURFEDGES];
-	lump_t *lump_vertexes = &header->lumps[LUMP_VERTEXES];
+	lump_t *lump_models = &header->lumps[ LUMP_MODELS ];
+	lump_t *lump_nodes = &header->lumps[ LUMP_NODES ];
+	lump_t *lump_faces = &header->lumps[ LUMP_FACES ];
+	lump_t *lump_edges = &header->lumps[ LUMP_EDGES ];
+	lump_t *lump_surfedges = &header->lumps[ LUMP_SURFEDGES ];
+	lump_t *lump_vertexes = &header->lumps[ LUMP_VERTEXES ];
 
-	bspmodel_t *models = (bspmodel_t *)(bsp + lump_models->fileofs);
-	int models_count = lump_models->filelen / sizeof(bspmodel_t);
+	bspmodel_t *models = (bspmodel_t *)( bsp + lump_models->fileofs );
+	int models_count = lump_models->filelen / sizeof( bspmodel_t );
 
-	bspnode_t *nodes = (bspnode_t *)(bsp + lump_nodes->fileofs);
-	int nodes_count = lump_nodes->filelen / sizeof(bspnode_t);
+	bspnode_t *nodes = (bspnode_t *)( bsp + lump_nodes->fileofs );
+	int nodes_count = lump_nodes->filelen / sizeof( bspnode_t );
 
-	bspface_t *faces = (bspface_t *)(bsp + lump_faces->fileofs);
-	int faces_count = lump_faces->filelen / sizeof(bspface_t);
+	bspface_t *faces = (bspface_t *)( bsp + lump_faces->fileofs );
+	int faces_count = lump_faces->filelen / sizeof( bspface_t );
 
-	bspedge_t *edges = (bspedge_t *)(bsp + lump_edges->fileofs);
-	int edges_count = lump_edges->filelen / sizeof(bspedge_t);
+	bspedge_t *edges = (bspedge_t *)( bsp + lump_edges->fileofs );
+	int edges_count = lump_edges->filelen / sizeof( bspedge_t );
 
-	uint32_t *surfedges = (uint32_t *)(bsp + lump_surfedges->fileofs);
-	int surfedges_count = lump_surfedges->filelen / sizeof(uint32_t);
+	uint32_t *surfedges = (uint32_t *)( bsp + lump_surfedges->fileofs );
+	int surfedges_count = lump_surfedges->filelen / sizeof( uint32_t );
 
-	bspvertex_t *vertexes = (bspvertex_t *)(bsp + lump_vertexes->fileofs);
-	int vertexes_count = lump_vertexes->filelen / sizeof(bspvertex_t);
+	bspvertex_t *vertexes = (bspvertex_t *)( bsp + lump_vertexes->fileofs );
+	int vertexes_count = lump_vertexes->filelen / sizeof( bspvertex_t );
 
-	bspmodel_t *model = &models[m_modelindex];
+	bspmodel_t *model = &models[ m_modelindex ];
 
-	glColor4f(1.f, 1.f, 1.f, 0.6f);
+	glColor4f( 1.f, 1.f, 1.f, 0.6f );
 
-	for (int i = 0; i < model->numfaces; i++)
+	for ( int i = 0; i < model->numfaces; i++ )
 	{
 		int facenum = model->firstface + i;
-		bspface_t *face = &faces[facenum];
+		bspface_t *face = &faces[ facenum ];
 
-		glBegin(GL_TRIANGLE_FAN);
+		glBegin( GL_TRIANGLE_FAN );
 		//glBegin(GL_TRIANGLES);
 
-		for (int j = 0; j < face->numedges; j++)
+		for ( int j = 0; j < face->numedges; j++ )
 		{
-			int32_t edgenum = surfedges[face->firstedge + j];
-			bspedge_t *edge = &edges[abs(edgenum)];
+			int32_t edgenum = surfedges[ face->firstedge + j ];
+			bspedge_t *edge = &edges[ abs( edgenum ) ];
 
-			int edgevertexnum = (edgenum >= 0 ? 1 : 0);
-			int vertexnum = edge->v[edgevertexnum];
+			int edgevertexnum = ( edgenum >= 0 ? 1 : 0 );
+			int vertexnum = edge->v[ edgevertexnum ];
 
-			Vector vertex = *(Vector *)&vertexes[vertexnum];
+			Vector vertex = *(Vector *)&vertexes[ vertexnum ];
 
 			//Render()->DrawPoint(vertex, { 255, 255, 255, 255 }, 24.f, 10.f);
-			glVertex3f(vertex.x, vertex.y, vertex.z);
+			glVertex3f( vertex.x, vertex.y, vertex.z );
 		}
 
 		glEnd();
 	}
 
-	glEnable(GL_TEXTURE_2D);
+	glEnable( GL_TEXTURE_2D );
 
-	glDisable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
+	glDisable( GL_BLEND );
+	glDisable( GL_ALPHA_TEST );
 }
 
 bool CDrawTransModel::ShouldStopDraw()
@@ -171,13 +171,13 @@ const Vector &CDrawTransModel::GetDrawOrigin() const
 	return m_vecMidPoint;
 }
 
-CON_COMMAND(sc_ultra_test, "")
+CON_COMMAND( sc_ultra_test, "" )
 {
-	if (args.ArgC() > 1)
+	if ( args.ArgC() > 1 )
 	{
-		int modelindex = atoi(args[1]);
+		int modelindex = atoi( args[ 1 ] );
 
-		Render()->AddDrawContext( new CDrawTransModel(modelindex), 5.f );
+		Render()->AddDrawContext( new CDrawTransModel( modelindex ), 5.f );
 
 		//model_t *pModel = g_pEngineStudio->GetModelByIndex( modelindex );
 
@@ -216,47 +216,47 @@ CON_COMMAND(sc_ultra_test, "")
 
 		bspheader_t *header = (bspheader_t *)bsp;
 
-		lump_t *lump_models = &header->lumps[LUMP_MODELS];
-		lump_t *lump_nodes = &header->lumps[LUMP_NODES];
-		lump_t *lump_faces = &header->lumps[LUMP_FACES];
-		lump_t *lump_edges = &header->lumps[LUMP_EDGES];
-		lump_t *lump_surfedges = &header->lumps[LUMP_SURFEDGES];
-		lump_t *lump_vertexes = &header->lumps[LUMP_VERTEXES];
+		lump_t *lump_models = &header->lumps[ LUMP_MODELS ];
+		lump_t *lump_nodes = &header->lumps[ LUMP_NODES ];
+		lump_t *lump_faces = &header->lumps[ LUMP_FACES ];
+		lump_t *lump_edges = &header->lumps[ LUMP_EDGES ];
+		lump_t *lump_surfedges = &header->lumps[ LUMP_SURFEDGES ];
+		lump_t *lump_vertexes = &header->lumps[ LUMP_VERTEXES ];
 
-		bspmodel_t *models = (bspmodel_t *)(bsp + lump_models->fileofs);
-		int models_count = lump_models->filelen / sizeof(bspmodel_t);
+		bspmodel_t *models = (bspmodel_t *)( bsp + lump_models->fileofs );
+		int models_count = lump_models->filelen / sizeof( bspmodel_t );
 
-		bspnode_t *nodes = (bspnode_t *)(bsp + lump_nodes->fileofs);
-		int nodes_count = lump_nodes->filelen / sizeof(bspnode_t);
-		
-		bspface_t *faces = (bspface_t *)(bsp + lump_faces->fileofs);
-		int faces_count = lump_faces->filelen / sizeof(bspface_t);
+		bspnode_t *nodes = (bspnode_t *)( bsp + lump_nodes->fileofs );
+		int nodes_count = lump_nodes->filelen / sizeof( bspnode_t );
 
-		bspedge_t *edges = (bspedge_t *)(bsp + lump_edges->fileofs);
-		int edges_count = lump_edges->filelen / sizeof(bspedge_t);
-		
-		uint32_t *surfedges = (uint32_t *)(bsp + lump_surfedges->fileofs);
-		int surfedges_count = lump_surfedges->filelen / sizeof(uint32_t);
+		bspface_t *faces = (bspface_t *)( bsp + lump_faces->fileofs );
+		int faces_count = lump_faces->filelen / sizeof( bspface_t );
 
-		bspvertex_t *vertexes = (bspvertex_t *)(bsp + lump_vertexes->fileofs);
-		int vertexes_count = lump_vertexes->filelen / sizeof(bspvertex_t);
+		bspedge_t *edges = (bspedge_t *)( bsp + lump_edges->fileofs );
+		int edges_count = lump_edges->filelen / sizeof( bspedge_t );
 
-		bspedge_t *pivot_edge = &edges[0];
+		uint32_t *surfedges = (uint32_t *)( bsp + lump_surfedges->fileofs );
+		int surfedges_count = lump_surfedges->filelen / sizeof( uint32_t );
+
+		bspvertex_t *vertexes = (bspvertex_t *)( bsp + lump_vertexes->fileofs );
+		int vertexes_count = lump_vertexes->filelen / sizeof( bspvertex_t );
+
+		bspedge_t *pivot_edge = &edges[ 0 ];
 
 		// dump
-		Msg("Model Index: %d\n", modelindex);
+		Msg( "Model Index: %d\n", modelindex );
 
-		bspmodel_t *model = &models[modelindex];
+		bspmodel_t *model = &models[ modelindex ];
 
-		Msg("Number of faces #%d\n", model->numfaces);
+		Msg( "Number of faces #%d\n", model->numfaces );
 
-		Msg("origin: %.3f %.3f %.3f\n", VectorExpand(*(Vector *)model->origin));
-		Msg("mins: %.3f %.3f %.3f\n", VectorExpand(*(Vector *)model->mins));
-		Msg("maxs: %.3f %.3f %.3f\n", VectorExpand(*(Vector *)model->maxs));
-		Msg("headnode: %d %d %d %d\n", model->headnode[0], model->headnode[1], model->headnode[2], model->headnode[3]);
-		Msg("visleafs: %d\n", model->visleafs);
-		Msg("firstface: %d\n", model->firstface);
-		Msg("numfaces: %d\n", model->numfaces);
+		Msg( "origin: %.3f %.3f %.3f\n", VectorExpand( *(Vector *)model->origin ) );
+		Msg( "mins: %.3f %.3f %.3f\n", VectorExpand( *(Vector *)model->mins ) );
+		Msg( "maxs: %.3f %.3f %.3f\n", VectorExpand( *(Vector *)model->maxs ) );
+		Msg( "headnode: %d %d %d %d\n", model->headnode[ 0 ], model->headnode[ 1 ], model->headnode[ 2 ], model->headnode[ 3 ] );
+		Msg( "visleafs: %d\n", model->visleafs );
+		Msg( "firstface: %d\n", model->firstface );
+		Msg( "numfaces: %d\n", model->numfaces );
 
 		//for (int n = 0; n < MAX_MAP_HULLS; n++)
 		//{
@@ -323,32 +323,32 @@ CON_COMMAND(sc_ultra_test, "")
 		//	}
 		//}
 
-		for (int i = 0; i < model->numfaces; i++)
+		for ( int i = 0; i < model->numfaces; i++ )
 		{
 			int facenum = model->firstface + i;
-			bspface_t *face = &faces[facenum];
+			bspface_t *face = &faces[ facenum ];
 
-			Msg("Face #%d\n", facenum);
-			Msg("Face side #%d\n", face->side);
+			Msg( "Face #%d\n", facenum );
+			Msg( "Face side #%d\n", face->side );
 
-			Msg("Number of edges #%d\n", face->numedges);
+			Msg( "Number of edges #%d\n", face->numedges );
 
-			for (int j = 0; j < face->numedges; j++)
+			for ( int j = 0; j < face->numedges; j++ )
 			{
-				int32_t edgenum = surfedges[face->firstedge + j];
+				int32_t edgenum = surfedges[ face->firstedge + j ];
 				//int edgenum = face->firstedge + j;
-				bspedge_t *edge = &edges[abs(edgenum)];
+				bspedge_t *edge = &edges[ abs( edgenum ) ];
 
-				int edgevertexnum = (edgenum >= 0 ? 1 : 0);
-				int vertexnum = edge->v[edgevertexnum];
+				int edgevertexnum = ( edgenum >= 0 ? 1 : 0 );
+				int vertexnum = edge->v[ edgevertexnum ];
 
-				Vector vertex = *(Vector *)&vertexes[vertexnum];
+				Vector vertex = *(Vector *)&vertexes[ vertexnum ];
 				////Vector vertex = *(Vector *)&vertexes[pivot_edge->v[edgevertexnum]] - *(Vector *)&vertexes[vertexnum];
 
-				Msg("Edge (%d) > vertex[%d] - %d (%.3f %.3f %.3f)\n", edgenum, edgevertexnum, vertexnum, VectorExpand(vertex));
+				Msg( "Edge (%d) > vertex[%d] - %d (%.3f %.3f %.3f)\n", edgenum, edgevertexnum, vertexnum, VectorExpand( vertex ) );
 
 				//Render()->DrawPoint( vertex, { 255, 255, 255, 255 }, 24.f, 10.f );
-				Render()->DrawBox( vertex, Vector(-2, -2, -2), Vector(2, 2, 2), { 255, 255, 255, 127 }, 10.f );
+				Render()->DrawBox( vertex, Vector( -2, -2, -2 ), Vector( 2, 2, 2 ), { 255, 255, 255, 127 }, 10.f );
 
 				////Vector vertex1 = *(Vector *)&vertexes[edge->v[0]] - *(Vector *)&vertexes[pivot_edge->v[0]];
 				////Vector vertex2 = *(Vector *)&vertexes[edge->v[1]] - *(Vector *)&vertexes[pivot_edge->v[1]];
@@ -367,19 +367,19 @@ CON_COMMAND(sc_ultra_test, "")
 				////}
 			}
 
-			Msg("\n");
+			Msg( "\n" );
 		}
 	}
 	else
 	{
-		for (int i = 0; i < MAX_MAP_MODELS; i++)
+		for ( int i = 0; i < MAX_MAP_MODELS; i++ )
 		{
-			model_t *pModel = g_pEngineStudio->GetModelByIndex(i);
+			model_t *pModel = g_pEngineStudio->GetModelByIndex( i );
 
 			if ( pModel == NULL )
 				continue;
 
-			Msg("Modelname: %s (%d)\n", pModel->name, i);
+			Msg( "Modelname: %s (%d)\n", pModel->name, i );
 		}
 	}
 }
@@ -390,25 +390,25 @@ ConVar sc_bsp( "sc_bsp", "1", FCVAR_CLIENTDLL, "Allow parse of .bsp maps" );
 // Utilities
 //-----------------------------------------------------------------------------
 
-static inline std::string &rtrim(std::string &s, const char *t)
+static inline std::string &rtrim( std::string &s, const char *t )
 {
-	s.erase(s.find_last_not_of(t) + 1);
+	s.erase( s.find_last_not_of( t ) + 1 );
 	return s;
 }
 
-static inline std::string &ltrim(std::string &s, const char *t)
+static inline std::string &ltrim( std::string &s, const char *t )
 {
-	s.erase(0, s.find_first_not_of(t));
+	s.erase( 0, s.find_first_not_of( t ) );
 	return s;
 }
 
-static inline std::string &trim(std::string &s, const char *t)
+static inline std::string &trim( std::string &s, const char *t )
 {
-	return ltrim(rtrim(s, t), t);
+	return ltrim( rtrim( s, t ), t );
 }
 
 //-----------------------------------------------------------------------------
-// BSP functions
+// Callbacks
 //-----------------------------------------------------------------------------
 
 void CBsp::OnParseServerInfo()
@@ -433,9 +433,314 @@ void CBsp::OnDisconnect()
 
 void CBsp::V_CalcRefdef()
 {
+	//DrawTriangles();
+}
+
+void CBsp::HUD_DrawTransparentTriangles()
+{
+	glDisable( GL_TEXTURE_2D );
+
+	DrawTriangles();
+
+	glEnable( GL_TEXTURE_2D );
+
+	g_pTriangleAPI->RenderMode( kRenderNormal );
+
+	/*
+		if ( g_Config.cvars.show_triggers )
+		{
+			glDisable( GL_TEXTURE_2D );
+
+			g_pTriangleAPI->RenderMode( kRenderTransAdd );
+			g_pTriangleAPI->CullFace( TRI_NONE );
+
+			for (const TriggerEntity &trigger : vTriggers)
+			{
+				float r, g, b, a;
+				bool bDraw = true;
+
+				switch (trigger.iType)
+				{
+				case TRIGGER_ONCE:
+					if ( g_Config.cvars.show_trigger_once )
+					{
+						r = g_Config.cvars.trigger_once_color[0];
+						g = g_Config.cvars.trigger_once_color[1];
+						b = g_Config.cvars.trigger_once_color[2];
+						a = g_Config.cvars.trigger_once_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_MULTIPLE:
+					if ( g_Config.cvars.show_trigger_multiple )
+					{
+						r = g_Config.cvars.trigger_multiple_color[0];
+						g = g_Config.cvars.trigger_multiple_color[1];
+						b = g_Config.cvars.trigger_multiple_color[2];
+						a = g_Config.cvars.trigger_multiple_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_HURT:
+					if ( g_Config.cvars.show_trigger_hurt )
+					{
+						r = g_Config.cvars.trigger_hurt_color[0];
+						g = g_Config.cvars.trigger_hurt_color[1];
+						b = g_Config.cvars.trigger_hurt_color[2];
+						a = g_Config.cvars.trigger_hurt_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_HURT_HEAL:
+					if ( g_Config.cvars.show_trigger_hurt_heal )
+					{
+						r = g_Config.cvars.trigger_hurt_heal_color[0];
+						g = g_Config.cvars.trigger_hurt_heal_color[1];
+						b = g_Config.cvars.trigger_hurt_heal_color[2];
+						a = g_Config.cvars.trigger_hurt_heal_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_PUSH:
+					if ( g_Config.cvars.show_trigger_push )
+					{
+						r = g_Config.cvars.trigger_push_color[0];
+						g = g_Config.cvars.trigger_push_color[1];
+						b = g_Config.cvars.trigger_push_color[2];
+						a = g_Config.cvars.trigger_push_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_TELEPORT:
+					if ( g_Config.cvars.show_trigger_teleport )
+					{
+						r = g_Config.cvars.trigger_teleport_color[0];
+						g = g_Config.cvars.trigger_teleport_color[1];
+						b = g_Config.cvars.trigger_teleport_color[2];
+						a = g_Config.cvars.trigger_teleport_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_CHANGELEVEL:
+					if ( g_Config.cvars.show_trigger_changelevel )
+					{
+						r = g_Config.cvars.trigger_changelevel_color[0];
+						g = g_Config.cvars.trigger_changelevel_color[1];
+						b = g_Config.cvars.trigger_changelevel_color[2];
+						a = g_Config.cvars.trigger_changelevel_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+
+				case TRIGGER_ANTIRUSH:
+					if ( g_Config.cvars.show_trigger_antirush )
+					{
+						r = g_Config.cvars.trigger_antirush_color[0];
+						g = g_Config.cvars.trigger_antirush_color[1];
+						b = g_Config.cvars.trigger_antirush_color[2];
+						a = g_Config.cvars.trigger_antirush_color[3];
+					}
+					else
+					{
+						bDraw = false;
+					}
+
+					break;
+				}
+
+				if ( !bDraw )
+					continue;
+
+				model_t *pModel = g_pEngineStudio->GetModelByIndex( trigger.iModel + 1 );
+
+				if ( pModel == NULL )
+					continue;
+
+				msurface_t *pSurfaces = pModel->surfaces + pModel->firstmodelsurface;
+
+				for (int i = 0; i < pModel->nummodelsurfaces; i++)
+				{
+					g_pTriangleAPI->Color4f(r, g, b, a);
+					g_pTriangleAPI->Begin(TRI_POLYGON);
+
+					for (int j = 0; j < pSurfaces[i].polys->numverts; j++)
+					{
+						g_pTriangleAPI->Vertex3fv( pSurfaces[i].polys->verts[j] );
+					}
+
+					g_pTriangleAPI->End();
+				}
+			}
+
+			glEnable( GL_TEXTURE_2D );
+
+			g_pTriangleAPI->RenderMode( kRenderNormal );
+		}
+	*/
+}
+
+//-----------------------------------------------------------------------------
+// Draw utilities
+//-----------------------------------------------------------------------------
+
+float CBsp::GetPulsatingAlpha( float a, float time, float speed )
+{
+	float s = sinf( speed * time );
+	s *= 0.05f;
+	s += a;
+	s = V_max( s, 0.0f );
+	s = V_min( s, 1.0f );
+	return s;
+}
+
+void CBsp::DrawTrianglesBox( const Vector &vecTriggerOrigin, const Vector &vecTriggerMins, const Vector &vecTriggerMaxs, float r, float g, float b, float a, float width, bool wireframe )
+{
+	if ( wireframe )
+	{
+		DrawBox( vecTriggerOrigin, vecTriggerMins, vecTriggerMaxs, r, g, b, a, width, true );
+		return;
+	}
+
+	Vector vecPoints[ 8 ];
+
+	Vector vecMins = vecTriggerMins;
+	Vector vecMaxs = vecTriggerMaxs;
+
+	VectorAdd( vecMins, vecTriggerOrigin, vecMins );
+	VectorAdd( vecMaxs, vecTriggerOrigin, vecMaxs );
+
+	// Build points of box
+	vecPoints[ 0 ].x = vecMins.x;
+	vecPoints[ 0 ].y = vecMins.y;
+	vecPoints[ 0 ].z = vecMins.z;
+
+	vecPoints[ 1 ].x = vecMins.x;
+	vecPoints[ 1 ].y = vecMaxs.y;
+	vecPoints[ 1 ].z = vecMins.z;
+
+	vecPoints[ 2 ].x = vecMaxs.x;
+	vecPoints[ 2 ].y = vecMaxs.y;
+	vecPoints[ 2 ].z = vecMins.z;
+
+	vecPoints[ 3 ].x = vecMaxs.x;
+	vecPoints[ 3 ].y = vecMins.y;
+	vecPoints[ 3 ].z = vecMins.z;
+
+	vecPoints[ 4 ].x = vecMins.x;
+	vecPoints[ 4 ].y = vecMins.y;
+	vecPoints[ 4 ].z = vecMaxs.z;
+
+	vecPoints[ 5 ].x = vecMins.x;
+	vecPoints[ 5 ].y = vecMaxs.y;
+	vecPoints[ 5 ].z = vecMaxs.z;
+
+	vecPoints[ 6 ].x = vecMaxs.x;
+	vecPoints[ 6 ].y = vecMaxs.y;
+	vecPoints[ 6 ].z = vecMaxs.z;
+
+	vecPoints[ 7 ].x = vecMaxs.x;
+	vecPoints[ 7 ].y = vecMins.y;
+	vecPoints[ 7 ].z = vecMaxs.z;
+
+	float flPulsateOffset = g_Config.cvars.trigger_pulsate_offset;
+	float flPulsateSpeed = g_Config.cvars.trigger_pulsate_speed;
+
+	float orig_alpha = a;
+	int nSurface = 0;
+	float flSurfaceOffset = 0.f;
+	const float flTime = g_Config.cvars.trigger_pulsate ? (float)*dbRealtime : 0.f;
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		int j = ( i + 1 ) % 4;
+
+		flSurfaceOffset = (float)nSurface * float( M_PI ) / flPulsateOffset;
+		a = GetPulsatingAlpha( orig_alpha, flTime + flSurfaceOffset, flPulsateSpeed );
+
+		g_pTriangleAPI->Color4f( r, g, b, a );
+		g_pTriangleAPI->Begin( TRI_POLYGON );
+		g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ i ] ) );
+		g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ j ] ) );
+		g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ j + 4 ] ) );
+		g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ i + 4 ] ) );
+		g_pTriangleAPI->End();
+
+		nSurface++;
+	}
+
+	// Bottom
+	flSurfaceOffset = (float)nSurface * float( M_PI ) / flPulsateOffset;
+	a = GetPulsatingAlpha( orig_alpha, flTime + flSurfaceOffset, flPulsateSpeed );
+
+	g_pTriangleAPI->Color4f( r, g, b, a );
+	g_pTriangleAPI->Begin( TRI_POLYGON );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 0 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 1 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 2 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 3 ] ) );
+	g_pTriangleAPI->End();
+
+	nSurface++;
+
+	// Top
+	flSurfaceOffset = (float)nSurface * float( M_PI ) / flPulsateOffset;
+	a = GetPulsatingAlpha( orig_alpha, flTime + flSurfaceOffset, flPulsateSpeed );
+
+	g_pTriangleAPI->Color4f( r, g, b, a );
+	g_pTriangleAPI->Begin( TRI_POLYGON );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 4 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 5 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 6 ] ) );
+	g_pTriangleAPI->Vertex3f( VectorExpand( vecPoints[ 7 ] ) );
+	g_pTriangleAPI->End();
+}
+
+//-----------------------------------------------------------------------------
+// Draw primitives
+//-----------------------------------------------------------------------------
+
+void CBsp::DrawTriangles()
+{
 	if ( g_Config.cvars.show_triggers )
 		//if ( false )
 	{
+		g_pTriangleAPI->RenderMode( kRenderTransAdd );
+		g_pTriangleAPI->CullFace( TRI_NONE );
+
 		for ( const TriggerEntity &trigger : vTriggers )
 		{
 			float r, g, b, a;
@@ -562,11 +867,18 @@ void CBsp::V_CalcRefdef()
 				}
 
 				break;
+
+			default:
+				r = 1.f;
+				g = 1.f;
+				b = 1.f;
+				a = 0.5f;
+				break;
 			}
 
 			if ( bDraw )
 			{
-				DrawBox( trigger.vecOrigin, trigger.vecMins, trigger.vecMaxs, r, g, b, a, 4.f, g_Config.cvars.bsp_wireframe );
+				DrawTrianglesBox( trigger.vecOrigin, trigger.vecMins, trigger.vecMaxs, r, g, b, a, 4.f, g_Config.cvars.bsp_wireframe );
 
 				if ( trigger.iType == TRIGGER_PUSH )
 				{
@@ -585,7 +897,8 @@ void CBsp::V_CalcRefdef()
 	{
 		for ( const FuncWall &funcWall : vFuncWalls )
 		{
-			DrawBox( funcWall.vecOrigin, funcWall.vecMins, funcWall.vecMaxs, 0.f, 1.f, 1.f, 0.25f, 4.f, g_Config.cvars.bsp_wireframe );
+			//DrawBox( funcWall.vecOrigin, funcWall.vecMins, funcWall.vecMaxs, 0.f, 1.f, 1.f, 0.25f, 4.f, g_Config.cvars.bsp_wireframe );
+			DrawTrianglesBox( funcWall.vecOrigin, funcWall.vecMins, funcWall.vecMaxs, 0.f, 1.f, 1.f, 32.f / 255.f, 4.f, g_Config.cvars.bsp_wireframe );
 		}
 	}
 }
@@ -594,38 +907,38 @@ void CBsp::Draw()
 {
 	if ( g_Config.cvars.show_spawns )
 	{
-		for (const MonsterSpawn &monster : vMonsterSpawns)
+		for ( const MonsterSpawn &monster : vMonsterSpawns )
 		{
 			Vector2D vecScreen;
 			Vector vecOrigin = monster.vecOrigin;
 
-			if ( UTIL_WorldToScreen(vecOrigin, vecScreen) )
+			if ( UTIL_WorldToScreen( vecOrigin, vecScreen ) )
 			{
 				pmtrace_t trace;
 
 				Vector vecStart = Client()->GetOrigin() + Client()->GetViewOffset();
 
-				g_pEventAPI->EV_SetTraceHull(PM_HULL_POINT);
-				g_pEventAPI->EV_PlayerTrace(vecStart, vecOrigin, PM_WORLD_ONLY, -1, &trace);
+				g_pEventAPI->EV_SetTraceHull( PM_HULL_POINT );
+				g_pEventAPI->EV_PlayerTrace( vecStart, vecOrigin, PM_WORLD_ONLY, -1, &trace );
 
-				if (trace.fraction != 1.f)
+				if ( trace.fraction != 1.f )
 				{
 					continue;
 				}
 
-				g_Drawing.DrawString(g_hFontESP, vecScreen.x, vecScreen.y, 255, 255, 255, 255, FONT_ALIGN_CENTER, monster.szClassname);
+				g_Drawing.DrawString( g_hFontESP, vecScreen.x, vecScreen.y, 255, 255, 255, 255, FONT_ALIGN_CENTER, monster.szClassname );
 			}
 		}
 	}
 
 	if ( g_Config.cvars.show_triggers && g_Config.cvars.show_triggers_info )
 	{
-		for (const TriggerEntity &trigger : vTriggers)
+		for ( const TriggerEntity &trigger : vTriggers )
 		{
 			Color clr;
 			bool bDraw = true;
 
-			switch (trigger.iType)
+			switch ( trigger.iType )
 			{
 			case TRIGGER_ONCE:
 			case TRIGGER_MULTIPLE:
@@ -635,10 +948,10 @@ void CBsp::Draw()
 			case TRIGGER_HURT:
 				if ( g_Config.cvars.show_trigger_hurt )
 				{
-					clr.SetColor( g_Config.cvars.trigger_hurt_color[0],
-								 g_Config.cvars.trigger_hurt_color[1],
-								 g_Config.cvars.trigger_hurt_color[2],
-								 1.f );
+					clr.SetColor( g_Config.cvars.trigger_hurt_color[ 0 ],
+								  g_Config.cvars.trigger_hurt_color[ 1 ],
+								  g_Config.cvars.trigger_hurt_color[ 2 ],
+								  1.f );
 				}
 				else
 				{
@@ -646,14 +959,14 @@ void CBsp::Draw()
 				}
 
 				break;
-				
+
 			case TRIGGER_HURT_HEAL:
 				if ( g_Config.cvars.show_trigger_hurt_heal )
 				{
-					clr.SetColor( g_Config.cvars.trigger_hurt_heal_color[0],
-								 g_Config.cvars.trigger_hurt_heal_color[1],
-								 g_Config.cvars.trigger_hurt_heal_color[2],
-								 1.f );
+					clr.SetColor( g_Config.cvars.trigger_hurt_heal_color[ 0 ],
+								  g_Config.cvars.trigger_hurt_heal_color[ 1 ],
+								  g_Config.cvars.trigger_hurt_heal_color[ 2 ],
+								  1.f );
 				}
 				else
 				{
@@ -665,10 +978,10 @@ void CBsp::Draw()
 			case TRIGGER_PUSH:
 				if ( g_Config.cvars.show_trigger_push )
 				{
-					clr.SetColor( g_Config.cvars.trigger_push_color[0],
-								 g_Config.cvars.trigger_push_color[1],
-								 g_Config.cvars.trigger_push_color[2],
-								 1.f );
+					clr.SetColor( g_Config.cvars.trigger_push_color[ 0 ],
+								  g_Config.cvars.trigger_push_color[ 1 ],
+								  g_Config.cvars.trigger_push_color[ 2 ],
+								  1.f );
 				}
 				else
 				{
@@ -684,10 +997,10 @@ void CBsp::Draw()
 			case TRIGGER_ANTIRUSH:
 				if ( g_Config.cvars.show_trigger_antirush )
 				{
-					clr.SetColor( g_Config.cvars.trigger_antirush_color[0],
-								 g_Config.cvars.trigger_antirush_color[1],
-								 g_Config.cvars.trigger_antirush_color[2],
-								 1.f );
+					clr.SetColor( g_Config.cvars.trigger_antirush_color[ 0 ],
+								  g_Config.cvars.trigger_antirush_color[ 1 ],
+								  g_Config.cvars.trigger_antirush_color[ 2 ],
+								  1.f );
 				}
 				else
 				{
@@ -702,47 +1015,47 @@ void CBsp::Draw()
 				Vector2D vecScreen;
 				Vector vecOrigin = trigger.vecMidPoint;
 
-				if ( UTIL_WorldToScreen(vecOrigin, vecScreen) )
+				if ( UTIL_WorldToScreen( vecOrigin, vecScreen ) )
 				{
 					pmtrace_t trace;
 
 					Vector vecStart = Client()->GetOrigin() + Client()->GetViewOffset();
 
-					g_pEventAPI->EV_SetTraceHull(PM_HULL_POINT);
-					g_pEventAPI->EV_PlayerTrace(vecStart, vecOrigin, PM_WORLD_ONLY, -1, &trace);
+					g_pEventAPI->EV_SetTraceHull( PM_HULL_POINT );
+					g_pEventAPI->EV_PlayerTrace( vecStart, vecOrigin, PM_WORLD_ONLY, -1, &trace );
 
-					if (trace.fraction != 1.f)
+					if ( trace.fraction != 1.f )
 					{
 						continue;
 					}
 
-					switch (trigger.iType)
+					switch ( trigger.iType )
 					{
 					case TRIGGER_ONCE:
 					case TRIGGER_MULTIPLE:
 						break;
 
 					case TRIGGER_HURT:
-						g_Drawing.DrawStringF(g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Damage: %d", trigger.iDamage);
+						g_Drawing.DrawStringF( g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Damage: %d", trigger.iDamage );
 						break;
-				
+
 					case TRIGGER_HURT_HEAL:
-						g_Drawing.DrawStringF(g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Heal: %d", abs(trigger.iDamage));
+						g_Drawing.DrawStringF( g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Heal: %d", abs( trigger.iDamage ) );
 						break;
 
 					case TRIGGER_PUSH:
-						g_Drawing.DrawStringF(g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Push Speed: %d", trigger.iSpeed);
+						g_Drawing.DrawStringF( g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Push Speed: %d", trigger.iSpeed );
 						break;
 
 					case TRIGGER_TELEPORT:
-						g_Drawing.DrawStringF(g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Model: %d", trigger.iModel);
+						g_Drawing.DrawStringF( g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Model: %d", trigger.iModel );
 						break;
 
 					case TRIGGER_CHANGELEVEL:
 						break;
 
 					case TRIGGER_ANTIRUSH:
-						g_Drawing.DrawStringF(g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Percentage: %.1f %%", trigger.flPercentage * 100.f);
+						g_Drawing.DrawStringF( g_hFontESP, vecScreen.x, vecScreen.y, clr.r, clr.g, clr.b, 255, FONT_ALIGN_CENTER, "Percentage: %.1f %%", trigger.flPercentage * 100.f );
 						break;
 					}
 				}
@@ -751,172 +1064,9 @@ void CBsp::Draw()
 	}
 }
 
-void CBsp::OnRenderScene()
-{
-	if ( g_Config.cvars.show_triggers )
-	{
-		glDisable( GL_TEXTURE_2D );
-
-		g_pTriangleAPI->RenderMode( kRenderTransAdd );
-		g_pTriangleAPI->CullFace( TRI_NONE );
-
-		for (const TriggerEntity &trigger : vTriggers)
-		{
-			float r, g, b, a;
-			bool bDraw = true;
-
-			switch (trigger.iType)
-			{
-			case TRIGGER_ONCE:
-				if ( g_Config.cvars.show_trigger_once )
-				{
-					r = g_Config.cvars.trigger_once_color[0];
-					g = g_Config.cvars.trigger_once_color[1];
-					b = g_Config.cvars.trigger_once_color[2];
-					a = g_Config.cvars.trigger_once_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-				
-			case TRIGGER_MULTIPLE:
-				if ( g_Config.cvars.show_trigger_multiple )
-				{
-					r = g_Config.cvars.trigger_multiple_color[0];
-					g = g_Config.cvars.trigger_multiple_color[1];
-					b = g_Config.cvars.trigger_multiple_color[2];
-					a = g_Config.cvars.trigger_multiple_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-
-			case TRIGGER_HURT:
-				if ( g_Config.cvars.show_trigger_hurt )
-				{
-					r = g_Config.cvars.trigger_hurt_color[0];
-					g = g_Config.cvars.trigger_hurt_color[1];
-					b = g_Config.cvars.trigger_hurt_color[2];
-					a = g_Config.cvars.trigger_hurt_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-				
-			case TRIGGER_HURT_HEAL:
-				if ( g_Config.cvars.show_trigger_hurt_heal )
-				{
-					r = g_Config.cvars.trigger_hurt_heal_color[0];
-					g = g_Config.cvars.trigger_hurt_heal_color[1];
-					b = g_Config.cvars.trigger_hurt_heal_color[2];
-					a = g_Config.cvars.trigger_hurt_heal_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-
-			case TRIGGER_PUSH:
-				if ( g_Config.cvars.show_trigger_push )
-				{
-					r = g_Config.cvars.trigger_push_color[0];
-					g = g_Config.cvars.trigger_push_color[1];
-					b = g_Config.cvars.trigger_push_color[2];
-					a = g_Config.cvars.trigger_push_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-				
-			case TRIGGER_TELEPORT:
-				if ( g_Config.cvars.show_trigger_teleport )
-				{
-					r = g_Config.cvars.trigger_teleport_color[0];
-					g = g_Config.cvars.trigger_teleport_color[1];
-					b = g_Config.cvars.trigger_teleport_color[2];
-					a = g_Config.cvars.trigger_teleport_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-
-			case TRIGGER_CHANGELEVEL:
-				if ( g_Config.cvars.show_trigger_changelevel )
-				{
-					r = g_Config.cvars.trigger_changelevel_color[0];
-					g = g_Config.cvars.trigger_changelevel_color[1];
-					b = g_Config.cvars.trigger_changelevel_color[2];
-					a = g_Config.cvars.trigger_changelevel_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-
-			case TRIGGER_ANTIRUSH:
-				if ( g_Config.cvars.show_trigger_antirush )
-				{
-					r = g_Config.cvars.trigger_antirush_color[0];
-					g = g_Config.cvars.trigger_antirush_color[1];
-					b = g_Config.cvars.trigger_antirush_color[2];
-					a = g_Config.cvars.trigger_antirush_color[3];
-				}
-				else
-				{
-					bDraw = false;
-				}
-
-				break;
-			}
-
-			if ( !bDraw )
-				continue;
-
-			model_t *pModel = g_pEngineStudio->GetModelByIndex( trigger.iModel + 1 );
-
-			if ( pModel == NULL )
-				continue;
-
-			msurface_t *pSurfaces = pModel->surfaces + pModel->firstmodelsurface;
-
-			for (int i = 0; i < pModel->nummodelsurfaces; i++)
-			{
-				g_pTriangleAPI->Color4f(r, g, b, a);
-				g_pTriangleAPI->Begin(TRI_POLYGON);
-
-				for (int j = 0; j < pSurfaces[i].polys->numverts; j++)
-				{
-					g_pTriangleAPI->Vertex3fv( pSurfaces[i].polys->verts[j] );
-				}
-
-				g_pTriangleAPI->End();
-			}
-		}
-
-		glEnable( GL_TEXTURE_2D );
-
-		g_pTriangleAPI->RenderMode( kRenderNormal );
-	}
-}
+//-----------------------------------------------------------------------------
+// Load and parse a BSP map
+//-----------------------------------------------------------------------------
 
 void CBsp::LoadBsp()
 {
@@ -933,16 +1083,16 @@ void CBsp::LoadBsp()
 	if ( !sc_bsp.GetBool() )
 		return;
 
-	char mapname[MAX_PATH];
+	char mapname[ MAX_PATH ];
 
-	strncpy(mapname, g_pEngineFuncs->GetLevelName(), MAX_PATH);
-	mapname[MAX_PATH - 1] = 0;
+	strncpy( mapname, g_pEngineFuncs->GetLevelName(), MAX_PATH );
+	mapname[ MAX_PATH - 1 ] = 0;
 
-	FileHandle_t hFile = g_pFileSystem->Open(mapname, "r", "GAME");
+	FileHandle_t hFile = g_pFileSystem->Open( mapname, "r", "GAME" );
 
 	if ( !hFile )
 	{
-		hFile = g_pFileSystem->Open(mapname, "r", "GAMEDOWNLOAD");
+		hFile = g_pFileSystem->Open( mapname, "r", "GAMEDOWNLOAD" );
 	}
 
 	if ( hFile )
@@ -952,7 +1102,7 @@ void CBsp::LoadBsp()
 
 		if ( !bsp )
 		{
-			Sys_Error("Failed to allocate memory for a bsp file");
+			Sys_Error( "Failed to allocate memory for a bsp file" );
 			return;
 		}
 
@@ -961,13 +1111,13 @@ void CBsp::LoadBsp()
 
 		bspheader_t *header = (bspheader_t *)bsp;
 
-		lump_t *lump_entities = &header->lumps[LUMP_ENTITIES];
-		lump_t *lump_models = &header->lumps[LUMP_MODELS];
+		lump_t *lump_entities = &header->lumps[ LUMP_ENTITIES ];
+		lump_t *lump_models = &header->lumps[ LUMP_MODELS ];
 
-		bspmodel_t *models = (bspmodel_t *)(bsp + lump_models->fileofs);
-		int models_count = lump_models->filelen / sizeof(bspmodel_t);
+		bspmodel_t *models = (bspmodel_t *)( bsp + lump_models->fileofs );
+		int models_count = lump_models->filelen / sizeof( bspmodel_t );
 
-		if ( LoadEntsFromBsp(bsp, lump_entities) )
+		if ( LoadEntsFromBsp( bsp, lump_entities ) )
 		{
 			const std::string sClassname = "classname";
 			const std::string sMonsterType = "monstertype";
@@ -981,9 +1131,9 @@ void CBsp::LoadBsp()
 			const std::string sDamage = "damage";
 			const std::string sDmg = "dmg";
 
-			for (const EntityKeyValues &keyvalues : vEnts)
+			for ( const EntityKeyValues &keyvalues : vEnts )
 			{
-				auto found_classname = keyvalues.find(sClassname);
+				auto found_classname = keyvalues.find( sClassname );
 
 				if ( found_classname != keyvalues.end() )
 				{
@@ -993,19 +1143,19 @@ void CBsp::LoadBsp()
 					bool bFuncWall = false;
 					TriggerType trigger_type = INVALID_TRIGGER;
 
-					const std::string &classname = keyvalues.at(sClassname);
+					const std::string &classname = keyvalues.at( sClassname );
 
-					if ( !classname.rfind("monster_", 0) )
+					if ( !classname.rfind( "monster_", 0 ) )
 					{
-						auto stringEndsWith = [](std::string const &str, std::string const &suffix)
+						auto stringEndsWith = []( std::string const &str, std::string const &suffix )
 						{
 							if ( str.length() < suffix.length() )
 								return false;
 
-							return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+							return std::equal( suffix.rbegin(), suffix.rend(), str.rbegin() );
 						};
 
-						if ( !stringEndsWith(classname, "_dead") )
+						if ( !stringEndsWith( classname, "_dead" ) )
 						{
 							bEntSpawn = true;
 						}
@@ -1050,24 +1200,24 @@ void CBsp::LoadBsp()
 					if ( trigger_type != INVALID_TRIGGER )
 					{
 						TriggerEntity trigger;
-						ZeroMemory( &trigger, sizeof(TriggerEntity) );
+						ZeroMemory( &trigger, sizeof( TriggerEntity ) );
 
 						trigger.iType = trigger_type;
 
 						if ( trigger_type != TRIGGER_ANTIRUSH )
 						{
-							auto found_model = keyvalues.find(sModel);
-							auto found_origin = keyvalues.find(sOrigin);
-							auto found_angles = keyvalues.find(sAngles);
+							auto found_model = keyvalues.find( sModel );
+							auto found_origin = keyvalues.find( sOrigin );
+							auto found_angles = keyvalues.find( sAngles );
 
 							if ( trigger_type == TRIGGER_HURT )
 							{
-								auto found_dmg = keyvalues.find(sDmg);
-								auto found_damage = keyvalues.find(sDamage);
+								auto found_dmg = keyvalues.find( sDmg );
+								auto found_damage = keyvalues.find( sDamage );
 
 								if ( found_damage != keyvalues.end() )
 								{
-									trigger.iDamage = atoi( keyvalues.at(sDamage).c_str() );
+									trigger.iDamage = atoi( keyvalues.at( sDamage ).c_str() );
 
 									if ( trigger.iDamage < 0 )
 									{
@@ -1076,7 +1226,7 @@ void CBsp::LoadBsp()
 								}
 								else if ( found_dmg != keyvalues.end() )
 								{
-									trigger.iDamage = atoi( keyvalues.at(sDmg).c_str() );
+									trigger.iDamage = atoi( keyvalues.at( sDmg ).c_str() );
 
 									if ( trigger.iDamage < 0 )
 									{
@@ -1086,26 +1236,26 @@ void CBsp::LoadBsp()
 							}
 							else if ( trigger_type == TRIGGER_PUSH )
 							{
-								auto found_speed = keyvalues.find(sSpeed);
+								auto found_speed = keyvalues.find( sSpeed );
 
 								if ( found_speed != keyvalues.end() )
 								{
-									trigger.iSpeed = atoi( keyvalues.at(sSpeed).c_str() );
+									trigger.iSpeed = atoi( keyvalues.at( sSpeed ).c_str() );
 								}
 							}
 
 							if ( found_model != keyvalues.end() )
 							{
-								if ( keyvalues.at(sModel)[0] == '*' )
+								if ( keyvalues.at( sModel )[ 0 ] == '*' )
 								{
-									int iModelIndex = atoi( keyvalues.at(sModel).c_str() + 1 );
+									int iModelIndex = atoi( keyvalues.at( sModel ).c_str() + 1 );
 
 									if ( iModelIndex > 0 && iModelIndex < models_count )
 									{
 										bspmodel_t *model = &models[ iModelIndex ];
 
 										trigger.iModel = iModelIndex;
-									
+
 										trigger.vecOrigin = model->origin;
 										trigger.vecMins = model->mins;
 										trigger.vecMaxs = model->maxs;
@@ -1119,20 +1269,20 @@ void CBsp::LoadBsp()
 								float y = 0.f;
 								float z = 0.f;
 
-								int nParamsRead = sscanf( keyvalues.at(sOrigin).c_str(), "%f %f %f", &x, &y, &z );
+								int nParamsRead = sscanf( keyvalues.at( sOrigin ).c_str(), "%f %f %f", &x, &y, &z );
 
-								if (nParamsRead >= 3)
+								if ( nParamsRead >= 3 )
 								{
 									trigger.vecOrigin.x += x;
 									trigger.vecOrigin.y += y;
 									trigger.vecOrigin.z += z;
 								}
-								else if (nParamsRead == 2)
+								else if ( nParamsRead == 2 )
 								{
 									trigger.vecOrigin.x += x;
 									trigger.vecOrigin.y += y;
 								}
-								else if (nParamsRead == 1)
+								else if ( nParamsRead == 1 )
 								{
 									trigger.vecOrigin.x += x;
 								}
@@ -1142,83 +1292,83 @@ void CBsp::LoadBsp()
 							{
 								Vector vecAngles;
 
-								int nParamsRead = sscanf( keyvalues.at(sAngles).c_str(), "%f %f %f", &vecAngles.x, &vecAngles.y, &vecAngles.z );
+								int nParamsRead = sscanf( keyvalues.at( sAngles ).c_str(), "%f %f %f", &vecAngles.x, &vecAngles.y, &vecAngles.z );
 
-								if (nParamsRead != 0)
+								if ( nParamsRead != 0 )
 								{
-									AngleVectors(vecAngles, &trigger.vecDirection, NULL, NULL);
+									AngleVectors( vecAngles, &trigger.vecDirection, NULL, NULL );
 								}
 							}
 						}
 						else // TRIGGER_ANTIRUSH
 						{
-							auto found_mins = keyvalues.find(sMinHullSize);
-							auto found_maxs = keyvalues.find(sMaxHullSize);
+							auto found_mins = keyvalues.find( sMinHullSize );
+							auto found_maxs = keyvalues.find( sMaxHullSize );
 
 							if ( found_mins == keyvalues.end() || found_maxs == keyvalues.end() ) // not found
 								continue;
-							
+
 							float x = 0.f;
 							float y = 0.f;
 							float z = 0.f;
 
 							// Mins
-							int nParamsRead = sscanf( keyvalues.at(sMinHullSize).c_str(), "%f %f %f", &x, &y, &z );
+							int nParamsRead = sscanf( keyvalues.at( sMinHullSize ).c_str(), "%f %f %f", &x, &y, &z );
 
-							if (nParamsRead >= 3)
+							if ( nParamsRead >= 3 )
 							{
 								trigger.vecOrigin.x = x;
 								trigger.vecOrigin.y = y;
 								trigger.vecOrigin.z = z;
 							}
-							else if (nParamsRead == 2)
+							else if ( nParamsRead == 2 )
 							{
 								trigger.vecOrigin.x = x;
 								trigger.vecOrigin.y = y;
 							}
-							else if (nParamsRead == 1)
+							else if ( nParamsRead == 1 )
 							{
 								trigger.vecOrigin.x = x;
 							}
-							
-							// Maxs
-							nParamsRead = sscanf( keyvalues.at(sMaxHullSize).c_str(), "%f %f %f", &x, &y, &z );
 
-							if (nParamsRead >= 3)
+							// Maxs
+							nParamsRead = sscanf( keyvalues.at( sMaxHullSize ).c_str(), "%f %f %f", &x, &y, &z );
+
+							if ( nParamsRead >= 3 )
 							{
 								trigger.vecMaxs.x = x - trigger.vecOrigin.x;
 								trigger.vecMaxs.y = y - trigger.vecOrigin.y;
 								trigger.vecMaxs.z = z - trigger.vecOrigin.z;
 							}
-							else if (nParamsRead == 2)
+							else if ( nParamsRead == 2 )
 							{
 								trigger.vecMaxs.x = x - trigger.vecOrigin.x;
 								trigger.vecMaxs.y = y - trigger.vecOrigin.y;
 							}
-							else if (nParamsRead == 1)
+							else if ( nParamsRead == 1 )
 							{
 								trigger.vecMaxs.x = x - trigger.vecOrigin.x;
 							}
 
-							auto found_percentage = keyvalues.find(sPercentage);
+							auto found_percentage = keyvalues.find( sPercentage );
 
 							if ( found_percentage != keyvalues.end() )
 							{
-								trigger.flPercentage = (float)atof( keyvalues.at(sPercentage).c_str() );
+								trigger.flPercentage = (float)atof( keyvalues.at( sPercentage ).c_str() );
 							}
 						}
 
 						trigger.vecMidPoint = trigger.vecOrigin + trigger.vecMins;
-						trigger.vecMidPoint += ((trigger.vecOrigin + trigger.vecMaxs) - (trigger.vecOrigin + trigger.vecMins)) * 0.5f;
+						trigger.vecMidPoint += ( ( trigger.vecOrigin + trigger.vecMaxs ) - ( trigger.vecOrigin + trigger.vecMins ) ) * 0.5f;
 
 						vTriggers.push_back( trigger );
 					}
 					else if ( bEntSpawn )
 					{
 						MonsterSpawn monster;
-						ZeroMemory( &monster, sizeof(MonsterSpawn) );
+						ZeroMemory( &monster, sizeof( MonsterSpawn ) );
 
-						auto found_origin = keyvalues.find(sOrigin);
+						auto found_origin = keyvalues.find( sOrigin );
 
 						if ( found_origin != keyvalues.end() )
 						{
@@ -1226,20 +1376,20 @@ void CBsp::LoadBsp()
 							float y = 0.f;
 							float z = 0.f;
 
-							int nParamsRead = sscanf( keyvalues.at(sOrigin).c_str(), "%f %f %f", &x, &y, &z );
+							int nParamsRead = sscanf( keyvalues.at( sOrigin ).c_str(), "%f %f %f", &x, &y, &z );
 
-							if (nParamsRead >= 3)
+							if ( nParamsRead >= 3 )
 							{
 								monster.vecOrigin.x = x;
 								monster.vecOrigin.y = y;
 								monster.vecOrigin.z = z;
 							}
-							else if (nParamsRead == 2)
+							else if ( nParamsRead == 2 )
 							{
 								monster.vecOrigin.x = x;
 								monster.vecOrigin.y = y;
 							}
-							else if (nParamsRead == 1)
+							else if ( nParamsRead == 1 )
 							{
 								monster.vecOrigin.x = x;
 							}
@@ -1248,12 +1398,12 @@ void CBsp::LoadBsp()
 
 							if ( classname == "monstermaker" || classname == "squadmaker" || classname == "env_xenmaker" )
 							{
-								auto found_monstertype = keyvalues.find(sMonsterType);
+								auto found_monstertype = keyvalues.find( sMonsterType );
 
 								if ( found_origin == keyvalues.end() )
 									continue;
 
-								strncpy_s( monster.szClassname, keyvalues.at(sMonsterType).c_str(), keyvalues.at(sMonsterType).length() );
+								strncpy_s( monster.szClassname, keyvalues.at( sMonsterType ).c_str(), keyvalues.at( sMonsterType ).length() );
 							}
 							else
 							{
@@ -1323,12 +1473,12 @@ void CBsp::LoadBsp()
 	}
 }
 
-bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
+bool CBsp::LoadEntsFromBsp( unsigned char *bsp, lump_t *lump_entities )
 {
 	static const char *trim_chars = " \t\n\r\f\v";
 
-	membuf sbuf(bsp + lump_entities->fileofs, lump_entities->filelen);
-	FILE *file = fopen("sven_internal/last_entmap.ent", "w");
+	membuf sbuf( bsp + lump_entities->fileofs, lump_entities->filelen );
+	FILE *file = fopen( "sven_internal/last_entmap.ent", "w" );
 
 	std::istream buffer( &sbuf );
 	std::string sLine;
@@ -1336,24 +1486,24 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 	int nLine = 0;
 	int mode = 0;
 
-	while ( std::getline(buffer, sLine) )
+	while ( std::getline( buffer, sLine ) )
 	{
 		nLine++;
 
-		sLine = trim(sLine, trim_chars);
+		sLine = trim( sLine, trim_chars );
 
-		if ( sLine.empty() || !sLine[0] )
+		if ( sLine.empty() || !sLine[ 0 ] )
 			continue;
 
 		if ( file != NULL )
-			fprintf( file, "%s\n", sLine.c_str());
+			fprintf( file, "%s\n", sLine.c_str() );
 
-		if ( sLine[0] == '/' )
+		if ( sLine[ 0 ] == '/' )
 			continue;
 
-		if (mode == 0)
+		if ( mode == 0 )
 		{
-			if (sLine[0] == '{')
+			if ( sLine[ 0 ] == '{' )
 			{
 				mode = 1;
 
@@ -1361,26 +1511,26 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 			}
 			else
 			{
-				Warning("[LoadEntsFromBsp] Expected start of keyvalues at line %d\n", nLine);
+				Warning( "[LoadEntsFromBsp] Expected start of keyvalues at line %d\n", nLine );
 
 				if ( file != NULL )
-					fclose(file);
+					fclose( file );
 
 				return false;
 			}
 		}
-		else if (mode == 1)
+		else if ( mode == 1 )
 		{
-			if (sLine[0] == '}')
+			if ( sLine[ 0 ] == '}' )
 			{
 				mode = 0;
 			}
-			else if (sLine[0] == '{')
+			else if ( sLine[ 0 ] == '{' )
 			{
-				Warning("[LoadEntsFromBsp] Expected end of keyvalues at line %d\n", nLine);
+				Warning( "[LoadEntsFromBsp] Expected end of keyvalues at line %d\n", nLine );
 
 				if ( file != NULL )
-					fclose(file);
+					fclose( file );
 
 				return false;
 			}
@@ -1388,17 +1538,17 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 			{
 				std::string sKey, sValue;
 
-				char *buffer = (char *)(sLine.c_str());
+				char *buffer = (char *)( sLine.c_str() );
 				char *key = buffer + 1;
 				char *value = NULL;
 
 				if ( *buffer != '\"' )
 				{
-					Warning("[LoadEntsFromBsp] Expected start of key at line %d\n", nLine);
-					
+					Warning( "[LoadEntsFromBsp] Expected start of key at line %d\n", nLine );
+
 					if ( file != NULL )
-						fclose(file);
-					
+						fclose( file );
+
 					return false;
 				}
 
@@ -1407,9 +1557,9 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 
 				buffer++;
 
-				while (*buffer)
+				while ( *buffer )
 				{
-					if (*buffer == '\"')
+					if ( *buffer == '\"' )
 					{
 						char ch = *buffer;
 						*buffer = 0;
@@ -1425,9 +1575,9 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 					buffer++;
 				}
 
-				while (*buffer)
+				while ( *buffer )
 				{
-					if (*buffer == '\"')
+					if ( *buffer == '\"' )
 					{
 						buffer++;
 						value = buffer;
@@ -1437,11 +1587,11 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 					buffer++;
 				}
 
-				if (value != NULL && *value != '\"')
+				if ( value != NULL && *value != '\"' )
 				{
-					while (*buffer)
+					while ( *buffer )
 					{
-						if (*buffer == '\"')
+						if ( *buffer == '\"' )
 						{
 							char ch = *buffer;
 							*buffer = 0;
@@ -1461,13 +1611,13 @@ bool CBsp::LoadEntsFromBsp(unsigned char *bsp, lump_t *lump_entities)
 					sValue = "";
 				}
 
-				vEnts.back()[sKey] = sValue;
+				vEnts.back()[ sKey ] = sValue;
 			}
 		}
 	}
 
 	if ( file != NULL )
-		fclose(file);
+		fclose( file );
 
 	return true;
 }

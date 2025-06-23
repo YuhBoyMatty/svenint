@@ -9,8 +9,6 @@
 #include <dbg.h>
 #include <convar.h>
 
-//#define EXPERIMENTAL_FAST_EXACT_RECORDING
-
 //-----------------------------------------------------------------------------
 // Declare hooks
 //-----------------------------------------------------------------------------
@@ -46,9 +44,7 @@ static FORCEINLINE bool IM_StringEndsWith( std::string const &str, std::string c
 
 CInputManager g_InputManager;
 
-#ifdef EXPERIMENTAL_FAST_EXACT_RECORDING
-static FILE *file = NULL;
-#endif
+static FILE *experimental = NULL;
 
 //-----------------------------------------------------------------------------
 // ConCommands, CVars..
@@ -58,6 +54,7 @@ ConVar sc_im_autorecord( "sc_im_autorecord", "0", FCVAR_CLIENTDLL, "Automaticall
 ConVar sc_im_autoplay( "sc_im_autoplay", "0", FCVAR_CLIENTDLL, "Automatically play inputs at map start" );
 ConVar sc_im_exact( "sc_im_exact", "0", FCVAR_CLIENTDLL, "Set origin & velocity" );
 ConVar sc_im_goto_exact( "sc_im_goto_exact", "1", FCVAR_CLIENTDLL, "Set origin & velocity when forwarding / backwarding / goto" );
+ConVar sc_im_experimental( "sc_im_experimental", "0", FCVAR_CLIENTDLL, "Experimental" );
 
 // BRUH
 static void sc_im_record( const CCommand &args );
@@ -241,7 +238,7 @@ bool CInputContext::ParseFile( FILE *hStream, int iVersion, int &iErrorCode )
 	size_t ulBytesRead, ulCommandBufferLength;
 	bool bParseOK = true;
 	int iFrameCount = 1;
-	
+
 	iErrorCode = 0;
 
 	while ( bParseOK )
@@ -626,8 +623,7 @@ void CInputContext::RecordInput( float frametime, usercmd_t *cmd, int active )
 	// Save input
 	m_frames.push_back( m_FrameBuffer );
 
-#ifdef EXPERIMENTAL_FAST_EXACT_RECORDING
-	if ( file != NULL )
+	if ( sc_im_experimental.GetBool() && experimental != NULL )
 	{
 		static char buffar[ 2048 ];
 
@@ -635,10 +631,9 @@ void CInputContext::RecordInput( float frametime, usercmd_t *cmd, int active )
 
 		if ( Host_IsServerActive() && ( pPlayer = g_pServerEngineFuncs->pfnPEntityOfEntIndex( g_pPlayerMove->player_index + 1 ) ) != NULL )
 		{
-			fprintf( file, "%d:%.3f %.3f %.3f:%.3f %.3f %.3f:%.3f %.3f %.3f\n", cmd->buttons, VectorExpand( va ), VectorExpand( pPlayer->v.origin ), VectorExpand( pPlayer->v.velocity ) );
+			fprintf( experimental, "%d:%.3f %.3f %.3f:%.3f %.3f %.3f:%.3f %.3f %.3f\n", cmd->buttons, VectorExpand( va ), VectorExpand( pPlayer->v.origin ), VectorExpand( pPlayer->v.velocity ) );
 		}
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -673,14 +668,14 @@ void CInputContext::PlaybackInput( float frametime, usercmd_t *cmd, int active )
 
 	g_pEngineFuncs->SetViewAngles( va );
 
-	g_ScriptCallbacks.OnPlayInput( m_sFileName.c_str(), m_iCurrentFrame + 1, cmd);
+	g_ScriptCallbacks.OnPlayInput( m_sFileName.c_str(), m_iCurrentFrame + 1, cmd );
 }
 
 //-----------------------------------------------------------------------------
 // CInputManager
 //-----------------------------------------------------------------------------
 
-CInputManager::CInputManager() : m_WhitelistedCommands(31, IM_CompareFunc, IM_HashFunc)
+CInputManager::CInputManager() : m_WhitelistedCommands( 31, IM_CompareFunc, IM_HashFunc )
 {
 	m_state = IM_NONE;
 	m_bSavedInputs = false;
@@ -704,7 +699,7 @@ bool CInputManager::Record( const char *pszFilename )
 					pszFilename,
 					m_state == IM_RECORDING ? "recording" : "playing back",
 					m_InputContext.FileName() );
-		
+
 		return false;
 	}
 
@@ -717,9 +712,8 @@ bool CInputManager::Record( const char *pszFilename )
 	m_bForceViewAngles = false;
 	m_sQueuedCommands.clear();
 
-#ifdef EXPERIMENTAL_FAST_EXACT_RECORDING
-	file = fopen( "output.txt", "w" );
-#endif
+	if ( sc_im_experimental.GetBool() )
+		experimental = fopen( "experimental.txt", "w" );
 
 	return true;
 }
@@ -751,7 +745,7 @@ bool CInputManager::Playback( const char *pszFilename )
 	}
 
 	IM_PRINT( "[Input Manager] Playing back inputs from file \"%s\"...\n", m_InputContext.FileName() );
-	
+
 	m_state = IM_PLAYINGBACK;
 	m_bForceViewAngles = false;
 
@@ -818,10 +812,8 @@ bool CInputManager::Stop( bool bAutoStop /* = false */ )
 		}
 	}
 
-#ifdef EXPERIMENTAL_FAST_EXACT_RECORDING
-	if ( file != NULL )
-		fclose( file );
-#endif
+	if ( experimental != NULL )
+		fclose( experimental );
 
 	m_InputContext.Clear();
 
@@ -1208,6 +1200,8 @@ void CInputManager::PostLoad( void )
 	m_WhitelistedCommands.Insert( "healme" );
 	m_WhitelistedCommands.Insert( "grenade" );
 	m_WhitelistedCommands.Insert( "takecover" );
+	m_WhitelistedCommands.Insert( "stuck" );
+	m_WhitelistedCommands.Insert( "unstuck" );
 	m_WhitelistedCommands.Insert( "sc_freeze" );
 	m_WhitelistedCommands.Insert( "sc_freeze2" );
 

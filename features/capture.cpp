@@ -300,6 +300,21 @@ bool CCapture::OpenPipe()
 	ZeroMemory( &m_pi, sizeof( PROCESS_INFORMATION ) );
 
 	snprintf( ffmpeg_args, M_ARRAYSIZE( ffmpeg_args ),
+			  "ffmpeg -f rawvideo \
+-pix_fmt rgb24 \
+-s:v %dx%d \
+-r %d \
+-i pipe:0 \
+-preset ultrafast \
+-y -movflags +faststart \
+-b:v 128k \
+-c:v libx264 \
+-crf 15 \
+-vf vflip \
+-pix_fmt yuv420p \
+%s.mp4", m_iWidth, m_iHeight, int( m_captureFps ), m_sFilename.c_str() );
+
+	/*
 "ffmpeg -f rawvideo \
 -pix_fmt rgb24 \
 -video_size %dx%d \
@@ -316,7 +331,7 @@ bool CCapture::OpenPipe()
 -colorspace bt709 \
 -color_range tv \
 -chroma_sample_location center \
-%s.mp4", m_iWidth, m_iHeight, int( m_captureFps ), m_sFilename.c_str() );
+	*/
 
 	if ( !CreateProcessA( NULL, ffmpeg_args, NULL, NULL, TRUE, 0, NULL, NULL, &si, &m_pi ) )
 	{
@@ -393,7 +408,7 @@ void CCapture::PostUpdateScreen( void )
 // Game frame
 //-----------------------------------------------------------------------------
 
-void CCapture::GameFrame( client_state_t state)
+void CCapture::GameFrame( client_state_t state )
 {
 	if ( !g_bPlayingbackDemo && IsRecording() && !m_bFirstCapture )
 	{
@@ -421,10 +436,10 @@ bool CCapture::Load( void )
 
 void CCapture::PostLoad( void )
 {
-	
+
 }
 
 void CCapture::Unload( void )
 {
-	
+
 }

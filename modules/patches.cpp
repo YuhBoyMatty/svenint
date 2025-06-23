@@ -45,10 +45,10 @@ static BYTE s_TertiaryAttackPatchedBytes[] =
 // what
 //-----------------------------------------------------------------------------
 
-// xWhitey: Make me 1
+// xWhitey: Make me 1, make it 1
 #define HOOK_INTEPR_BOUND ( 0 )
 
-DECLARE_HOOK( void, __cdecl, ORIG_CL_ComputeClientInterpAmount, usercmd_t * );
+DECLARE_HOOK( void, __cdecl, CL_ComputeClientInterpAmount, usercmd_t * );
 
 constexpr unsigned int patchInterpDupeSize = 0x1DF;
 
