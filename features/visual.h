@@ -68,6 +68,7 @@ private:
 	void DrawHitmarkers();
 	void DrawCrosshair();
 	void ShowSpeed();
+	void ShowFPS();
 	void ShowGrenadeTimer();
 	void ShowGrenadeTrajectory();
 	void ShowARGrenadeTrajectory();
@@ -90,6 +91,7 @@ private:
 	std::vector<hitmarker_t> m_vHitMarkers;
 
 	float m_flTime;
+	float m_flPrevCurTime;
 
 	float m_flPrevTime;
 	float m_flFadeTime;

@@ -377,6 +377,17 @@ public:
 		float grenade_timer_height_frac = 0.5f;
 		float grenade_timer_color[3] = { 100.f / 255.f, 130.f / 255.f, 200.f / 255.f };
 		float grenade_explosive_time_color[3] = { 1.f, 65.f / 255.f, 65.f / 255.f };
+		
+		//-----------------------------------------------------------------------------
+		// FPS indicator
+		//-----------------------------------------------------------------------------
+		
+		bool fps_indicator = false;
+		float fps_indicator_width_frac = 0.009f;
+		float fps_indicator_height_frac = 0.009f;
+		float fps_indicator_good_color[3] = { 100.f / 255.f, 130.f / 255.f, 200.f / 255.f };
+		float fps_indicator_avg_color[3] = { 1.f, 1.f, 127.f / 255.f };
+		float fps_indicator_bad_color[3] = { 1.f, 127.f / 255.f, 65.f / 255.f };
 
 		//-----------------------------------------------------------------------------
 		// Chams

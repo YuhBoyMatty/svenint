@@ -433,6 +433,24 @@ bool CConfig::Load()
 
 			ConfigManager()->EndSectionImport();
 		}
+		
+		if ( ConfigManager()->BeginSectionImport( "FPSINDICATOR" ) )
+		{
+			ConfigManager()->ImportParam( "Enable", cvars.fps_indicator );
+			ConfigManager()->ImportParam( "WidthFraction", cvars.fps_indicator_width_frac );
+			ConfigManager()->ImportParam( "HeightFraction", cvars.fps_indicator_height_frac );
+			ConfigManager()->ImportParam( "GoodFPSColor_R", cvars.fps_indicator_good_color[ 0 ] );
+			ConfigManager()->ImportParam( "GoodFPSColor_G", cvars.fps_indicator_good_color[ 1 ] );
+			ConfigManager()->ImportParam( "GoodFPSColor_B", cvars.fps_indicator_good_color[ 2 ] );
+			ConfigManager()->ImportParam( "AvgFPSColor_R", cvars.fps_indicator_avg_color[ 0 ] );
+			ConfigManager()->ImportParam( "AvgFPSColor_G", cvars.fps_indicator_avg_color[ 1 ] );
+			ConfigManager()->ImportParam( "AvgFPSColor_B", cvars.fps_indicator_avg_color[ 2 ] );
+			ConfigManager()->ImportParam( "BadFPSColor_R", cvars.fps_indicator_bad_color[ 0 ] );
+			ConfigManager()->ImportParam( "BadFPSColor_G", cvars.fps_indicator_bad_color[ 1 ] );
+			ConfigManager()->ImportParam( "BadFPSColor_B", cvars.fps_indicator_bad_color[ 2 ] );
+
+			ConfigManager()->EndSectionImport();
+		}
 
 		if ( ConfigManager()->BeginSectionImport( "VISUAL" ) )
 		{
@@ -1342,6 +1360,24 @@ void CConfig::Save()
 			ConfigManager()->ExportParam( "ExplosiveTimeColor_R", cvars.grenade_explosive_time_color[ 0 ] );
 			ConfigManager()->ExportParam( "ExplosiveTimeColor_G", cvars.grenade_explosive_time_color[ 1 ] );
 			ConfigManager()->ExportParam( "ExplosiveTimeColor_B", cvars.grenade_explosive_time_color[ 2 ] );
+
+			ConfigManager()->EndSectionExport();
+		}
+
+		if ( ConfigManager()->BeginSectionExport( "FPSINDICATOR" ) )
+		{
+			ConfigManager()->ExportParam( "Enable", cvars.fps_indicator );
+			ConfigManager()->ExportParam( "WidthFraction", cvars.fps_indicator_width_frac );
+			ConfigManager()->ExportParam( "HeightFraction", cvars.fps_indicator_height_frac );
+			ConfigManager()->ExportParam( "GoodFPSColor_R", cvars.fps_indicator_good_color[ 0 ] );
+			ConfigManager()->ExportParam( "GoodFPSColor_G", cvars.fps_indicator_good_color[ 1 ] );
+			ConfigManager()->ExportParam( "GoodFPSColor_B", cvars.fps_indicator_good_color[ 2 ] );
+			ConfigManager()->ExportParam( "AvgFPSColor_R", cvars.fps_indicator_avg_color[ 0 ] );
+			ConfigManager()->ExportParam( "AvgFPSColor_G", cvars.fps_indicator_avg_color[ 1 ] );
+			ConfigManager()->ExportParam( "AvgFPSColor_B", cvars.fps_indicator_avg_color[ 2 ] );
+			ConfigManager()->ExportParam( "BadFPSColor_R", cvars.fps_indicator_bad_color[ 0 ] );
+			ConfigManager()->ExportParam( "BadFPSColor_G", cvars.fps_indicator_bad_color[ 1 ] );
+			ConfigManager()->ExportParam( "BadFPSColor_B", cvars.fps_indicator_bad_color[ 2 ] );
 
 			ConfigManager()->EndSectionExport();
 		}

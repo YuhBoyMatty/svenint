@@ -2236,7 +2236,7 @@ void CMenuModule::DrawHUDTabContent()
 
 		ImGui::SetCursorPosX( 332 );
 
-		ImGui::BeginChild( xs( "ESP2" ), ImVec2( 328.5, 195 ), true );
+		ImGui::BeginChild( xs( "ESP2" ), ImVec2( 328.5, 420 ), true ); // esp lol what
 
 		ImGui::PushItemWidth( 160 );
 
@@ -2261,6 +2261,38 @@ void CMenuModule::DrawHUDTabContent()
 		ImGui::Spacing();
 
 		ImGui::SliderFloat( xs( "Height Fraction##nade_t" ), &g_Config.cvars.grenade_timer_height_frac, 0.f, 1.f );
+
+		ImGuiCustom.Spacing( 8 );
+
+		ImGui::Text( xs( "FPS Indicator" ) );
+
+		ImGui::PushItemWidth( 130 );
+
+		ImGui::Spacing();
+
+		ImGui::Checkbox( xs( "Show FPS Indicator" ), &g_Config.cvars.fps_indicator );
+
+		ImGui::Spacing();
+
+		ImGui::ColorEdit3( xs( "Good FPS Color##fps_t" ), g_Config.cvars.fps_indicator_good_color );
+
+		ImGui::Spacing();
+
+		ImGui::ColorEdit3( xs( "Average FPS Color##fps_t" ), g_Config.cvars.fps_indicator_avg_color );
+		
+		ImGui::Spacing();
+
+		ImGui::ColorEdit3( xs( "Bad FPS Color##fps_t" ), g_Config.cvars.fps_indicator_bad_color );
+
+		ImGui::Spacing();
+
+		ImGui::SliderFloat( xs( "Width Fraction##fps_t" ), &g_Config.cvars.fps_indicator_width_frac, 0.f, 1.f );
+
+		ImGui::Spacing();
+
+		ImGui::SliderFloat( xs( "Height Fraction##fps_t" ), &g_Config.cvars.fps_indicator_height_frac, 0.f, 1.f );
+
+		ImGuiCustom.Spacing( 4 );
 
 		ImGui::EndChild();
 		ImGui::PopItemWidth();

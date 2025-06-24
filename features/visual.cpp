@@ -162,7 +162,10 @@ void CVisual::OnHUDRedraw(float flTime)
 	m_flTime = flTime;
 
 	ShowSpeed();
+	ShowFPS();
 	ShowGrenadeTimer();
+
+	m_flPrevCurTime = flTime;
 }
 
 void CVisual::V_CalcRefdef(struct ref_params_s *pparams)
@@ -336,6 +339,42 @@ void CVisual::ShowSpeed()
 	}
 
 	vecPrevVelocity = vecVelocity;
+}
+
+void CVisual::ShowFPS()
+{
+	if ( !g_Config.cvars.fps_indicator )
+		return;
+
+	int r, g, b;
+	int fps = int( 1.f / ( m_flTime - m_flPrevCurTime ) );
+
+	if ( fps >= 60 )
+	{
+		r = int( 255.f * g_Config.cvars.fps_indicator_good_color[ 0 ] );
+		g = int( 255.f * g_Config.cvars.fps_indicator_good_color[ 1 ] );
+		b = int( 255.f * g_Config.cvars.fps_indicator_good_color[ 2 ] );
+	}
+	else if ( fps <= 25 )
+	{
+		r = int( 255.f * g_Config.cvars.fps_indicator_bad_color[ 0 ] );
+		g = int( 255.f * g_Config.cvars.fps_indicator_bad_color[ 1 ] );
+		b = int( 255.f * g_Config.cvars.fps_indicator_bad_color[ 2 ] );
+	}
+	else
+	{
+		r = int( 255.f * g_Config.cvars.fps_indicator_avg_color[ 0 ] );
+		g = int( 255.f * g_Config.cvars.fps_indicator_avg_color[ 1 ] );
+		b = int( 255.f * g_Config.cvars.fps_indicator_avg_color[ 2 ] );
+	}
+
+	g_Drawing.DrawNumber( int( 1.f / ( m_flTime - m_flPrevCurTime ) ),
+						  int( m_iScreenWidth * g_Config.cvars.fps_indicator_width_frac ),
+						  int( m_iScreenHeight * g_Config.cvars.fps_indicator_height_frac ),
+						  r,
+						  g,
+						  b,
+						  FONT_ALIGN_LEFT );
 }
 
 void CVisual::DrawHitmarkers()
@@ -1863,6 +1902,7 @@ int UserMsgHook_ScreenFade(const char *pszUserMsg, int iSize, void *pBuffer)
 CVisual::CVisual()
 {
 	m_flTime = 0.f;
+	m_flPrevCurTime = 0.f;
 
 	m_flPrevTime = 0.f;
 	m_flFadeTime = g_Config.cvars.jumpspeed_fade_duration;
