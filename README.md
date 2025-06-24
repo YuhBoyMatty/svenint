@@ -1,7 +1,7 @@
 # SvenInt
-Publishing the private version, no more updates for this project, Sven Co-op has met its end and will never be the same, special thanks for the braindead devs. Have fun exploring this mess. 
+Publishing the private version, no more updates for this project (mayyybeeee), Sven Co-op has met its end and will never be the same for me, special thanks for the braindead devs. Have fun exploring this mess. 
 
-SvenInt is a C++ plugin for [SvenMod](https://github.com/sw1ft747/SvenMod) that provides to you various cheats, gameplay enhances and the best speedrun tools for the time being
+SvenInt is a C++ plugin for [SvenMod](https://github.com/sw1ft747/SvenMod) that provides to you various cheats, gameplay enhances and the best speedrun tools so far
 
 Supported version of the game: 5.25
 

@@ -9,7 +9,7 @@ namespace Patterns
 	
 		DEFINE_PATTERN( Host_FilterTime, "E9 ? ? ? ? 90 90 90 8B 0D ? ? ? ? D8");
 		DEFINE_PATTERN( host_framerate, "74 ? DD ? B8" );
-		DEFINE_PATTERN( host_frametime, "DD ? ? ? ? ? 51 D9 ? ? E8 ? ? ? ? 59" );
+		DEFINE_PATTERN( host_frametime, "DD 15 ? ? ? ? DC ? ? ? ? ? DD ? ? ? ? ? C3" );
 		DEFINE_PATTERN( g_flInterpolationAmount, "D9 ? ? ? ? ? EB ? 8B DF" );
 		
 		DEFINE_PATTERN( Netchan_CanPacket, "D9 ? ? ? ? ? D9 ? DA ? DF E0 F6 C4 ? 8B 44 24 04");

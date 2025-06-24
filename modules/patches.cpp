@@ -677,7 +677,7 @@ bool CPatchesModule::Load()
 	}
 	
 	// host_frametime
-	pflhost_frametime = *(float **)( (unsigned char *)phost_frametime + 0x1 );
+	pflhost_frametime = *(float **)( (unsigned char *)phost_frametime + 0x2 );
 
 	// g_flInterpolationAmount
 	pflg_flInterpolationAmount = *(float **)( (unsigned char *)pg_flInterpolationAmount + 0x1 );
