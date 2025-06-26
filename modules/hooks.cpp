@@ -185,7 +185,7 @@ static unsigned int *cl__frame__valid = NULL;
 //-----------------------------------------------------------------------------
 
 ConVar cl_lefthand( "cl_lefthand", "0", FCVAR_CLIENTDLL, "Left-handed viewmodels" );
-ConVar viewmodel_fov( "viewmodel_fov", "0", FCVAR_CLIENTDLL, "Viewmodel FOV" );
+ConVar sc_viewmodel_fov( "sc_viewmodel_fov", "0", FCVAR_CLIENTDLL, "Viewmodel FOV" );
 
 ConVar sc_novis( "sc_novis", "0", FCVAR_CLIENTDLL, "Better r_novis" );
 ConVar sc_unforcecvars( "sc_unforcecvars", "0", FCVAR_CLIENTDLL, "Don't force CVars" );
@@ -555,6 +555,9 @@ void HOOKED_NetMsgHook_SendCvarValue( void )
 			if ( !strncmp( xs( "sc_" ), pszCvarName, strlen( xs( "sc_" ) ) ) )
 			{
 				Msg( xs( "Rejected a server's attempt to query SvenInt's console variable \"%s\"\n" ), pszCvarName );
+
+				ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
+				ClientToServerBuffer.WriteString( (char *)pCvar->string );
 			}
 			else
 			{
@@ -616,6 +619,11 @@ void HOOKED_NetMsgHook_SendCvarValue2( void )
 			if ( !strncmp( xs( "sc_" ), pszCvarName, strlen( xs( "sc_" ) ) ) )
 			{
 				Msg( xs( "Rejected a server's attempt to query SvenInt's console variable \"%s\"\n" ), pszCvarName );
+
+				ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE2 );
+				ClientToServerBuffer.WriteLong( iRequestID );
+				ClientToServerBuffer.WriteString( pszCvarName );
+				ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 			}
 			else
 			{
@@ -1375,9 +1383,9 @@ DECLARE_CLASS_FUNC( void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr
 			( *rotationmatrix )[ 2 ][ 1 ] *= -1.f;
 		}
 
-		if ( viewmodel_fov.GetBool() )
+		if ( sc_viewmodel_fov.GetBool() )
 		{
-			float fov = viewmodel_fov.GetFloat();
+			float fov = sc_viewmodel_fov.GetFloat();
 
 			for ( int i = 0; i < 3; i++ )
 			{

@@ -130,6 +130,7 @@ CON_COMMAND( savepos, "Save local player's position" )
 		if ( !FNullEnt( pPlayer ) && IsValidEntity( pPlayer ) )
 		{
 			savedpos = pPlayer->v.origin;
+			Msg( "savepos: %.6f %.6f %.6f\n", VectorExpand( savedpos ) );
 			Utils()->PrintChatText( "<SvenInt> Saved current position" );
 		}
 	}
