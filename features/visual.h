@@ -62,12 +62,15 @@ public:
 
 	void CClient_SoundEngine__PlayFMODSoundPost( void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex, float flOffset );
 
+	void ReloadFriends( void );
+
 private:
 	void ESP();
 	void ShowSounds();
 	void DrawHitmarkers();
 	void DrawCrosshair();
 	void ShowSpeed();
+	void ShowFriends();
 	void ShowFPS();
 	void ShowGrenadeTimer();
 	void ShowGrenadeTrajectory();

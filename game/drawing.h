@@ -124,6 +124,7 @@ extern CDrawing g_Drawing;
 
 extern vgui::HFont g_hFontESP;
 extern vgui::HFont g_hFontESP2;
+extern vgui::HFont g_hFontFriends;
 extern vgui::HFont g_hFontSpeedometer;
 extern vgui::HFont g_hFontVotePopup;
 //extern vgui::HFont MENU;

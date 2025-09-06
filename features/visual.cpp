@@ -13,6 +13,7 @@
 #include <ISvenModAPI.h>
 
 #include <messagebuffer.h>
+#include <data_struct/hash.h>
 
 #include <hl_sdk/engine/studio.h>
 #include <hl_sdk/cl_dll/cl_dll.h>
@@ -63,6 +64,15 @@ bone_s g_Bones[MAXENTS + 1];
 DECLARE_HOOK(int, __cdecl, V_FadeAlpha);
 //DECLARE_HOOK(void, __cdecl, EV_HLDM_PlayTextureSound, int idx, pmtrace_t *trace, float *vecSrc, float *vecEnd, int iBulletType);
 //DECLARE_HOOK(char, __cdecl, HUD_PlayerMoveTexture, const char *name);
+
+//-----------------------------------------------------------------------------
+// Hash Maps
+//-----------------------------------------------------------------------------
+
+bool HashMap_Compare( const uint64 &a, const uint64 &b ) { return a == b; }
+unsigned int HashMap_Hash( const uint64 &a ) { return HashKey( (unsigned char *)&a, sizeof( uint64 ) ); }
+
+static CHash<uint64> _Friends( 15, HashMap_Compare, HashMap_Hash );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -124,6 +134,17 @@ CON_COMMAND_EXTERN(sc_esp, ConCommand_ESP, "Toggle ESP")
 	g_Config.cvars.esp = !g_Config.cvars.esp;
 }
 
+CON_COMMAND_EXTERN(sc_show_friends, ConCommand_Friends, "Show list of friends playing on this server")
+{
+	Msg(g_Config.cvars.show_friends ? "Friends List disabled\n" : "Friends List enabled\n");
+	g_Config.cvars.show_friends = !g_Config.cvars.show_friends;
+}
+
+CON_COMMAND(sc_reload_friends, "Reload list of friends to display in-game")
+{
+	g_Visual.ReloadFriends();
+}
+
 //-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
@@ -150,6 +171,7 @@ void CVisual::OnVideoInit()
 	m_vHitMarkers.clear();
 
 	ResetJumpSpeed();
+	ReloadFriends();
 }
 
 void CVisual::GameFrame()
@@ -187,6 +209,7 @@ void CVisual::Draw()
 	DrawHitmarkers();
 
 	ESP();
+	ShowFriends();
 
 	DrawCrosshair();
 }
@@ -339,6 +362,64 @@ void CVisual::ShowSpeed()
 	}
 
 	vecPrevVelocity = vecVelocity;
+}
+
+void CVisual::ShowFriends()
+{
+	if ( !g_Config.cvars.show_friends )
+		return;
+
+	int w, h;
+	int lineOffset = 0;
+
+	int r = int( 255.f * g_Config.cvars.friends_color[ 0 ] );
+	int g = int( 255.f * g_Config.cvars.friends_color[ 1 ] );
+	int b = int( 255.f * g_Config.cvars.friends_color[ 2 ] );
+	int a = int( 255.f * g_Config.cvars.friends_color[ 3 ] );
+
+	g_Drawing.DrawStringEx( g_hFontFriends,
+							int( m_iScreenWidth * g_Config.cvars.friends_width_fraction ),
+							int( m_iScreenHeight * g_Config.cvars.friends_height_fraction ),
+							r, g, b, a,
+							w, h,
+							FONT_ALIGN_LEFT,
+							"Friends online:" );
+
+	lineOffset += h;
+
+	bool bFoundAnyFriend = false;
+	for ( int i = 0; i < MAXCLIENTS; i++ )
+	{
+		player_info_t *pPlayerInfo = g_pEngineStudio->PlayerInfo( i );
+		if ( !pPlayerInfo || !pPlayerInfo->name || !pPlayerInfo->name[ 0 ] )
+			continue;
+
+		uint64 *pFound = _Friends.Find( PlayerUtils()->GetSteamID( i + 1 ) );
+		if ( pFound != NULL )
+		{
+			g_Drawing.DrawStringExF( g_hFontFriends,
+									 int( m_iScreenWidth * g_Config.cvars.friends_width_fraction ),
+									 int( m_iScreenHeight * g_Config.cvars.friends_height_fraction ) + lineOffset,
+									 r, g, b, a,
+									 w, h,
+									 FONT_ALIGN_LEFT,
+									 "(%d) %s", i + 1, pPlayerInfo->name );
+
+			lineOffset += h;
+			bFoundAnyFriend = true;
+		}
+	}
+
+	if ( !bFoundAnyFriend )
+	{
+		g_Drawing.DrawStringEx( g_hFontFriends,
+								int( m_iScreenWidth * g_Config.cvars.friends_width_fraction ),
+								int( m_iScreenHeight * g_Config.cvars.friends_height_fraction ) + lineOffset,
+								r, g, b, a,
+								w, h,
+								FONT_ALIGN_LEFT,
+								"No friends online" );
+	}
 }
 
 void CVisual::ShowFPS()
@@ -1812,6 +1893,93 @@ void CVisual::CClient_SoundEngine__PlayFMODSoundPost( void *thisptr, int fFlags,
 
 		//Render()->DrawBox( pos, Vector(-2, -2, -2), Vector(2, 2, 2), { 232, 0, 232, 128 }, 5.f );
 		g_Visual.AddSound( vecOrigin );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Load list of friends
+//-----------------------------------------------------------------------------
+
+void CVisual::ReloadFriends( void )
+{
+#define PARSE_COMMENT_PREFIX ";#"
+#define PARSE_STRIP_CHARS (" \t\n")
+
+#define PARSE_STRIP_CHARS_LEN (sizeof(PARSE_STRIP_CHARS) - 1)
+#define PARSE_COMMENT_PREFIX_LEN (sizeof(PARSE_COMMENT_PREFIX) - 1)
+
+	auto contains_chars = []( char ch, const char *chars, size_t length ) -> int
+	{
+		for ( size_t i = 0; i < length; ++i )
+		{
+			if ( chars[ i ] == ch )
+				return 1;
+		}
+
+		return 0;
+	};
+
+	auto lstrip = [ contains_chars ]( char *str ) -> char *
+	{
+		while ( *str && contains_chars( *str, PARSE_STRIP_CHARS, PARSE_STRIP_CHARS_LEN ) )
+			++str;
+
+		return str;
+	};
+
+	auto rstrip = [ contains_chars ]( char *str )
+	{
+		char *end = str + strlen( str ) - 1;
+
+		if ( end < str )
+			return;
+
+		while ( end >= str && contains_chars( *end, PARSE_STRIP_CHARS, PARSE_STRIP_CHARS_LEN ) )
+		{
+			*end = '\0';
+			--end;
+		}
+	};
+
+	auto remove_comment = [ contains_chars ]( char *str )
+	{
+		while ( *str && !contains_chars( *str, PARSE_COMMENT_PREFIX, PARSE_COMMENT_PREFIX_LEN ) )
+			++str;
+
+		if ( *str )
+			*str = '\0';
+	};
+
+	static char szBuffer[ 512 ];
+	FILE *file = fopen( "sven_internal/friends.txt", "r" );
+
+	_Friends.Clear();
+
+	if ( file != NULL )
+	{
+		int nLine = 0;
+
+		while ( fgets( szBuffer, sizeof( szBuffer ), file ) )
+		{
+			nLine++;
+
+			char *buffer = lstrip( (char *)szBuffer );
+			remove_comment( buffer );
+			rstrip( buffer );
+
+			if ( !*buffer )
+				continue;
+
+			uint64 steamID = atoll( buffer );
+			if ( steamID != 0uLL )
+				_Friends.Insert( steamID );
+		}
+
+		fclose( file );
+	}
+	else
+	{
+		Warning( "[SvenInt] Missing file \"../sven_internal/friends.txt\"\n" );
 	}
 }
 
