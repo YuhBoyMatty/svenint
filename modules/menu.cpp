@@ -105,7 +105,7 @@ static std::string MainTabNames[] = { xs( ICON_FA_EYE "  Visuals" ), xs( ICON_FA
 
 static std::string VisualsSubTabs[] = { xs( "Render" ), xs( "ESP" ), xs( "Chams" ), xs( "Glow" ), xs( "Flashlight" ), xs( "Wallhack" ), xs( "BSP" ), xs( "Models Manager" ), xs( "Shaders" ), xs( "Misc" ) };
 
-static std::string HUDSubTabs[] = { xs( "General" ), xs( "Speedometer" ), xs( "Radar" ), xs( "Chat Colors" ), xs( "Custom Vote Popup" ) };
+static std::string HUDSubTabs[] = { xs( "General" ), xs( "Speedometer" ), xs( "Radar" ), xs( "Chat Colors" ), xs( "Custom Vote Popup" ), xs( "Friends List" ) };
 
 static std::string UtilitySubTabs[] = { xs( "Player" ), xs( "Color Pulsator" ), xs( "Fake Lag" ), xs( "Anti-AFK" ), xs( "Spammer" ), xs( "Speedrun Tools" ), xs( "Misc" ) };
 
@@ -141,6 +141,7 @@ static obfuscated_string dof_interps[] = { xs( "0 - Linear" ), xs( "1 - Simple S
 
 static obfuscated_string strafe_dir_items[] = { xs( "0 - To the left" ), xs( "1 - To the right" ), xs( "2 - Best strafe" ), xs( "3 - View angles" ) };
 static obfuscated_string strafe_type_items[] = { xs( "0 - Max. acceleration" ), xs( "1 - Max. angle" ), xs( "2 - Max. deceleration" ), xs( "3 - Const speed" ) };
+static obfuscated_string strafe_bypass_mode_items[] = { xs( "0 - Off" ), xs( "1 - Strafe once per 2 frames" ), xs( "2 - Invert strafe inputs" ) };
 
 static obfuscated_string fakelag_type_items[] = { xs( "0 - Dynamic" ), xs( "1 - Maximum" ), xs( "2 - Jitter" ), xs( "3 - Break Lag Compensation" ) };
 static obfuscated_string fakelag_move_items[] = { xs( "0 - Everytime" ), xs( "1 - On Land" ), xs( "2 - On Move" ), xs( "3 - In Air" ) };
@@ -2563,6 +2564,30 @@ void CMenuModule::DrawHUDTabContent()
 		ImGui::EndChild();
 		break;
 	}
+	case 5: // Friends List
+	{
+		ImGui::BeginChild( xs( "friends-list" ), ImVec2( 328, 145 ), true );
+
+		ImGui::PushItemWidth( 180 );
+
+		ImGui::Checkbox( xs( "Show List of Friends" ), &g_Config.cvars.show_friends );
+
+		ImGui::Spacing();
+
+		ImGui::SliderFloat( xs( "Width Fraction##friends" ), &g_Config.cvars.friends_width_fraction, 0.0f, 1.0f );
+
+		ImGui::Spacing();
+
+		ImGui::SliderFloat( xs( "Height Fraction##friends" ), &g_Config.cvars.friends_height_fraction, 0.0f, 1.0f );
+
+		ImGui::Spacing();
+
+		ImGui::ColorEdit4( xs( "Color##friends" ), g_Config.cvars.friends_color );
+
+		ImGui::PopItemWidth();
+		ImGui::EndChild();
+		break;
+	}
 	}
 }
 
@@ -2709,7 +2734,7 @@ void CMenuModule::DrawUtilityTabContent()
 
 		ImGui::Checkbox( xs( "Enable Strafer" ), &g_Config.cvars.strafe );
 
-		ImGui::Spacing();
+		ImGui::SameLine();
 
 		ImGui::Checkbox( xs( "Ignore Ground" ), &g_Config.cvars.strafe_ignore_ground );
 
@@ -2720,6 +2745,10 @@ void CMenuModule::DrawUtilityTabContent()
 		ImGui::Spacing();
 
 		ImGui::Combo( xs( "Strafe Type" ), &g_Config.cvars.strafe_type, (const char **)strafe_type_items, IM_ARRAYSIZE( strafe_type_items ) );
+		
+		ImGui::Spacing();
+
+		ImGui::Combo( xs( "Bypass Mode" ), &g_Config.cvars.strafe_bypass_mode, (const char **)strafe_bypass_mode_items, IM_ARRAYSIZE( strafe_bypass_mode_items ) );
 
 		ImGuiCustom.Spacing( 8 );
 

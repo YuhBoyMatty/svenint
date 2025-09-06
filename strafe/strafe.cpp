@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+bool g_bStrafedRight = false;
+
 namespace Strafe
 {
 	void VectorFME( PlayerData &player, MovementVars &vars, double wishspeed, const double a[ 2 ] )
@@ -260,6 +262,7 @@ namespace Strafe
 		VectorFME( pl, strafedata.vars, wishspeed, avec );
 		VecCopy<float, 2>( pl.Velocity, new_vel );
 
+		g_bStrafedRight = right;
 		return yaw;
 	}
 

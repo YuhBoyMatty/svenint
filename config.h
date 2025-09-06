@@ -258,6 +258,11 @@ public:
 
 		int draw_entities = 0; // enum
 
+		bool show_friends = false;
+		float friends_width_fraction = 0.01f;
+		float friends_height_fraction = 0.5f;
+		float friends_color[4] = { 180.f / 255.f, 220.f / 255.f, 255.f / 255.f, 200.f / 255.f };
+		
 		bool show_speed = false;
 		bool show_vertical_speed = false;
 		bool show_jumpspeed = false;
@@ -465,6 +470,7 @@ public:
 		bool strafe = true;
 		bool strafe_vectorial = true;
 		bool strafe_ignore_ground = true;
+		int strafe_bypass_mode = 0;
 		int strafe_dir = 3; // enum
 		int strafe_type = 0; // enum
 

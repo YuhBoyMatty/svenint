@@ -461,6 +461,14 @@ bool CConfig::Load()
 			ConfigManager()->ImportParam( "SkipFramesCount", cvars.skip_frames_count );
 			ConfigManager()->ImportParam( "DrawEntities", cvars.draw_entities );
 
+			ConfigManager()->ImportParam( "ShowFriends", cvars.show_friends );
+			ConfigManager()->ImportParam( "FriendsWidthFraction", cvars.friends_width_fraction );
+			ConfigManager()->ImportParam( "FriendsHeightFraction", cvars.friends_height_fraction );
+			ConfigManager()->ImportParam( "FriendsColor_R", cvars.friends_color[ 0 ] );
+			ConfigManager()->ImportParam( "FriendsColor_G", cvars.friends_color[ 1 ] );
+			ConfigManager()->ImportParam( "FriendsColor_B", cvars.friends_color[ 2 ] );
+			ConfigManager()->ImportParam( "FriendsColor_A", cvars.friends_color[ 3 ] );
+
 			ConfigManager()->ImportParam( "ShowHitMarkers", cvars.show_hitmarkers );
 			ConfigManager()->ImportParam( "HitMarkersSound", cvars.hitmarkers_sound );
 			ConfigManager()->ImportParam( "HitMarkersSize", cvars.hitmarkers_size );
@@ -683,6 +691,7 @@ bool CConfig::Load()
 			ConfigManager()->ImportParam( "IgnoreGround", cvars.strafe_ignore_ground );
 			ConfigManager()->ImportParam( "Direction", cvars.strafe_dir );
 			ConfigManager()->ImportParam( "Type", cvars.strafe_type );
+			ConfigManager()->ImportParam( "BypassMode", cvars.strafe_bypass_mode );
 
 			ConfigManager()->EndSectionImport();
 		}
@@ -1391,6 +1400,14 @@ void CConfig::Save()
 			ConfigManager()->ExportParam( "SkipFramesCount", cvars.skip_frames_count );
 			ConfigManager()->ExportParam( "DrawEntities", cvars.draw_entities );
 
+			ConfigManager()->ExportParam( "ShowFriends", cvars.show_friends );
+			ConfigManager()->ExportParam( "FriendsWidthFraction", cvars.friends_width_fraction );
+			ConfigManager()->ExportParam( "FriendsHeightFraction", cvars.friends_height_fraction );
+			ConfigManager()->ExportParam( "FriendsColor_R", cvars.friends_color[ 0 ] );
+			ConfigManager()->ExportParam( "FriendsColor_G", cvars.friends_color[ 1 ] );
+			ConfigManager()->ExportParam( "FriendsColor_B", cvars.friends_color[ 2 ] );
+			ConfigManager()->ExportParam( "FriendsColor_A", cvars.friends_color[ 3 ] );
+
 			ConfigManager()->ExportParam( "ShowHitMarkers", cvars.show_hitmarkers );
 			ConfigManager()->ExportParam( "HitMarkersSound", cvars.hitmarkers_sound );
 			ConfigManager()->ExportParam( "HitMarkersSize", cvars.hitmarkers_size );
@@ -1613,6 +1630,7 @@ void CConfig::Save()
 			ConfigManager()->ExportParam( "IgnoreGround", cvars.strafe_ignore_ground );
 			ConfigManager()->ExportParam( "Direction", cvars.strafe_dir );
 			ConfigManager()->ExportParam( "Type", cvars.strafe_type );
+			ConfigManager()->ExportParam( "BypassMode", cvars.strafe_bypass_mode );
 
 			ConfigManager()->EndSectionExport();
 		}

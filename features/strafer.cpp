@@ -235,7 +235,15 @@ void CStrafer::CreateMove(float frametime, struct usercmd_s *cmd, int active)
 
 void CStrafer::Strafe(struct usercmd_s *cmd)
 {
-	if ( sc_strafe_ignore_ground.GetBool() && g_pPlayerMove->onground != -1 || cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) )
+	extern bool g_bStrafedRight;
+	static bool s_bLastStrafedRight = g_bStrafedRight;
+	static bool s_bFlip = false;
+	static bool s_bSkipFlip = false;
+
+	//if ( sc_strafe_ignore_ground.GetBool() && g_pPlayerMove->onground != -1 )
+	//	return;
+	
+	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) )
 		return;
 
 	if ( g_Config.cvars.antiafk || g_pPlayerMove->dead || g_pPlayerMove->iuser1 != 0 || g_pPlayerMove->movetype != MOVETYPE_WALK || g_pPlayerMove->waterlevel > WL_FEET )
@@ -275,6 +283,19 @@ void CStrafer::Strafe(struct usercmd_s *cmd)
 	{
 		Strafe::ProcessedFrame out;
 		out.Yaw = va[ 1 ];
+		if ( s_bFlip && g_Config.cvars.strafe_bypass_mode == 2 && s_bLastStrafedRight != g_bStrafedRight )
+			out.Yaw = NormalizeAngle( out.Yaw + 180.f );
+
+		// L4DST kicks in
+		if ( g_strafeData.vars.OnGround && ( g_Config.cvars.autojump || g_Config.cvars.autojump_legacy ) && cmd->buttons & IN_JUMP )
+		{
+			g_strafeData.vars.OnGround = false;
+			g_strafeData.vars.ReduceWishspeed = false;
+		}
+		else if ( sc_strafe_ignore_ground.GetBool() && g_strafeData.vars.OnGround )
+		{
+			return;
+		}
 
 		Strafe::Friction( g_strafeData );
 
@@ -285,12 +306,26 @@ void CStrafer::Strafe(struct usercmd_s *cmd)
 
 		if ( out.Processed )
 		{
+			bool bOldLastStrafedRight = s_bLastStrafedRight;
+			s_bLastStrafedRight = g_bStrafedRight;
+
+			if ( s_bSkipFlip && g_Config.cvars.strafe_bypass_mode == 1 && bOldLastStrafedRight != g_bStrafedRight )
+			{
+				s_bSkipFlip = false;
+				return;
+			}
+
+			s_bSkipFlip = true;
+
 			cmd->forwardmove = out.Forwardspeed;
 			cmd->sidemove = out.Sidespeed;
 
-			cmd->viewangles[ 1 ] = out.Yaw;
+			if ( s_bFlip && g_Config.cvars.strafe_bypass_mode == 2 )
+				cmd->viewangles[ 1 ] = out.Yaw;
+			else
+				cmd->viewangles[ 1 ] = va[ 1 ] = out.Yaw;
 
-			va[ 1 ] = out.Yaw;
+			s_bFlip = !s_bFlip;
 		}
 	}
 
