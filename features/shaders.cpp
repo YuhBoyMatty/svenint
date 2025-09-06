@@ -937,6 +937,7 @@ CShaders::CShaders()
 	m_pfnClientDLL_HudRedraw = NULL;
 	m_hClientDLL_HudRedraw = 0;
 
+	m_bEnabled = true;
 	m_hOldBuffer = 0;
 
 	POST_PROCESSING_RESET_VARS( m_hDepthBuffer );
@@ -954,6 +955,10 @@ CShaders::CShaders()
 
 bool CShaders::Load()
 {
+	m_bEnabled = !CommandLine()->HasParm( "-noshaders" );
+	if ( !m_bEnabled )
+		return true;
+
 #if SHADERS_ENABLE
 	m_pfnClientDLL_HudRedraw = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::ClientDLL_HudRedraw );
 
@@ -969,6 +974,9 @@ bool CShaders::Load()
 
 void CShaders::PostLoad()
 {
+	if ( !m_bEnabled )
+		return;
+
 #if SHADERS_ENABLE
 	m_width = g_ScreenInfo.width;
 	m_height = g_ScreenInfo.height;
@@ -998,6 +1006,9 @@ void CShaders::PostLoad()
 
 void CShaders::Unload()
 {
+	if ( !m_bEnabled )
+		return;
+
 #if SHADERS_ENABLE
 	DetoursAPI()->RemoveDetour( m_hClientDLL_HudRedraw );
 

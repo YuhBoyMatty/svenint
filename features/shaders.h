@@ -109,6 +109,7 @@ private:
 	void *m_pfnClientDLL_HudRedraw;
 	DetourHandle_t m_hClientDLL_HudRedraw;
 
+	bool m_bEnabled;
 	GLint m_hOldBuffer;
 
 	POST_PROCESSING_DEFINE_VARS( m_hDepthBuffer );
