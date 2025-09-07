@@ -494,7 +494,7 @@ bool CPatchesModule::PatchInterp()
 		return false;
 	}
 
-	if (*(pPatchInterp - 0x8) != 0x7D) // JNL opcode
+	if (*(pPatchInterp - 0x7) != 0x7D) // JNL opcode
 	{
 		Warning("'Patch Interp' failed initialization #8\n");
 		return false;
@@ -507,6 +507,7 @@ bool CPatchesModule::PatchInterp()
 	constexpr unsigned long forceDownOffset = 0x1C;
 	constexpr unsigned long forceDownCheckOpcode = 0x0F;
 #else
+	2D8AE58
 	constexpr unsigned long forceDownOffset = 0xD;
 	constexpr unsigned long forceDownCheckOpcode = 0x7E;
 #endif
@@ -518,7 +519,22 @@ bool CPatchesModule::PatchInterp()
 	}
 
 	// Patch ex_interp force down
-	*(pPatchInterp + forceDownOffset) = 0xEB; // TODO FIX MEEEEE    0F 8E BF 00 00 00  use JMP opcode
+#if defined(SC_5_26)
+	BYTE *ulJumpFrom =  pPatchInterp + forceDownOffset;
+	BYTE *ulJumpTo = ulJumpFrom + 0xC5;
+	unsigned long ulRelAdr = (unsigned long)MemoryUtils()->CalcRelativeAddress( ulJumpFrom, ulJumpTo );
+	*ulJumpFrom = 0xE9;
+	MemoryUtils()->PatchMemory( ulJumpFrom + 1, (unsigned char *)&ulRelAdr, sizeof( ulRelAdr ) );
+	MemoryUtils()->MemoryNOP( ulJumpFrom + 5, 1 );
+
+	// Patch:
+	// 0F8E BF000000
+	// To:
+	// JMP [ADDR]
+	// NOP
+#else
+	*(pPatchInterp + forceDownOffset) = 0xEB;
+#endif
 
 	VirtualProtect(m_pInterpClampBegin, patchInterpDupeSize, dwProtection, &dwProtection);
 #endif // #if !HOOK_INTEPR_BOUND
