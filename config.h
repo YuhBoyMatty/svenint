@@ -260,7 +260,7 @@ public:
 
 		bool show_friends = false;
 		float friends_width_fraction = 0.01f;
-		float friends_height_fraction = 0.5f;
+		float friends_height_fraction = 0.3f;
 		float friends_color[4] = { 180.f / 255.f, 220.f / 255.f, 255.f / 255.f, 200.f / 255.f };
 		
 		bool show_speed = false;
