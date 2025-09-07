@@ -283,7 +283,7 @@ void CStrafer::Strafe(struct usercmd_s *cmd)
 	{
 		Strafe::ProcessedFrame out;
 		out.Yaw = va[ 1 ];
-		if ( s_bFlip && g_Config.cvars.strafe_bypass_mode == 2 && s_bLastStrafedRight != g_bStrafedRight )
+		if ( s_bFlip && g_Config.cvars.strafe_bypass_mode == 2 )
 			out.Yaw = NormalizeAngle( out.Yaw + 180.f );
 
 		// L4DST kicks in
@@ -325,7 +325,10 @@ void CStrafer::Strafe(struct usercmd_s *cmd)
 			else
 				cmd->viewangles[ 1 ] = va[ 1 ] = out.Yaw;
 
-			s_bFlip = !s_bFlip;
+			if ( bOldLastStrafedRight == g_bStrafedRight )
+				s_bFlip = false;
+			else
+				s_bFlip = !s_bFlip;
 		}
 	}
 
