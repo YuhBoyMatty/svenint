@@ -69,6 +69,8 @@ DECLARE_CLASS_HOOK( void, CHudBaseTextBlock__Print, CHudBaseTextBlock *, const c
 
 DECLARE_CLASS_HOOK( void, CClient_SoundEngine__PlayFMODSound, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex, float flOffset );
 
+DECLARE_HOOK( bool, __cdecl, CCamera__Process, void *, void * );
+
 DECLARE_HOOK( qboolean, __cdecl, Netchan_CanPacket, netchan_t * );
 DECLARE_HOOK( void, __cdecl, ScaleColors, int *r, int *g, int *b, int alpha );
 DECLARE_HOOK( void, __cdecl, ScaleColors_RGBA, Color *clr );
@@ -202,6 +204,18 @@ ConVar sc_disable_players_join_chat( "sc_disable_players_join_chat", "0", FCVAR_
 ConVar sc_disable_monster_info( "sc_disable_monster_info", "0", FCVAR_CLIENTDLL, "" );
 ConVar sc_disable_sprays( "sc_disable_sprays", "0", FCVAR_CLIENTDLL, "" );
 
+CON_COMMAND( sc_gay, "" )
+{
+	const char *filename = args[ 1 ];
+
+	CMessageBuffer ClientToServerBuffer;
+	ClientToServerBuffer.Init( clc_buffer );
+	std::string s = "dlfile ";
+	s += filename;
+	ClientToServerBuffer.WriteByte( CLC_STRINGCMD );
+	ClientToServerBuffer.WriteString( (char *)s.c_str() );
+}
+
 //-----------------------------------------------------------------------------
 // Hooks module feature
 //-----------------------------------------------------------------------------
@@ -221,6 +235,7 @@ private:
 	void *m_pfnCHud__Think;
 	void *m_pfnCHudBaseTextBlock__Print;
 	void *m_pfnCClient_SoundEngine__PlayFMODSound;
+	void *m_pfnCCamera__Process;
 	void *m_pfnNetchan_CanPacket;
 	void *m_pfnScaleColors;
 	void *m_pfnScaleColors_RGBA;
@@ -245,6 +260,7 @@ private:
 	DetourHandle_t m_hCHud__Think;
 	DetourHandle_t m_hCHudBaseTextBlock__Print;
 	DetourHandle_t m_hCClient_SoundEngine__PlayFMODSound;
+	DetourHandle_t m_hCCamera__Process;
 	DetourHandle_t m_hNetchan_CanPacket;
 	DetourHandle_t m_hScaleColors;
 	DetourHandle_t m_hScaleColors_RGBA;
@@ -490,6 +506,18 @@ DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound, void *thisp
 		ORIG_CClient_SoundEngine__PlayFMODSound( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex, flOffset );
 
 	g_Visual.CClient_SoundEngine__PlayFMODSoundPost( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex, flOffset );
+}
+
+//-----------------------------------------------------------------------------
+// CCamera__Process hook
+//-----------------------------------------------------------------------------
+
+DECLARE_FUNC( bool, __cdecl, HOOKED_CCamera__Process, void *thisptr, void *unk )
+{
+	if ( g_pEngineFuncs->GetLocalPlayer() == NULL )
+		return true;
+
+	return ORIG_CCamera__Process( thisptr, unk );
 }
 
 //-----------------------------------------------------------------------------
@@ -2088,6 +2116,7 @@ CHooksModule::CHooksModule()
 	m_pfnCHud__Think = NULL;
 	m_pfnCHudBaseTextBlock__Print = NULL;
 	m_pfnCClient_SoundEngine__PlayFMODSound = NULL;
+	m_pfnCCamera__Process = NULL;
 	m_pfnNetchan_CanPacket = NULL;
 	m_pfnScaleColors = NULL;
 	m_pfnScaleColors_RGBA = NULL;
@@ -2174,6 +2203,9 @@ bool CHooksModule::Load()
 	auto fpfnCHud__Think = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::CHud__Think );
 	auto fpfnCHudBaseTextBlock__Print = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::CHudBaseTextBlock__Print );
 	auto fpfnCClient_SoundEngine__PlayFMODSound = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::CClient_SoundEngine__PlayFMODSound );
+#if defined(SC_5_26)
+	auto fpfnCCamera__Process = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Client, Patterns::Client::CCamera__Process );
+#endif
 	auto fpfnNetchan_CanPacket = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::Netchan_CanPacket );
 	auto fpfnSCR_UpdateScreen = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::SCR_UpdateScreen );
 	auto fpfnV_RenderView = MemoryUtils()->FindPatternAsync( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::V_RenderView );
@@ -2217,6 +2249,14 @@ bool CHooksModule::Load()
 		Warning( xs( "Couldn't find function \"CClient_SoundEngine::PlayFMODSound\"\n" ) );
 		ScanOK = false;
 	}
+	
+#if defined(SC_5_26)
+	if ( !( m_pfnCCamera__Process = fpfnCCamera__Process.get() ) )
+	{
+		Warning( xs( "Couldn't find function \"CCamera::Process\"\n" ) );
+		ScanOK = false;
+	}
+#endif
 
 	if ( !( m_pfnNetchan_CanPacket = fpfnNetchan_CanPacket.get() ) )
 	{
@@ -2430,6 +2470,9 @@ void CHooksModule::PostLoad()
 	m_hCHud__Think = DetoursAPI()->DetourFunction( m_pfnCHud__Think, HOOKED_CHud__Think, GET_FUNC_PTR( ORIG_CHud__Think ) );
 	m_hCHudBaseTextBlock__Print = DetoursAPI()->DetourFunction( m_pfnCHudBaseTextBlock__Print, HOOKED_CHudBaseTextBlock__Print, GET_FUNC_PTR( ORIG_CHudBaseTextBlock__Print ) );
 	m_hCClient_SoundEngine__PlayFMODSound = DetoursAPI()->DetourFunction( m_pfnCClient_SoundEngine__PlayFMODSound, HOOKED_CClient_SoundEngine__PlayFMODSound, GET_FUNC_PTR( ORIG_CClient_SoundEngine__PlayFMODSound ) );
+#if defined(SC_5_26)
+	m_hCCamera__Process = DetoursAPI()->DetourFunction( m_pfnCCamera__Process, HOOKED_CCamera__Process, GET_FUNC_PTR( ORIG_CCamera__Process ) );
+#endif
 	m_hNetchan_CanPacket = DetoursAPI()->DetourFunction( m_pfnNetchan_CanPacket, HOOKED_Netchan_CanPacket, GET_FUNC_PTR( ORIG_Netchan_CanPacket ) );
 	m_hScaleColors = DetoursAPI()->DetourFunction( m_pfnScaleColors, HOOKED_ScaleColors, GET_FUNC_PTR( ORIG_ScaleColors ) );
 	m_hScaleColors_RGBA = DetoursAPI()->DetourFunction( m_pfnScaleColors_RGBA, HOOKED_ScaleColors_RGBA, GET_FUNC_PTR( ORIG_ScaleColors_RGBA ) );
@@ -2477,6 +2520,9 @@ void CHooksModule::Unload()
 	DetoursAPI()->RemoveDetour( m_hCHud__Think );
 	DetoursAPI()->RemoveDetour( m_hCHudBaseTextBlock__Print );
 	DetoursAPI()->RemoveDetour( m_hCClient_SoundEngine__PlayFMODSound );
+#if defined(SC_5_26)
+	DetoursAPI()->RemoveDetour( m_hCCamera__Process );
+#endif
 	DetoursAPI()->RemoveDetour( m_hNetchan_CanPacket );
 	DetoursAPI()->RemoveDetour( m_hScaleColors );
 	DetoursAPI()->RemoveDetour( m_hScaleColors_RGBA );

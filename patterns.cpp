@@ -143,6 +143,8 @@ namespace Patterns
 		DEFINE_PATTERN( CClient_SoundEngine__Play2DSound, "83 EC ? F3 0F 10 44 24 14" );
 		DEFINE_PATTERN( CClient_SoundEngine__LoadSoundList, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 A4 08 00 00" );
 
+		DEFINE_PATTERN( CCamera__Process, "56 8B 74 24 0C 57 8B 7C 24 0C 81" );
+
 		DEFINE_PATTERN( EV_HLDM_PlayTextureSound, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 AC 00 00 00 8B 84 24 C0 00 00 00" );
 
 		DEFINE_PATTERN( HACK_GetPlayerUniqueID, "FF 74 24 08 A1" );
