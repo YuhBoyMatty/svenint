@@ -27,6 +27,7 @@
 //#include "../utils/security.hpp"
 #include "../friends.h"
 #include "../config.h"
+#include "../plugin.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb/stb_image.h"
@@ -542,7 +543,7 @@ void CMenuModule::DrawLogo()
 
 	ImGui::SameLine();
 
-	ImGui::SetCursorPosY( 12 );
+	ImGui::SetCursorPosY( 6 ); // def 12
 	ImGui::SetCursorPosX( 50 );
 
 	ImGui::PushFont( m_pMenuFontBig );
@@ -550,6 +551,10 @@ void CMenuModule::DrawLogo()
 	ImGui::TextUnformatted( xs( "SvenInt" ) );
 
 	ImGui::PopFont();
+
+	ImGui::SetCursorPosY( 6 + 24 );
+	ImGui::SetCursorPosX( 50 );
+	ImGui::TextUnformatted( xs( "v" SVENINT_MAJOR_VERSION_STRING "." SVENINT_MINOR_VERSION_STRING "." SVENINT_PATCH_VERSION_STRING ) );
 
 	ImGui::Spacing();
 }
