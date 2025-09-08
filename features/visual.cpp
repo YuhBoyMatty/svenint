@@ -366,7 +366,7 @@ void CVisual::ShowSpeed()
 
 void CVisual::ShowFriends()
 {
-	if ( !g_Config.cvars.show_friends )
+	if ( !g_Config.cvars.show_friends || g_CamHack.IsEnabled() )
 		return;
 
 	int w, h;
@@ -1953,10 +1953,9 @@ void CVisual::ReloadFriends( void )
 	static char szBuffer[ 512 ];
 	FILE *file = fopen( "sven_internal/friends.txt", "r" );
 
-	_Friends.Clear();
-
 	if ( file != NULL )
 	{
+		_Friends.Clear();
 		int nLine = 0;
 
 		while ( fgets( szBuffer, sizeof( szBuffer ), file ) )
