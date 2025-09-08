@@ -415,7 +415,11 @@ bool CAim::IsUsingMountedGun()
 
 	// offset: usermsg HideHUD
 	// TODO: validate offset for different sven versions
+#if defined(SC_5_26)
+	return g_pHUD != NULL && ( *( (int *)g_pHUD + 35 ) & HIDEHUD_WEAPONS );
+#else
 	return g_pHUD != NULL && ( *( (int *)g_pHUD + 21 ) & HIDEHUD_WEAPONS );
+#endif
 }
 
 bool CAim::CheckReload( int iWeaponID, int iClip, usercmd_t *cmd )
