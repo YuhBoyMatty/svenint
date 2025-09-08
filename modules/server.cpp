@@ -437,7 +437,7 @@ bool CServerModule::Init( void )
 			return false;
 		}
 
-		Msg( "[Sven Internal] Preloaded server binary\n" );
+		Msg( "[SvenInt] Preloaded server binary\n" );
 	}
 
 	// Get API functions

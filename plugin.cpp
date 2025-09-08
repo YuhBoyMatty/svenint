@@ -190,7 +190,7 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 
 	if ( !GL_Init() )
 	{
-		Warning(("[Sven Internal] Failed to initialize OpenGL module\n"));
+		Warning(("[SvenInt] Failed to initialize OpenGL module\n"));
 		return false;
 	}
 
@@ -220,13 +220,13 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 
 	if ( !g_ServerModule.Init() )
 	{
-		Warning(("[Sven Internal] Failed to initialize server's module\n"));
+		Warning(("[SvenInt] Failed to initialize server's module\n"));
 		return false;
 	}
 
 	if ( !g_KeySpam.Init() || !LoadFeatures() )
 	{
-		Warning(("[Sven Internal] Failed to initialize one of features\n"));
+		Warning(("[SvenInt] Failed to initialize one of features\n"));
 		return false;
 	}
 
@@ -257,7 +257,7 @@ bool CSvenInternal::Load(CreateInterfaceFn pfnSvenModFactory, ISvenModAPI *pSven
 
 void CSvenInternal::PostLoad(bool bGlobalLoad)
 {
-	ConColorMsg( { 40, 255, 40, 255 }, ( "[Sven Internal] Successfully loaded\n" ) );
+	ConColorMsg( { 40, 255, 40, 255 }, ( "[SvenInt] Successfully loaded\n" ) );
 
 	if (bGlobalLoad)
 	{
@@ -303,7 +303,7 @@ void CSvenInternal::Unload(void)
 
 bool CSvenInternal::Pause(void)
 {
-	Warning(("[Sven Internal] It is not allowed to pause the plugin\n"));
+	Warning(("[SvenInt] It is not allowed to pause the plugin\n"));
 	return false;
 }
 
@@ -341,7 +341,9 @@ void CSvenInternal::OnDisconnect(void)
 	g_ScriptVM.Shutdown();
 }
 
+#if SECURITY_CHECKS
 #pragma optimize("", off)
+#endif
 void CSvenInternal::GameFrame(client_state_t state, double frametime, bool bPostRunCmd)
 {
 	extern bool g_bScreenshot;
@@ -468,7 +470,9 @@ void CSvenInternal::GameFrame(client_state_t state, double frametime, bool bPost
 		g_InputManager.GameFrame( bPostRunCmd );
 	}
 }
+#if SECURITY_CHECKS
 #pragma optimize("", on)
+#endif
 
 void CSvenInternal::Draw(void)
 {
@@ -563,27 +567,27 @@ void CSvenInternal::InitFolders(ISvenModAPI *pSvenModAPI)
 #ifdef PLATFORM_WINDOWS
 	if ( !CreateDirectory((sDir + ("\\sven_internal\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(("[Sven Internal] Failed to create \"../sven_internal/\" directory\n"));
+		Warning(("[SvenInt] Failed to create \"../sven_internal/\" directory\n"));
 	}
 
 	if ( !CreateDirectory((sDir + ("\\sven_internal\\config\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(("[Sven Internal] Failed to create \"../sven_internal/config/\" directory\n"));
+		Warning(("[SvenInt] Failed to create \"../sven_internal/config/\" directory\n"));
 	}
 	
 	if ( !CreateDirectory((sDir + ("\\sven_internal\\config\\shaders\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(("[Sven Internal] Failed to create \"../sven_internal/config/shaders/\" directory\n"));
+		Warning(("[SvenInt] Failed to create \"../sven_internal/config/shaders/\" directory\n"));
 	}
 
 	if ( !CreateDirectory((sDir + ("\\sven_internal\\message_spammer\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(("[Sven Internal] Failed to create \"../sven_internal/message_spammer/\" directory\n"));
+		Warning(("[SvenInt] Failed to create \"../sven_internal/message_spammer/\" directory\n"));
 	}
 
 	if ( !CreateDirectory((sDir + ("\\sven_internal\\input_manager\\")).c_str(), NULL) && GetLastError() != ERROR_ALREADY_EXISTS )
 	{
-		Warning(("[Sven Internal] Failed to create \"../sven_internal/input_manager/\" directory\n"));
+		Warning(("[SvenInt] Failed to create \"../sven_internal/input_manager/\" directory\n"));
 	}
 #else
 #error Implement Linux equivalent
