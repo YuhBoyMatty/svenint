@@ -27,6 +27,7 @@
 //-----------------------------------------------------------------------------
 
 #define DEFINE_SCRIPTFUNC( name ) static int ScriptFunc_##name( lua_State *pLuaState )
+#define DEFINE_SCRIPTFUNC_NONSTATIC( name ) int ScriptFunc_##name( lua_State *pLuaState )
 #define DEFINE_GETTER( metatable, type ) static int ScriptFunc_MetaMethod_index( lua_State *pLuaState ) \
 { \
 	const char *pszKey = luaL_checkstring( pLuaState, 2 ); \
