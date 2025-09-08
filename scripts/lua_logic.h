@@ -91,7 +91,7 @@ struct Lua_TimerContext
 
 class CTimersHandler
 {
-	friend static int ScriptFunc_CreateTimer(lua_State *pLuaState);
+	friend int ScriptFunc_CreateTimer(lua_State *pLuaState);
 
 public:
 	CTimersHandler();

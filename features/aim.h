@@ -20,7 +20,7 @@ class CEntity;
 
 class CAim : public CBaseFeature
 {
-	friend static int ScriptFunc_Aimbot( struct lua_State *pLuaState );
+	friend int ScriptFunc_Aimbot( struct lua_State *pLuaState );
 
 public:
 	virtual bool Load();

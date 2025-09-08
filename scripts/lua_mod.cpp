@@ -428,7 +428,7 @@ DEFINE_SCRIPTFUNC( TraceHull )
 	return VLUA_RET_ARGS( 0 );
 }
 
-DEFINE_SCRIPTFUNC( Aimbot )
+DEFINE_SCRIPTFUNC_NONSTATIC( Aimbot )
 {
 	usercmd_t *cmd = lua_getusercmd( pLuaState, 1 );
 	bool bAimbot = lua_toboolean( pLuaState, 2 );

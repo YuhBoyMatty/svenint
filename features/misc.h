@@ -20,7 +20,7 @@ typedef std::unordered_map<std::string, std::string> CmdMap;
 class CMisc : public CBaseFeature
 {
 	friend class CAim;
-	friend static int ScriptFunc_Aimbot( struct lua_State *pLuaState );
+	friend int ScriptFunc_Aimbot( struct lua_State *pLuaState );
 
 public:
 	CmdMap m_OnTickCommands;
