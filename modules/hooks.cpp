@@ -204,18 +204,6 @@ ConVar sc_disable_players_join_chat( "sc_disable_players_join_chat", "0", FCVAR_
 ConVar sc_disable_monster_info( "sc_disable_monster_info", "0", FCVAR_CLIENTDLL, "" );
 ConVar sc_disable_sprays( "sc_disable_sprays", "0", FCVAR_CLIENTDLL, "" );
 
-CON_COMMAND( sc_gay, "" )
-{
-	const char *filename = args[ 1 ];
-
-	CMessageBuffer ClientToServerBuffer;
-	ClientToServerBuffer.Init( clc_buffer );
-	std::string s = "dlfile ";
-	s += filename;
-	ClientToServerBuffer.WriteByte( CLC_STRINGCMD );
-	ClientToServerBuffer.WriteString( (char *)s.c_str() );
-}
-
 //-----------------------------------------------------------------------------
 // Hooks module feature
 //-----------------------------------------------------------------------------
@@ -585,7 +573,7 @@ void HOOKED_NetMsgHook_SendCvarValue( void )
 				Msg( xs( "Rejected a server's attempt to query SvenInt's console variable \"%s\"\n" ), pszCvarName );
 
 				ClientToServerBuffer.WriteByte( CLC_REQUESTCVARVALUE );
-				ClientToServerBuffer.WriteString( (char *)pCvar->string );
+				ClientToServerBuffer.WriteString( (char *)xs( "Bad CVAR request" ) );
 			}
 			else
 			{
@@ -995,7 +983,7 @@ DECLARE_FUNC( int, __cdecl, HOOKED_CRC_MapFile, uint32 *ulCRC, char *pszMapName 
 	{
 		if ( *ulCRC != g_ulMapCRC && g_Config.cvars.ignore_different_map_versions )
 		{
-			Warning( xs( "[Sven Internal] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n" ) );
+			Warning( xs( "[SvenInt] Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n" ) );
 			Warning( xs( "Client's CRC of the map: %X\n" ), g_ulMapCRC );
 			Warning( xs( "Server's CRC of the map: %X\n" ), *ulCRC );
 
