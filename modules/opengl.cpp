@@ -21,7 +21,7 @@ bool GL_Init()
 
 	if ( status != GLEW_OK )
 	{
-		Warning(("[Sven Internal] Failed to initialize GLEW. Reason: %s\n"), glewGetErrorString(status));
+		Warning(("[SvenInt] Failed to initialize GLEW. Reason: %s\n"), glewGetErrorString(status));
 		return false;
 	}
 
@@ -29,7 +29,7 @@ bool GL_Init()
 
 	if ( pfnGL_Bind == NULL )
 	{
-		Warning(("Failed to find function \"GL_Bind\"\n"));
+		Warning(("[SvenInt] Failed to find function \"GL_Bind\"\n"));
 		return false;
 	}
 
@@ -187,9 +187,14 @@ bool CShaderProgram::CompileFile( const char *pszVertexFile, const char *pszFrag
 	std::string vs;
 
 	if ( !vscode )
-		Sys_Error("CShaderProgram::CompileFile: \"%s\" not found", pszVertexFile);
+	{
+		Warning( "[SvenInt] CShaderProgram::CompileFile: \"%s\" not found", pszVertexFile );
+		return false;
+	}
 	else
-		vs = std::string(vscode);
+	{
+		vs = std::string( vscode );
+	}
 
 	AppendDefine(vs, "#define IS_VERTEX_SHADER\n");
 	
@@ -205,9 +210,14 @@ bool CShaderProgram::CompileFile( const char *pszVertexFile, const char *pszFrag
 	std::string fs;
 	
 	if ( !fscode )
-		Sys_Error("CShaderProgram::CompileFile: \"%s\" not found", pszFragmentFile);
+	{
+		Warning( "[SvenInt] CShaderProgram::CompileFile: \"%s\" not found", pszFragmentFile );
+		return false;
+	}
 	else
-		fs = std::string(fscode);
+	{
+		fs = std::string( fscode );
+	}
 
 	AppendDefine(fs, "#define IS_FRAGMENT_SHADER\n");
 	
@@ -319,7 +329,15 @@ GLuint CShaderProgram::InternalCompile(const char *vscode, const char *fscode, c
 		char szCompilerLog[1024] = { 0 };
 		glGetProgramInfoLog(program, sizeof(szCompilerLog), &nInfoLength, szCompilerLog);
 
-		Sys_Error("Shader \"%s\" compiled with error:\n%s", GetInternalName(), szCompilerLog);
+		Warning( "[SvenInt] Shader \"%s\" compiled with error:\n%s", GetInternalName(), szCompilerLog );
+
+		for ( int j = 0; j < shader_object_used; ++j )
+		{
+			glDetachObjectARB( program, shader_objects[ j ] );
+			glDeleteObjectARB( shader_objects[ j ] );
+		}
+		glDeleteProgramsARB( 1, &program );
+		return 0;
 	}
 
 	m_shaders.emplace_back( program, shader_objects, shader_object_used );
@@ -346,7 +364,7 @@ GLuint CShaderProgram::CompileShaderObject(int type, const char *code, const cha
 		glGetInfoLogARB(obj, sizeof(szCompilerLog) - 1, &nInfoLength, szCompilerLog);
 		szCompilerLog[nInfoLength] = 0;
 
-		Sys_Error("%s shader \"%s\" compiled with error:\n%s", type == GL_VERTEX_SHADER_ARB ? "Vertex" : "Fragment", GetInternalName(), szCompilerLog);
+		Warning( "[SvenInt] %s shader \"%s\" compiled with error:\n%s", type == GL_VERTEX_SHADER_ARB ? "Vertex" : "Fragment", GetInternalName(), szCompilerLog );
 	}
 
 	return obj;

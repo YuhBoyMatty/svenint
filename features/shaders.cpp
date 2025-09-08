@@ -69,12 +69,12 @@ void CShaders::OnPostRenderView(void)
 		return;
 
 	// Depth buffer
-	if ( g_Config.cvars.shaders_show_depth_buffer )
+	if ( g_Config.cvars.shaders_show_depth_buffer && SHADER_COMPILED( m_ShaderDepthBuffer ) )
 	{
 		DrawDepthBuffer( g_Config.cvars.shaders_depth_buffer_znear, g_Config.cvars.shaders_depth_buffer_zfar, g_Config.cvars.shaders_depth_buffer_brightness );
 	}
 
-	if ( g_Config.cvars.shaders_ssao )
+	if ( g_Config.cvars.shaders_ssao && SHADER_COMPILED( m_ShaderSSAO ) )
 	{
 		DrawSSAO( g_Config.cvars.shaders_ssao_znear,
 				 g_Config.cvars.shaders_ssao_zfar,
@@ -94,7 +94,7 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Color correction
-	if ( g_Config.cvars.shaders_color_correction )
+	if ( g_Config.cvars.shaders_color_correction && SHADER_COMPILED( m_ShaderColorCorrection ) )
 	{
 		DrawColorCorrection( g_Config.cvars.shaders_cc_target_gamma,
 							g_Config.cvars.shaders_cc_monitor_gamma,
@@ -113,7 +113,7 @@ void CShaders::OnPostRenderView(void)
 	
 	// God rays
 	// Experimental only, need to draw a sun with this shader and then draw the rest of world (w/o the shader)
-	if ( *( sc_gl_godrays.GetString() ) != 0 )
+	if ( *( sc_gl_godrays.GetString() ) != 0 && SHADER_COMPILED( m_ShaderGodRays ) )
 	{
 		int numSamples;
 		float x, y, density, weight, decay, exposure;
@@ -131,7 +131,7 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Chromatic aberration
-	if ( g_Config.cvars.shaders_chromatic_aberration )
+	if ( g_Config.cvars.shaders_chromatic_aberration && SHADER_COMPILED( m_ShaderChromaticAberration ) )
 	{
 		DrawChromaticAberration( g_Config.cvars.shaders_chromatic_aberration_type,
 								g_Config.cvars.shaders_chromatic_aberration_dir_x,
@@ -141,7 +141,7 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Depth of Field blur
-	if ( g_Config.cvars.shaders_dof_blur )
+	if ( g_Config.cvars.shaders_dof_blur && SHADER_COMPILED( m_ShaderDoFBlur ) )
 	{
 		DrawDoFBlur( g_Config.cvars.shaders_dof_blur_min_range,
 					g_Config.cvars.shaders_dof_blur_max_range,
@@ -152,7 +152,7 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Motion blur, speed dependent only
-	if ( g_Config.cvars.shaders_motion_blur )
+	if ( g_Config.cvars.shaders_motion_blur && SHADER_COMPILED( m_ShaderRadialBlur ) )
 	{
 		float flSpeed = g_pPlayerMove->velocity.Length2D();
 
@@ -175,31 +175,31 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Radial blur
-	if ( g_Config.cvars.shaders_radial_blur )
+	if ( g_Config.cvars.shaders_radial_blur && SHADER_COMPILED( m_ShaderRadialBlur ) )
 	{
 		DrawRadialBlur( g_Config.cvars.shaders_radial_blur_distance, g_Config.cvars.shaders_radial_blur_strength );
 	}
 
 	// Bokeh blur
-	if ( g_Config.cvars.shaders_bokeh_blur )
+	if ( g_Config.cvars.shaders_bokeh_blur && SHADER_COMPILED( m_ShaderBokeh ) )
 	{
 		DrawBokehBlur( g_Config.cvars.shaders_bokeh_blur_radius, (float)g_Config.cvars.shaders_bokeh_blur_samples, g_Config.cvars.shaders_bokeh_blur_coeff );
 	}
 
 	// Gaussian blur
-	if ( g_Config.cvars.shaders_gaussian_blur )
+	if ( g_Config.cvars.shaders_gaussian_blur && SHADER_COMPILED( m_ShaderGaussianBlur ) )
 	{
 		DrawGaussianBlur( g_Config.cvars.shaders_gaussian_blur_radius );
 	}
 
 	// Fast gaussian blur
-	if ( g_Config.cvars.shaders_gaussian_blur_fast )
+	if ( g_Config.cvars.shaders_gaussian_blur_fast && SHADER_COMPILED( m_ShaderGaussianBlurFast ) )
 	{
 		DrawGaussianBlurFast( g_Config.cvars.shaders_gaussian_blur_fast_radius );
 	}
 
 	// Menu, background blur 
-	if ( g_Config.cvars.menu_blur )
+	if ( g_Config.cvars.menu_blur && SHADER_COMPILED( m_ShaderBokeh ) )
 	{
 		float flTime = g_pEngineFuncs->Sys_FloatTime();
 	
@@ -234,7 +234,7 @@ void CShaders::OnPostRenderView(void)
 	}
 
 	// Vignette
-	if ( g_Config.cvars.shaders_vignette )
+	if ( g_Config.cvars.shaders_vignette && SHADER_COMPILED( m_ShaderVignette ) )
 	{
 		DrawVignette( g_Config.cvars.shaders_vignette_falloff, g_Config.cvars.shaders_vignette_amount );
 	}
