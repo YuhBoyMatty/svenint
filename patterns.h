@@ -14,6 +14,7 @@ namespace Patterns
 		EXTERN_PATTERN( flNextCmdTime );
 
 		EXTERN_PATTERN( Host_FilterTime );
+		EXTERN_PATTERN( Host_FilterTime_31fps );
 		EXTERN_PATTERN( host_framerate );
 		EXTERN_PATTERN( host_frametime );
 		EXTERN_PATTERN( g_flInterpolationAmount );
@@ -40,6 +41,7 @@ namespace Patterns
 		EXTERN_PATTERN( R_SetupFrame );
 		EXTERN_PATTERN( R_ForceCVars );
 		EXTERN_PATTERN( R_LoadSkyboxInt );
+		EXTERN_PATTERN( R_DrawViewModel_glClear );
 
 		EXTERN_PATTERN( VID_TakeSnapshot );
 

@@ -8,6 +8,7 @@ namespace Patterns
 		DEFINE_PATTERN( flNextCmdTime, "D9 ? ? ? ? ? 75 ? A1" );
 	
 		DEFINE_PATTERN( Host_FilterTime, "E9 ? ? ? ? 90 90 90 8B 0D ? ? ? ? D8");
+		DEFINE_PATTERN( Host_FilterTime_31fps, "D9 ? ? ? ? ? EB ? D8 ? DF E0 F6 C4 ? 75 ? DD ? D9 C0" );
 		DEFINE_PATTERN( host_framerate, "74 ? DD ? B8" );
 		DEFINE_PATTERN( host_frametime, "DD 15 ? ? ? ? DC ? ? ? ? ? DD ? ? ? ? ? C3" );
 		DEFINE_PATTERN( g_flInterpolationAmount, "D9 ? ? ? ? ? EB ? 8B DF" );
@@ -34,6 +35,7 @@ namespace Patterns
 		DEFINE_PATTERN( R_SetupFrame, "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 20 D9 ? ? ? ? ? D9 ? ? ? ? ? DA" );
 		DEFINE_PATTERN( R_ForceCVars, "83 7C 24 04 ? 0F 84" );
 		DEFINE_PATTERN( R_LoadSkyboxInt, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 20 01 00 00 53 8B 9C 24 2C 01 00 00" );
+		DEFINE_PATTERN( R_DrawViewModel_glClear, "68 ? ? ? ? FF 15 ? ? ? ? 83 3D ? ? ? ? ? 0F 95 C3" );
 
 		DEFINE_PATTERN( VID_TakeSnapshot, "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 83 3D ? ? ? ? ? 53" );
 

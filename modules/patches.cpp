@@ -717,6 +717,24 @@ void CPatchesModule::PostLoad()
 	{
 		Warning("Failed to patch ex_interp and cl_updaterate\n");
 	}
+
+#if defined(SC_5_26)
+	// Patch depth buffer clear up since Sniper doesn't have any brain cell
+	void *pglClearArg1 = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::R_DrawViewModel_glClear );
+	if ( pglClearArg1 != NULL )
+	{
+		int patchValue = 0;
+		MemoryUtils()->PatchMemory( (unsigned char *)pglClearArg1 + 0x1, (unsigned char *)&patchValue, sizeof( patchValue ) );
+	}
+	
+	// Patch locked 31 FPS at game loading, once more Sniper doesn't have any brain cell
+	// Credits: @xWhitey
+	void *p31fpsFPU = MemoryUtils()->FindPattern( SvenModAPI()->Modules()->Hardware, Patterns::Hardware::Host_FilterTime_31fps );
+	if ( p31fpsFPU != NULL )
+	{
+		*(float **)( (unsigned char *)p31fpsFPU + 0x2 ) = &CVar()->FindCvar( "fps_max" )->value;
+	}
+#endif
 	
 #if HOOK_INTEPR_BOUND
 	hCL_ComputeClientInterpAmount = DetoursAPI()->DetourFunction( pfnCL_ComputeClientInterpAmount,
