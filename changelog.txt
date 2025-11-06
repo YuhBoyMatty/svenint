@@ -1,0 +1,4 @@
+SvenInt v3 Changelog
+
+06/11/2025 - Version 3.0.0:
+- Completely rewritten from scratch as an injectable DLL library

@@ -1,0 +1,1263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="gamedata.cpp" />
+    <ClCompile Include="utils\detours.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\memory_utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\decode.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\itab.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn-att.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn-intel.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="udis86\src\udis86.c">
+      <Filter>udis86\src</Filter>
+    </ClCompile>
+    <ClCompile Include="game\commandline.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\CBaseEngineClient.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\dbg.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\CBasePlayerMove.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\CBaseExtraPlayerInfo.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\CBaseWeaponsResource.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\cvar.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\convar.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\client.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\config.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="game\localplayer.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\game_hooks.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\messagebuffer.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\mathlib.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="game\game_utils.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\hooks.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="game\hook_events.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\menu.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
+      <Filter>imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\menu_styles.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="features\features.cpp">
+      <Filter>features</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\server.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\scripts.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_cvar.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_debug.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_entity_dictionary.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_entity_vars.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_global_vars.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_input_manager.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_logic.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_mod.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_player_move.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_random.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_triggers.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_usercmd.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_vector.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\scripts_binding.cpp">
+      <Filter>scripts</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lapi.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lauxlib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lbaselib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lcode.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lcorolib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lctype.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldblib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldebug.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldo.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldump.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lfunc.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lgc.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\linit.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\liolib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\llex.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lmathlib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lmem.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\loadlib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lobject.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lopcodes.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\loslib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lparser.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstate.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstring.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstrlib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltable.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltablib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltests.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltm.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lua.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lundump.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lutf8lib.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lvm.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lzio.c">
+      <Filter>scripts\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\opengl.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="glew\src\glew.c">
+      <Filter>glew\src</Filter>
+    </ClCompile>
+    <ClCompile Include="strafe\strafe.cpp">
+      <Filter>strafe</Filter>
+    </ClCompile>
+    <ClCompile Include="game\keyvalues_parser.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_action_burst.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_fakelag.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_movcmdratelimiter.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
+    <ClCompile Include="features\hud_chat_colors.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\hud_grenade_timer.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\hud_remap_colors.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\hud_speedometer.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\hud_vote_popup.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_antisoundspam.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_bypass_cvar_query.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_clientmenu.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_demo_capture.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_demo_message.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_edge_pixels_player.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_entity_list.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_game_patches.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_ignore_different_maps.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_message_spammer.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_mute_manager.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_nosleep.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_random_generator.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_soundcache.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_votebot.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_airrun.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_autojump.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_ceilclip.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_ducktap.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_edgejump.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_fastrun.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_jumpbug.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_selfsink.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_strafer.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_wallstrafe.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_aim.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_antiafk.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_antigrab.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_autoreload.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_camhack.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_color_pulsator.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_dynamic_glow.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_firstperson_roaming.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_flashlight.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_freeze.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_keyspam.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_lookat.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_silent_angles.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_speedhack.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_spinner.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_stick.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_thirdperson.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_bsp.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_chams.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_draw_context.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_draw_entities.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_drawing.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_fog.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_frame_skipper.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_lightmap.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_models_replacement.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_skybox.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_viewmodel_tweaks.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_wallhack.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_bloom.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_chromatic_aberration.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_color_correction.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_depth_buffer.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_dof_blur.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_menu_background_blur.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_motion_blur.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_ssao.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\shader_vignette.cpp">
+      <Filter>features\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_aim_angles.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_hud.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_input_manager.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_landing_prediction.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_legit_mode.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_player_hulls.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_revive_area.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_revive_boost_info.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_revive_info.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_timer.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_timescale.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\st_usables.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_crosshair.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_esp.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_friends.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_hitmarkers.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_nofade.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_noshake.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_noviewentity.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_player_push_direction.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_player_sight_direction.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_projectile_prediction.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_radar.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="glew\include\GL\glew.h">
+      <Filter>glew\include\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="game\hlsdk_mini.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="gamedata.h" />
+    <ClInclude Include="utils\detours.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\memory_utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\patterns.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\hash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\hashdict.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\hashtable.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\generichash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="svenint.h" />
+    <ClInclude Include="game\gameui\gameconsole.h">
+      <Filter>game\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="game\gameui\gameconsoledialog.h">
+      <Filter>game\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="game\gameui\IGameConsole.h">
+      <Filter>game\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="game\gameui\IGameUI.h">
+      <Filter>game\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="game\gameui\IRunGameEngine.h">
+      <Filter>game\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IBaseUI.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IClientPanel.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IClientVGUI.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IEngineSurface.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IEngineVGui.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IGameUIFuncs.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IHTMLChromeController.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IInput.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IInputInternal.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IKeyValues.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\ILocalize.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IPanel.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IScheme.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\ISurface.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\ISystem.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\IVGui.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\VGUI2.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\vgui2\VGuiVertex.h">
+      <Filter>game\vgui2</Filter>
+    </ClInclude>
+    <ClInclude Include="game\interface.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\color.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\IFileSystem.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\CBaseEngineClient.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\dbg.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\CBasePlayerMove.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\CBaseExtraPlayerInfo.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\CBaseWeaponsResource.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\convar.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\cvar.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\client.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\config.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="game\localplayer.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\game_hooks.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\commandline.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\messagebuffer.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\mathlib.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="game\game_utils.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\hooks.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="game\hook_events.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\menu.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_opengl3.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_win32.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_opengl3_loader.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\menu_fonts.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\menu_styles.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\util.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="features\base_feature.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\server.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\scripts.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_cvar.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_debug.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_entity_dictionary.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_entity_vars.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_global_vars.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_input_manager.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_logic.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_mod.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_player_move.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_random.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_triggers.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_usercmd.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua_vector.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\scripts_binding.h">
+      <Filter>scripts</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lapi.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lauxlib.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lcode.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lctype.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ldebug.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ldo.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lfunc.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lgc.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ljumptab.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\llex.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\llimits.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lmem.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lobject.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lopcodes.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lopnames.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lparser.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lprefix.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lstate.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lstring.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ltable.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ltests.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\ltm.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lua.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lua.hpp">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lualib.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lundump.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lvm.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts\lua\lzio.h">
+      <Filter>scripts\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="modules\opengl.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="strafe\strafe.h">
+      <Filter>strafe</Filter>
+    </ClInclude>
+    <ClInclude Include="strafe\strafe_utils.h">
+      <Filter>strafe</Filter>
+    </ClInclude>
+    <ClInclude Include="game\keyvalues_parser.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_action_burst.h">
+      <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_fakelag.h">
+      <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_movcmdratelimiter.h">
+      <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_chat_colors.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_grenade_timer.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_remap_colors.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_speedometer.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_vote_popup.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_antisoundspam.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_bypass_cvar_query.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_clientmenu.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_demo_capture.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_demo_message.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_edge_pixels_player.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_entity_list.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_game_patches.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_ignore_different_maps.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_message_spammer.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_mute_manager.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_nosleep.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_random_generator.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_soundcache.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_votebot.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_airrun.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_autojump.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_ceilclip.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_ducktap.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_edgejump.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_fastrun.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_jumpbug.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_selfsink.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_strafer.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_wallstrafe.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_aim.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_antiafk.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_antigrab.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_autoreload.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_camhack.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_color_pulsator.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_dynamic_glow.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_firstperson_roaming.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_flashlight.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_freeze.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_keyspam.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_lookat.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_silent_angles.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_speedhack.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_spinner.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_stick.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_thirdperson.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_bsp.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_chams.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_draw_context.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_draw_entities.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_drawing.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_fog.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_frame_skipper.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_lightmap.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_models_replacement.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_skybox.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_viewmodel_tweaks.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_wallhack.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_bloom.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_chromatic_aberration.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_color_correction.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_depth_buffer.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_dof_blur.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_menu_background_blur.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_motion_blur.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_ssao.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\shader_vignette.h">
+      <Filter>features\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_aim_angles.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_hud.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_input_manager.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_landing_prediction.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_legit_mode.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_player_hulls.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_revive_area.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_revive_boost_info.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_revive_info.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_timer.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_timescale.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_usables.h">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_crosshair.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_esp.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_friends.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_hitmarkers.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_nofade.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_noshake.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_noviewentity.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_player_push_direction.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_player_sight_direction.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_projectile_prediction.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_radar.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="features">
+      <UniqueIdentifier>{5723a30e-7a49-41fb-a345-cce843dcd965}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules">
+      <UniqueIdentifier>{d1b7aae4-f0bc-44b5-aef4-6fab6f07cc24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{22b44015-80a7-412f-9560-e50b1791beff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="strafe">
+      <UniqueIdentifier>{4bf9ed5e-0036-44d6-8bd9-6584c6374753}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{7275e7c5-e473-4d5d-b0e4-2419e37fb303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{7c9f0beb-7322-42d4-ae30-ef0a45581c2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glew">
+      <UniqueIdentifier>{55bec3aa-353e-4978-9969-d5e78a68f5d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glew\include">
+      <UniqueIdentifier>{01646d7c-fd5e-45c9-a0b6-13eb918bcbb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glew\include\GL">
+      <UniqueIdentifier>{ca35d009-66b2-497a-b7af-9e69850bb490}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="udis86">
+      <UniqueIdentifier>{f94ed9b4-e62b-4a4c-a2c1-75c780700d56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="udis86\src">
+      <UniqueIdentifier>{81387e81-0c0a-4f34-99f9-a3fc5bca22ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\gameui">
+      <UniqueIdentifier>{93f9a8da-0bc2-4301-b5e3-b70b92f7b57e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game\vgui2">
+      <UniqueIdentifier>{892dfd3a-1be8-4866-ae44-ee0707d1dc28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{16d4e6de-eeae-4aac-b2fc-1fb721e01299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui\backends">
+      <UniqueIdentifier>{cf5f7572-e21e-4302-afac-7a9879ad0426}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripts\lua">
+      <UniqueIdentifier>{1604847d-4218-4d35-8c77-f914658f976f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glew\src">
+      <UniqueIdentifier>{b4db8d01-303f-439a-8d21-335883f64e7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\HUD">
+      <UniqueIdentifier>{bc349043-0043-443c-8f07-85fd573d729d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Shaders">
+      <UniqueIdentifier>{9d3122bb-ab81-4a8c-950d-53129612bc3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Misc">
+      <UniqueIdentifier>{f3f98cf5-caee-4c63-8b72-0e2f50e1a449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Movement">
+      <UniqueIdentifier>{99870b26-bc5b-405f-af0e-e436e9e8c272}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Player">
+      <UniqueIdentifier>{f48131c9-1eb5-4223-b16c-4882ea016544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Render">
+      <UniqueIdentifier>{787d5200-b1d1-42dc-8e1c-10580bdc0579}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Visual">
+      <UniqueIdentifier>{4617d530-eb02-4646-8987-4b4747a70c47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Speedrun Tools">
+      <UniqueIdentifier>{b66b9d42-0ec7-43cd-a74b-a5d4c19ef601}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\Exploit">
+      <UniqueIdentifier>{47169f72-30c3-4294-8957-b5daef1a3737}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

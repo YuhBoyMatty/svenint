@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{8dba3860-3cf6-4b3c-8ffb-b509939cf53c}</ProjectGuid>
+    <RootNamespace>svenint</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;_DEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <OpenMPSupport>false</OpenMPSupport>
+      <AdditionalIncludeDirectories>./;imgui/;glew/include/</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>SINT_PROPRIETARY;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;NDEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <OpenMPSupport>false</OpenMPSupport>
+      <AdditionalOptions>/GR-</AdditionalOptions>
+      <AdditionalIncludeDirectories>./;imgui/;glew/include/</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="features\base_feature.h" />
+    <ClInclude Include="features\exploit_action_burst.h" />
+    <ClInclude Include="features\exploit_fakelag.h" />
+    <ClInclude Include="features\exploit_movcmdratelimiter.h" />
+    <ClInclude Include="features\hud_chat_colors.h" />
+    <ClInclude Include="features\hud_grenade_timer.h" />
+    <ClInclude Include="features\hud_remap_colors.h" />
+    <ClInclude Include="features\hud_speedometer.h" />
+    <ClInclude Include="features\hud_vote_popup.h" />
+    <ClInclude Include="features\misc_antisoundspam.h" />
+    <ClInclude Include="features\misc_bypass_cvar_query.h" />
+    <ClInclude Include="features\misc_clientmenu.h" />
+    <ClInclude Include="features\misc_demo_capture.h" />
+    <ClInclude Include="features\misc_demo_message.h" />
+    <ClInclude Include="features\misc_edge_pixels_player.h" />
+    <ClInclude Include="features\misc_entity_list.h" />
+    <ClInclude Include="features\misc_game_patches.h" />
+    <ClInclude Include="features\misc_ignore_different_maps.h" />
+    <ClInclude Include="features\misc_message_spammer.h" />
+    <ClInclude Include="features\misc_mute_manager.h" />
+    <ClInclude Include="features\misc_nosleep.h" />
+    <ClInclude Include="features\misc_random_generator.h" />
+    <ClInclude Include="features\misc_soundcache.h" />
+    <ClInclude Include="features\misc_votebot.h" />
+    <ClInclude Include="features\mov_airrun.h" />
+    <ClInclude Include="features\mov_autojump.h" />
+    <ClInclude Include="features\mov_ceilclip.h" />
+    <ClInclude Include="features\mov_ducktap.h" />
+    <ClInclude Include="features\mov_edgejump.h" />
+    <ClInclude Include="features\mov_fastrun.h" />
+    <ClInclude Include="features\mov_jumpbug.h" />
+    <ClInclude Include="features\mov_selfsink.h" />
+    <ClInclude Include="features\mov_strafer.h" />
+    <ClInclude Include="features\mov_wallstrafe.h" />
+    <ClInclude Include="features\player_aim.h" />
+    <ClInclude Include="features\player_antiafk.h" />
+    <ClInclude Include="features\player_antigrab.h" />
+    <ClInclude Include="features\player_autoreload.h" />
+    <ClInclude Include="features\player_camhack.h" />
+    <ClInclude Include="features\player_color_pulsator.h" />
+    <ClInclude Include="features\player_dynamic_glow.h" />
+    <ClInclude Include="features\player_firstperson_roaming.h" />
+    <ClInclude Include="features\player_flashlight.h" />
+    <ClInclude Include="features\player_freeze.h" />
+    <ClInclude Include="features\player_keyspam.h" />
+    <ClInclude Include="features\player_lookat.h" />
+    <ClInclude Include="features\player_silent_angles.h" />
+    <ClInclude Include="features\player_speedhack.h" />
+    <ClInclude Include="features\player_spinner.h" />
+    <ClInclude Include="features\player_stick.h" />
+    <ClInclude Include="features\player_thirdperson.h" />
+    <ClInclude Include="features\r_bsp.h" />
+    <ClInclude Include="features\r_chams.h" />
+    <ClInclude Include="features\r_drawing.h" />
+    <ClInclude Include="features\r_draw_context.h" />
+    <ClInclude Include="features\r_draw_entities.h" />
+    <ClInclude Include="features\r_fog.h" />
+    <ClInclude Include="features\r_frame_skipper.h" />
+    <ClInclude Include="features\r_lightmap.h" />
+    <ClInclude Include="features\r_models_replacement.h" />
+    <ClInclude Include="features\r_skybox.h" />
+    <ClInclude Include="features\r_viewmodel_tweaks.h" />
+    <ClInclude Include="features\r_wallhack.h" />
+    <ClInclude Include="features\shader_bloom.h" />
+    <ClInclude Include="features\shader_chromatic_aberration.h" />
+    <ClInclude Include="features\shader_color_correction.h" />
+    <ClInclude Include="features\shader_depth_buffer.h" />
+    <ClInclude Include="features\shader_dof_blur.h" />
+    <ClInclude Include="features\shader_menu_background_blur.h" />
+    <ClInclude Include="features\shader_motion_blur.h" />
+    <ClInclude Include="features\shader_ssao.h" />
+    <ClInclude Include="features\shader_vignette.h" />
+    <ClInclude Include="features\st_aim_angles.h" />
+    <ClInclude Include="features\st_hud.h" />
+    <ClInclude Include="features\st_input_manager.h" />
+    <ClInclude Include="features\st_landing_prediction.h" />
+    <ClInclude Include="features\st_legit_mode.h" />
+    <ClInclude Include="features\st_player_hulls.h" />
+    <ClInclude Include="features\st_revive_area.h" />
+    <ClInclude Include="features\st_revive_boost_info.h" />
+    <ClInclude Include="features\st_revive_info.h" />
+    <ClInclude Include="features\st_timer.h" />
+    <ClInclude Include="features\st_timescale.h" />
+    <ClInclude Include="features\st_usables.h" />
+    <ClInclude Include="features\visual_crosshair.h" />
+    <ClInclude Include="features\visual_esp.h" />
+    <ClInclude Include="features\visual_friends.h" />
+    <ClInclude Include="features\visual_hitmarkers.h" />
+    <ClInclude Include="features\visual_nofade.h" />
+    <ClInclude Include="features\visual_noshake.h" />
+    <ClInclude Include="features\visual_noviewentity.h" />
+    <ClInclude Include="features\visual_player_push_direction.h" />
+    <ClInclude Include="features\visual_player_sight_direction.h" />
+    <ClInclude Include="features\visual_projectile_prediction.h" />
+    <ClInclude Include="features\visual_radar.h" />
+    <ClInclude Include="gamedata.h" />
+    <ClInclude Include="game\CBaseExtraPlayerInfo.h" />
+    <ClInclude Include="game\CBasePlayerMove.h" />
+    <ClInclude Include="game\CBaseWeaponsResource.h" />
+    <ClInclude Include="game\color.h" />
+    <ClInclude Include="game\convar.h" />
+    <ClInclude Include="game\cvar.h" />
+    <ClInclude Include="game\dbg.h" />
+    <ClInclude Include="game\gameui\gameconsole.h" />
+    <ClInclude Include="game\gameui\gameconsoledialog.h" />
+    <ClInclude Include="game\gameui\IGameConsole.h" />
+    <ClInclude Include="game\gameui\IGameUI.h" />
+    <ClInclude Include="game\gameui\IRunGameEngine.h" />
+    <ClInclude Include="game\game_hooks.h" />
+    <ClInclude Include="game\hlsdk_mini.h" />
+    <ClInclude Include="game\commandline.h" />
+    <ClInclude Include="game\CBaseEngineClient.h" />
+    <ClInclude Include="game\hook_events.h" />
+    <ClInclude Include="game\IFileSystem.h" />
+    <ClInclude Include="game\interface.h" />
+    <ClInclude Include="game\keyvalues_parser.h" />
+    <ClInclude Include="game\localplayer.h" />
+    <ClInclude Include="game\mathlib.h" />
+    <ClInclude Include="game\messagebuffer.h" />
+    <ClInclude Include="game\game_utils.h" />
+    <ClInclude Include="game\vgui2\IBaseUI.h" />
+    <ClInclude Include="game\vgui2\IClientPanel.h" />
+    <ClInclude Include="game\vgui2\IClientVGUI.h" />
+    <ClInclude Include="game\vgui2\IEngineSurface.h" />
+    <ClInclude Include="game\vgui2\IEngineVGui.h" />
+    <ClInclude Include="game\vgui2\IGameUIFuncs.h" />
+    <ClInclude Include="game\vgui2\IHTMLChromeController.h" />
+    <ClInclude Include="game\vgui2\IInput.h" />
+    <ClInclude Include="game\vgui2\IInputInternal.h" />
+    <ClInclude Include="game\vgui2\IKeyValues.h" />
+    <ClInclude Include="game\vgui2\ILocalize.h" />
+    <ClInclude Include="game\vgui2\IPanel.h" />
+    <ClInclude Include="game\vgui2\IScheme.h" />
+    <ClInclude Include="game\vgui2\ISurface.h" />
+    <ClInclude Include="game\vgui2\ISystem.h" />
+    <ClInclude Include="game\vgui2\IVGui.h" />
+    <ClInclude Include="game\vgui2\VGUI2.h" />
+    <ClInclude Include="game\vgui2\VGuiVertex.h" />
+    <ClInclude Include="glew\include\GL\glew.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="modules\client.h" />
+    <ClInclude Include="modules\config.h" />
+    <ClInclude Include="modules\hooks.h" />
+    <ClInclude Include="modules\menu.h" />
+    <ClInclude Include="modules\opengl.h" />
+    <ClInclude Include="modules\scripts.h" />
+    <ClInclude Include="modules\server.h" />
+    <ClInclude Include="scripts\lua\lapi.h" />
+    <ClInclude Include="scripts\lua\lauxlib.h" />
+    <ClInclude Include="scripts\lua\lcode.h" />
+    <ClInclude Include="scripts\lua\lctype.h" />
+    <ClInclude Include="scripts\lua\ldebug.h" />
+    <ClInclude Include="scripts\lua\ldo.h" />
+    <ClInclude Include="scripts\lua\lfunc.h" />
+    <ClInclude Include="scripts\lua\lgc.h" />
+    <ClInclude Include="scripts\lua\ljumptab.h" />
+    <ClInclude Include="scripts\lua\llex.h" />
+    <ClInclude Include="scripts\lua\llimits.h" />
+    <ClInclude Include="scripts\lua\lmem.h" />
+    <ClInclude Include="scripts\lua\lobject.h" />
+    <ClInclude Include="scripts\lua\lopcodes.h" />
+    <ClInclude Include="scripts\lua\lopnames.h" />
+    <ClInclude Include="scripts\lua\lparser.h" />
+    <ClInclude Include="scripts\lua\lprefix.h" />
+    <ClInclude Include="scripts\lua\lstate.h" />
+    <ClInclude Include="scripts\lua\lstring.h" />
+    <ClInclude Include="scripts\lua\ltable.h" />
+    <ClInclude Include="scripts\lua\ltests.h" />
+    <ClInclude Include="scripts\lua\ltm.h" />
+    <ClInclude Include="scripts\lua\lua.h" />
+    <ClInclude Include="scripts\lua\lua.hpp" />
+    <ClInclude Include="scripts\lua\lualib.h" />
+    <ClInclude Include="scripts\lua\lundump.h" />
+    <ClInclude Include="scripts\lua\lvm.h" />
+    <ClInclude Include="scripts\lua\lzio.h" />
+    <ClInclude Include="scripts\lua_cvar.h" />
+    <ClInclude Include="scripts\lua_debug.h" />
+    <ClInclude Include="scripts\lua_entity_dictionary.h" />
+    <ClInclude Include="scripts\lua_entity_vars.h" />
+    <ClInclude Include="scripts\lua_global_vars.h" />
+    <ClInclude Include="scripts\lua_input_manager.h" />
+    <ClInclude Include="scripts\lua_logic.h" />
+    <ClInclude Include="scripts\lua_mod.h" />
+    <ClInclude Include="scripts\lua_player_move.h" />
+    <ClInclude Include="scripts\lua_random.h" />
+    <ClInclude Include="scripts\lua_triggers.h" />
+    <ClInclude Include="scripts\lua_usercmd.h" />
+    <ClInclude Include="scripts\lua_vector.h" />
+    <ClInclude Include="scripts\scripts_binding.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="strafe\strafe.h" />
+    <ClInclude Include="strafe\strafe_utils.h" />
+    <ClInclude Include="utils\detours.h" />
+    <ClInclude Include="utils\generichash.h" />
+    <ClInclude Include="utils\hash.h" />
+    <ClInclude Include="utils\hashdict.h" />
+    <ClInclude Include="utils\hashtable.h" />
+    <ClInclude Include="utils\memory_utils.h" />
+    <ClInclude Include="utils\menu_fonts.h" />
+    <ClInclude Include="utils\menu_styles.h" />
+    <ClInclude Include="utils\patterns.h" />
+    <ClInclude Include="svenint.h" />
+    <ClInclude Include="utils\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="features\exploit_action_burst.cpp" />
+    <ClCompile Include="features\exploit_fakelag.cpp" />
+    <ClCompile Include="features\exploit_movcmdratelimiter.cpp" />
+    <ClCompile Include="features\features.cpp" />
+    <ClCompile Include="features\hud_chat_colors.cpp" />
+    <ClCompile Include="features\hud_grenade_timer.cpp" />
+    <ClCompile Include="features\hud_remap_colors.cpp" />
+    <ClCompile Include="features\hud_speedometer.cpp" />
+    <ClCompile Include="features\hud_vote_popup.cpp" />
+    <ClCompile Include="features\misc_antisoundspam.cpp" />
+    <ClCompile Include="features\misc_bypass_cvar_query.cpp" />
+    <ClCompile Include="features\misc_clientmenu.cpp" />
+    <ClCompile Include="features\misc_demo_capture.cpp" />
+    <ClCompile Include="features\misc_demo_message.cpp" />
+    <ClCompile Include="features\misc_edge_pixels_player.cpp" />
+    <ClCompile Include="features\misc_entity_list.cpp" />
+    <ClCompile Include="features\misc_game_patches.cpp" />
+    <ClCompile Include="features\misc_ignore_different_maps.cpp" />
+    <ClCompile Include="features\misc_message_spammer.cpp" />
+    <ClCompile Include="features\misc_mute_manager.cpp" />
+    <ClCompile Include="features\misc_nosleep.cpp" />
+    <ClCompile Include="features\misc_random_generator.cpp" />
+    <ClCompile Include="features\misc_soundcache.cpp" />
+    <ClCompile Include="features\misc_votebot.cpp" />
+    <ClCompile Include="features\mov_airrun.cpp" />
+    <ClCompile Include="features\mov_autojump.cpp" />
+    <ClCompile Include="features\mov_ceilclip.cpp" />
+    <ClCompile Include="features\mov_ducktap.cpp" />
+    <ClCompile Include="features\mov_edgejump.cpp" />
+    <ClCompile Include="features\mov_fastrun.cpp" />
+    <ClCompile Include="features\mov_jumpbug.cpp" />
+    <ClCompile Include="features\mov_selfsink.cpp" />
+    <ClCompile Include="features\mov_strafer.cpp" />
+    <ClCompile Include="features\mov_wallstrafe.cpp" />
+    <ClCompile Include="features\player_aim.cpp" />
+    <ClCompile Include="features\player_antiafk.cpp" />
+    <ClCompile Include="features\player_antigrab.cpp" />
+    <ClCompile Include="features\player_autoreload.cpp" />
+    <ClCompile Include="features\player_camhack.cpp" />
+    <ClCompile Include="features\player_color_pulsator.cpp" />
+    <ClCompile Include="features\player_dynamic_glow.cpp" />
+    <ClCompile Include="features\player_firstperson_roaming.cpp" />
+    <ClCompile Include="features\player_flashlight.cpp" />
+    <ClCompile Include="features\player_freeze.cpp" />
+    <ClCompile Include="features\player_keyspam.cpp" />
+    <ClCompile Include="features\player_lookat.cpp" />
+    <ClCompile Include="features\player_silent_angles.cpp" />
+    <ClCompile Include="features\player_speedhack.cpp" />
+    <ClCompile Include="features\player_spinner.cpp" />
+    <ClCompile Include="features\player_stick.cpp" />
+    <ClCompile Include="features\player_thirdperson.cpp" />
+    <ClCompile Include="features\r_bsp.cpp" />
+    <ClCompile Include="features\r_chams.cpp" />
+    <ClCompile Include="features\r_drawing.cpp" />
+    <ClCompile Include="features\r_draw_context.cpp" />
+    <ClCompile Include="features\r_draw_entities.cpp" />
+    <ClCompile Include="features\r_fog.cpp" />
+    <ClCompile Include="features\r_frame_skipper.cpp" />
+    <ClCompile Include="features\r_lightmap.cpp" />
+    <ClCompile Include="features\r_models_replacement.cpp" />
+    <ClCompile Include="features\r_skybox.cpp" />
+    <ClCompile Include="features\r_viewmodel_tweaks.cpp" />
+    <ClCompile Include="features\r_wallhack.cpp" />
+    <ClCompile Include="features\shader_bloom.cpp" />
+    <ClCompile Include="features\shader_chromatic_aberration.cpp" />
+    <ClCompile Include="features\shader_color_correction.cpp" />
+    <ClCompile Include="features\shader_depth_buffer.cpp" />
+    <ClCompile Include="features\shader_dof_blur.cpp" />
+    <ClCompile Include="features\shader_menu_background_blur.cpp" />
+    <ClCompile Include="features\shader_motion_blur.cpp" />
+    <ClCompile Include="features\shader_ssao.cpp" />
+    <ClCompile Include="features\shader_vignette.cpp" />
+    <ClCompile Include="features\st_aim_angles.cpp" />
+    <ClCompile Include="features\st_hud.cpp" />
+    <ClCompile Include="features\st_input_manager.cpp" />
+    <ClCompile Include="features\st_landing_prediction.cpp" />
+    <ClCompile Include="features\st_legit_mode.cpp" />
+    <ClCompile Include="features\st_player_hulls.cpp" />
+    <ClCompile Include="features\st_revive_area.cpp" />
+    <ClCompile Include="features\st_revive_boost_info.cpp" />
+    <ClCompile Include="features\st_revive_info.cpp" />
+    <ClCompile Include="features\st_timer.cpp" />
+    <ClCompile Include="features\st_timescale.cpp" />
+    <ClCompile Include="features\st_usables.cpp" />
+    <ClCompile Include="features\visual_crosshair.cpp" />
+    <ClCompile Include="features\visual_esp.cpp" />
+    <ClCompile Include="features\visual_friends.cpp" />
+    <ClCompile Include="features\visual_hitmarkers.cpp" />
+    <ClCompile Include="features\visual_nofade.cpp" />
+    <ClCompile Include="features\visual_noshake.cpp" />
+    <ClCompile Include="features\visual_noviewentity.cpp" />
+    <ClCompile Include="features\visual_player_push_direction.cpp" />
+    <ClCompile Include="features\visual_player_sight_direction.cpp" />
+    <ClCompile Include="features\visual_projectile_prediction.cpp" />
+    <ClCompile Include="features\visual_radar.cpp" />
+    <ClCompile Include="gamedata.cpp" />
+    <ClCompile Include="game\CBaseEngineClient.cpp" />
+    <ClCompile Include="game\CBaseExtraPlayerInfo.cpp" />
+    <ClCompile Include="game\CBasePlayerMove.cpp" />
+    <ClCompile Include="game\CBaseWeaponsResource.cpp" />
+    <ClCompile Include="game\commandline.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="game\convar.cpp" />
+    <ClCompile Include="game\cvar.cpp" />
+    <ClCompile Include="game\dbg.cpp" />
+    <ClCompile Include="game\game_hooks.cpp" />
+    <ClCompile Include="game\hook_events.cpp" />
+    <ClCompile Include="game\keyvalues_parser.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="game\localplayer.cpp" />
+    <ClCompile Include="game\mathlib.cpp" />
+    <ClCompile Include="game\messagebuffer.cpp" />
+    <ClCompile Include="game\game_utils.cpp" />
+    <ClCompile Include="glew\src\glew.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;_DEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;NDEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="modules\client.cpp" />
+    <ClCompile Include="modules\config.cpp" />
+    <ClCompile Include="modules\hooks.cpp" />
+    <ClCompile Include="modules\menu.cpp" />
+    <ClCompile Include="modules\opengl.cpp" />
+    <ClCompile Include="modules\scripts.cpp" />
+    <ClCompile Include="modules\server.cpp" />
+    <ClCompile Include="scripts\lua\lapi.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lauxlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lbaselib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lcode.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lcorolib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lctype.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldblib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldebug.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldo.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ldump.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lfunc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lgc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\linit.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\liolib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\llex.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lmathlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lmem.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\loadlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lobject.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lopcodes.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\loslib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lparser.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstate.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstring.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lstrlib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltable.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltablib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltests.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\ltm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lua.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lundump.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lutf8lib.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lvm.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua\lzio.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="scripts\lua_cvar.cpp" />
+    <ClCompile Include="scripts\lua_debug.cpp" />
+    <ClCompile Include="scripts\lua_entity_dictionary.cpp" />
+    <ClCompile Include="scripts\lua_entity_vars.cpp" />
+    <ClCompile Include="scripts\lua_global_vars.cpp" />
+    <ClCompile Include="scripts\lua_input_manager.cpp" />
+    <ClCompile Include="scripts\lua_logic.cpp" />
+    <ClCompile Include="scripts\lua_mod.cpp" />
+    <ClCompile Include="scripts\lua_player_move.cpp" />
+    <ClCompile Include="scripts\lua_random.cpp" />
+    <ClCompile Include="scripts\lua_triggers.cpp" />
+    <ClCompile Include="scripts\lua_usercmd.cpp" />
+    <ClCompile Include="scripts\lua_vector.cpp" />
+    <ClCompile Include="scripts\scripts_binding.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="strafe\strafe.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\decode.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\itab.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn-att.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn-intel.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\syn.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="udis86\src\udis86.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\detours.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\memory_utils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\menu_styles.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

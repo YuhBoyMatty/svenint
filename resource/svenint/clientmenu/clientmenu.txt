@@ -1,0 +1,6 @@
+"clientmenu/clientmenu.txt"
+{
+	"example"				"1"
+	"example2"				"1"
+	"input_manager"			"1"
+}

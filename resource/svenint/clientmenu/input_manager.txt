@@ -1,0 +1,147 @@
+"ClientMenu"
+{
+	"input_manager"
+	{
+		"Title"		"Input Manager"
+
+		"1"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager; sc_im_record default.bin"
+			"label"		"Record"
+		}
+        "2"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager; sc_im_play default.bin"
+			"label"		"Playback"
+		}
+	    "3"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager; sc_im_split"
+			"label"		"Split"
+		}
+        "4"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager; sc_im_stop"
+			"label"		"Stop"
+		}
+        "5"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward"
+			"label"		"Forward"
+		}
+        "6"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward"
+			"label"		"Backward"
+		}
+		"0"
+		{
+			"command"	"cl_menu_playsound buttons/blip1"
+			"label"		"Exit"
+		}
+	}
+	
+	"input_manager_forward"
+	{
+		"Title"		"Forward Frames"
+
+		"1"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 10"
+			"label"		"Forward 10 frames" 
+		}
+		"2"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 50"
+			"label"		"Forward 50 frames" 
+		}
+		"3"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 100"
+			"label"		"Forward 100 frames" 
+		}
+		"4"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 200"
+			"label"		"Forward 200 frames" 
+		}
+		"5"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 500"
+			"label"		"Forward 500 frames" 
+		}
+		"6"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 1000"
+			"label"		"Forward 1000 frames" 
+		}
+		"7"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_forward; sc_im_forward 2000"
+			"label"		"Forward 2000 frames" 
+		}
+        "8"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager"
+			"label"		"Back"
+			"flags"		"1"
+		}
+		"0"
+		{
+			"command"	"cl_menu_playsound buttons/blip1"
+			"label"		"Exit"
+		}
+	}
+	
+	"input_manager_backward"
+	{
+		"Title"		"Backward Frames"
+
+		"1"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 10"
+			"label"		"Backward 10 frames" 
+		}
+		"2"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 50"
+			"label"		"Backward 50 frames" 
+		}
+		"3"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 100"
+			"label"		"Backward 100 frames" 
+		}
+		"4"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 200"
+			"label"		"Backward 200 frames" 
+		}
+		"5"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 500"
+			"label"		"Backward 500 frames" 
+		}
+		"6"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 1000"
+			"label"		"Backward 1000 frames" 
+		}
+		"7"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager_backward; sc_im_backward 2000"
+			"label"		"Backward 2000 frames" 
+		}
+        "8"
+		{
+			"command"	"cl_menu_playsound buttons/blip1; cl_menu_show input_manager"
+			"label"		"Back"
+			"flags"		"1"
+		}
+		"0"
+		{
+			"command"	"cl_menu_playsound buttons/blip1"
+			"label"		"Exit"
+		}
+	}
+}
