@@ -1,1 +1,0 @@
-# Format: STEAM64ID = MODELNAME
