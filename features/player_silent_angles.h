@@ -41,11 +41,16 @@ public:
 		m_fAbortFlags = fAbortFlags;
 		m_vecAngles = angles;
 	}
+
 	inline void Cancel( void )
 	{
 		m_bSetAngles = false;
 		m_fAbortFlags = -1;
 	}
+
+	inline bool IsSet( void ) const { return m_bSetAngles; }
+	inline void AddAngles( const Vector &angles ) { m_vecAngles += angles; }
+	inline void SubtractAngles( const Vector &angles ) { m_vecAngles -= angles; }
 
 	bool CanSetAngles( usercmd_t *cmd, int fAbortFlags );
 	void Process( usercmd_t *cmd );

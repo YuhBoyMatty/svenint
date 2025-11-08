@@ -24,6 +24,9 @@ FEATURE_CON_COMMAND_TOGGLE( sc_edgejump, "Auto jump on edge" );
 
 void CEdgeJump::Execute( usercmd_t *cmd, float frametime )
 {
+	if ( localplayer->GetMoveType() != MOVETYPE_WALK )
+		return;
+
 	Vector vecPredictVelocity = localplayer->GetVelocity() * frametime;
 	Vector vecPredictOrigin = localplayer->GetOrigin() + vecPredictVelocity;
 

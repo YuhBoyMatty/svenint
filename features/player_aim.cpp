@@ -280,8 +280,12 @@ void CAim::NoRecoil( usercmd_t *cmd )
 				vecNoRecoil = ( m_vecPunchAngle + m_vecEvPunchAngle ) * 2;
 			}
 
-			vecNoRecoil.z = 0.f;
-			cmd->viewangles -= vecNoRecoil;
+			//vecNoRecoil.z = 0.f;
+
+			if ( Features::silentangles->IsSet() )
+				Features::silentangles->SubtractAngles( vecNoRecoil );
+			else
+				cmd->viewangles -= vecNoRecoil;
 		}
 	}
 	else if ( cmd->buttons & IN_ATTACK2 )
@@ -289,9 +293,12 @@ void CAim::NoRecoil( usercmd_t *cmd )
 		if ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanSecondaryAttack() ) )
 		{
 			Vector vecNoRecoil = ( m_vecPunchAngle + m_vecEvPunchAngle ) * 2;
-			vecNoRecoil.z = 0.f;
+			//vecNoRecoil.z = 0.f;
 
-			cmd->viewangles -= vecNoRecoil;
+			if ( Features::silentangles->IsSet() )
+				Features::silentangles->SubtractAngles( vecNoRecoil );
+			else
+				cmd->viewangles -= vecNoRecoil;
 		}
 	}
 }
