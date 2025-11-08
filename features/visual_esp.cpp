@@ -20,11 +20,13 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_2( CClient_SoundEngine__PlayFMODSound,
+			DEFINE_PATTERNS_3( CClient_SoundEngine__PlayFMODSound,
 							   "5.26",
 							   "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 94 00 00 00",
 							   "5.25",
-							   "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 B4 00 00 00 8B 45 18" );
+							   "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 B4 00 00 00 8B 45 18",
+							   "5.11",
+							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 A8 00 00 00 8B 84 24 B8 00 00 00" );
 		}
 	}
 }
@@ -50,6 +52,7 @@ static esp_bone_s gBones[ MY_MAXENTS + 1 ];
 //-----------------------------------------------------------------------------
 
 DECLARE_CLASS_HOOK( void, CClient_SoundEngine__PlayFMODSound, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex, float flOffset );
+DECLARE_CLASS_HOOK( void, CClient_SoundEngine__PlayFMODSound_511, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -65,6 +68,22 @@ DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound, void *thisp
 {
 	ORIG_CClient_SoundEngine__PlayFMODSound( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex, flOffset );
 
+	THIS_FEATURE()->UpdateEntitySound( entindex, vecOrigin, pszSample );
+}
+
+DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound_511, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex )
+{
+	ORIG_CClient_SoundEngine__PlayFMODSound_511( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex );
+
+	THIS_FEATURE()->UpdateEntitySound( entindex, vecOrigin, pszSample );
+}
+
+//-----------------------------------------------------------------------------
+// Update entity's last played sound
+//-----------------------------------------------------------------------------
+
+void CESP::UpdateEntitySound( int entindex, float *vecOrigin, const char *pszSample )
+{
 	// Actually, it should be in entity list but whatever
 	if ( entindex > 0 && entindex <= Features::entitylist->GetMaxEntities() )
 	{
@@ -1476,9 +1495,18 @@ void CESP::PostLoad( void )
 	if ( m_pfnCClient_SoundEngine__PlayFMODSound == NULL )
 		return;
 
-	m_hCClient_SoundEngine__PlayFMODSound = Detours()->DetourFunction( m_pfnCClient_SoundEngine__PlayFMODSound,
-																	   HOOKED_CClient_SoundEngine__PlayFMODSound,
-																	   GET_FUNC_PTR( ORIG_CClient_SoundEngine__PlayFMODSound ) );
+	if ( gameversion == 511 )
+	{
+		m_hCClient_SoundEngine__PlayFMODSound = Detours()->DetourFunction( m_pfnCClient_SoundEngine__PlayFMODSound,
+																		   HOOKED_CClient_SoundEngine__PlayFMODSound_511,
+																		   GET_FUNC_PTR( ORIG_CClient_SoundEngine__PlayFMODSound_511 ) );
+	}
+	else
+	{
+		m_hCClient_SoundEngine__PlayFMODSound = Detours()->DetourFunction( m_pfnCClient_SoundEngine__PlayFMODSound,
+																		   HOOKED_CClient_SoundEngine__PlayFMODSound,
+																		   GET_FUNC_PTR( ORIG_CClient_SoundEngine__PlayFMODSound ) );
+	}
 }
 
 //-----------------------------------------------------------------------------

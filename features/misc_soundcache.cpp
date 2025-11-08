@@ -24,7 +24,12 @@ namespace FeaturesGameData
 		namespace Client
 		{
 			DEFINE_PATTERN( CClient_SoundEngine__LoadSoundList, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 08 00 00" );
-			DEFINE_PATTERN( CClient_SoundEngine__FlushCache, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 54 03 00 00" );
+
+			DEFINE_PATTERNS_2( CClient_SoundEngine__FlushCache,
+							   "5.25",
+							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 54 03 00 00",
+							   "5.11",
+							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 5C 04 00 00" );
 		}
 	}
 }
@@ -384,8 +389,14 @@ bool CSoundcache::Load( void )
 	m_pfnCClient_SoundEngine__LoadSoundList = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__LoadSoundList );
 	FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCClient_SoundEngine__LoadSoundList, "CClient_SoundEngine::LoadSoundList" );
 
-	m_pfnCClient_SoundEngine__FlushCache = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache );
-	FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCClient_SoundEngine__FlushCache, "CClient_SoundEngine::FlushCache" );
+	int patternIndex;
+	DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__FlushCache );
+	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache, fCClient_SoundEngine__FlushCache );
+	m_pfnCClient_SoundEngine__FlushCache = MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__FlushCache, &patternIndex );
+	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCClient_SoundEngine__FlushCache,
+								   "CClient_SoundEngine::FlushCache",
+								   FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache,
+								   patternIndex );
 
 	return true;
 }

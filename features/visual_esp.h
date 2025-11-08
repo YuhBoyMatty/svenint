@@ -32,6 +32,8 @@ public:
 	virtual void OnButtonPressed( CMenuElementButton *pButton ) override;
 
 public:
+	void UpdateEntitySound( int entindex, float *vecOrigin, const char *pszSample );
+
 	inline float *GetFriendPlayerColor( void ) { return m_pFriendPlayerColor->GetColor(); }
 	inline float *GetEnemyPlayerColor( void ) { return m_pEnemyPlayerColor->GetColor(); }
 	inline float *GetFriendColor( void ) { return m_pFriendColor->GetColor(); }

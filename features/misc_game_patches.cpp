@@ -25,7 +25,12 @@ namespace FeaturesGameData
 	{
 		namespace Engine
 		{
-			DEFINE_PATTERN( Host_FilterTime_31fps, "D9 ? ? ? ? ? EB ? D8 ? DF E0 F6 C4 ? 75 ? DD ? D9 C0" );
+			DEFINE_PATTERNS_2( Host_FilterTime_31fps,
+							   "5.25",
+							   "D9 ? ? ? ? ? EB ? D8 ? DF E0 F6 C4 ? 75 ? DD ? D9 C0",
+							   "5.11",
+							   "D9 ? ? ? ? ? D9 ? ? D9 ? ? DD ? ? ? ? ? D8 ? DF E0" );
+
 			DEFINE_PATTERN( R_DrawViewModel_glClear, "68 ? ? ? ? FF 15 ? ? ? ? 83 3D ? ? ? ? ? 0F 95 C3" );
 
 			DEFINE_PATTERNS_2( CL_ComputeClientInterpolationAmount,
@@ -331,20 +336,24 @@ bool CGamePatches::Load( void )
 		}
 	}
 
-	auto fHost_FilterTime_31fps = MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps );
-
 	int patternIndex;
 	DEFINE_PATTERNS_FUTURE( fCL_ComputeClientInterpolationAmount );
+	DEFINE_PATTERNS_FUTURE( fHost_FilterTime_31fps );
+
 	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
 									 FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
 									 fCL_ComputeClientInterpolationAmount );
+	
+	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
+									 FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
+									 fHost_FilterTime_31fps );
 
 	m_pfnCL_ComputeClientInterpolationAmount = MemoryUtils()->GetPatternFutureValue( fCL_ComputeClientInterpolationAmount, &patternIndex );
 	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCL_ComputeClientInterpolationAmount,
 										  "CL_ComputeClientInterpolationAmount",
 										  FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
 										  patternIndex );
-
+	
 	if ( !bOK )
 	{
 		PrintWarning2( "Interpolation bounds weren't patched\n" );
@@ -363,8 +372,11 @@ bool CGamePatches::Load( void )
 		m_pfnCCamera__Process = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CCamera__Process );
 	}
 
-	m_p31fpsFPU = fHost_FilterTime_31fps.get();
-	FEATURE_CHECK_SYMBOL_PATTERN_STATUS( m_p31fpsFPU, "Host_FilterTime (Forced 31 FPS)" );
+	m_p31fpsFPU = MemoryUtils()->GetPatternFutureValue( fHost_FilterTime_31fps, &patternIndex );
+	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_p31fpsFPU,
+										  "Host_FilterTime (Forced 31 FPS)",
+										  FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
+										  patternIndex );
 
 	return true;
 }
