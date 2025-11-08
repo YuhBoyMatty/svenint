@@ -112,7 +112,7 @@ bool CGrenadeTimer::Load( void )
 	UnpackRGB( *(unsigned char *)&clrTimer.r,
 			   *(unsigned char *)&clrTimer.g,
 			   *(unsigned char *)&clrTimer.b,
-			   RGB_BLUEISH );
+			   RGB_SVENISH );
 	UnpackRGB( *(unsigned char *)&clrTimerExplosion.r,
 			   *(unsigned char *)&clrTimerExplosion.g,
 			   *(unsigned char *)&clrTimerExplosion.b,

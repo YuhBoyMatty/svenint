@@ -185,7 +185,7 @@ bool CSpeedometer::Load( void )
 	UnpackRGB( *(unsigned char *)&clrSpeed.r,
 			   *(unsigned char *)&clrSpeed.g,
 			   *(unsigned char *)&clrSpeed.b,
-			   RGB_BLUEISH );
+			   RGB_SVENISH );
 
 	m_pJumpSpeed = Modules::menu->AddParamBool( this, "JumpSpeed", NULL, true );
 	m_pJumpSpeedFade = Modules::menu->AddParamFloat( this, "JumpSpeedFade", NULL, 0.7f, 0.1f, 2.f );

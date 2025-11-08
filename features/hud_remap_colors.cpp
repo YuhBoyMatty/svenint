@@ -53,6 +53,42 @@ DECLARE_FUNC( void, __cdecl, HOOKED_FillRGBA, int x, int y, int width, int heigh
 }
 
 //-----------------------------------------------------------------------------
+// Press button
+//-----------------------------------------------------------------------------
+
+void CRemapColors::OnButtonPressed( CMenuElementButton *pButton )
+{
+	int rgb = RGB_SVENISH;
+
+	if ( pButton == m_pButtonYellow )
+	{
+		rgb = RGB_YELLOWISH;
+	}
+	else if ( pButton == m_pButtonGreen )
+	{
+		rgb = RGB_GREENISH;
+	}
+	else if ( pButton == m_pButtonBlue )
+	{
+		rgb = RGB_BLUEISH;
+	}
+	else if ( pButton == m_pButtonRed )
+	{
+		rgb = RGB_REDISH;
+	}
+
+	Color clr;
+	UnpackRGB( *(unsigned char *)&clr.r,
+			   *(unsigned char *)&clr.g,
+			   *(unsigned char *)&clr.b,
+			   rgb );
+
+	m_pHUDColor->GetCfgProperty()->GetColor()[ 0 ] = float( clr.r ) / 255.f;
+	m_pHUDColor->GetCfgProperty()->GetColor()[ 1 ] = float( clr.g ) / 255.f;
+	m_pHUDColor->GetCfgProperty()->GetColor()[ 2 ] = float( clr.b ) / 255.f;
+}
+
+//-----------------------------------------------------------------------------
 // Init feature
 //-----------------------------------------------------------------------------
 
@@ -60,6 +96,11 @@ CRemapColors::CRemapColors( const char *pszCategoryName, const char *pszName ) :
 {
 	SetInitiallyDisabled();
 
+	m_pButtonSven = NULL;
+	m_pButtonYellow = NULL;
+	m_pButtonGreen = NULL;
+	m_pButtonBlue = NULL;
+	m_pButtonRed = NULL;
 	m_pHUDColor = NULL;
 
 	m_pfnSPR_Set = NULL;
@@ -76,7 +117,12 @@ CRemapColors::CRemapColors( const char *pszCategoryName, const char *pszName ) :
 bool CRemapColors::Load( void )
 {
 	Modules::menu->BindFeature( this );
-	Modules::menu->AddElementResetButton( this, "Reset" );
+
+	m_pButtonSven = Modules::menu->AddElementButton( this, this, "Sven" ); Modules::menu->AddElementSameLine( this );
+	m_pButtonYellow = Modules::menu->AddElementButton( this, this, "Yellow" ); Modules::menu->AddElementSameLine( this );
+	m_pButtonGreen = Modules::menu->AddElementButton( this, this, "Green" ); Modules::menu->AddElementSameLine( this );
+	m_pButtonBlue = Modules::menu->AddElementButton( this, this, "Blue" ); Modules::menu->AddElementSameLine( this );
+	m_pButtonRed = Modules::menu->AddElementButton( this, this, "Red" );
 
 	Color clr;
 	UnpackRGB( *(unsigned char *)&clr.r,

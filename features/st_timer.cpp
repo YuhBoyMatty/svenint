@@ -334,7 +334,7 @@ bool CSpeedrunTimer::Load( void )
 	UnpackRGB( *(unsigned char *)&clrTimer.r,
 			   *(unsigned char *)&clrTimer.g,
 			   *(unsigned char *)&clrTimer.b,
-			   RGB_BLUEISH );
+			   RGB_SVENISH );
 
 	m_pWidthScreenFraction = Modules::menu->AddParamFloat( this, "WidthScreenFraction", NULL, 0.01f, 0.f, 1.f );
 	m_pHeightScreenFraction = Modules::menu->AddParamFloat( this, "HeightScreenFraction", NULL, 0.35f, 0.f, 1.f );

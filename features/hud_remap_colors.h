@@ -16,7 +16,7 @@
 // Remap colors feature
 //-----------------------------------------------------------------------------
 
-class CRemapColors final : public CBaseFeature
+class CRemapColors final : public CBaseFeature, IMenuElementButtonCallback
 {
 public:
 	CRemapColors( const char *pszCategoryName, const char *pszName );
@@ -25,10 +25,17 @@ public:
 	virtual void PostLoad( void ) override;
 	virtual void Unload( void ) override;
 
+	virtual void OnButtonPressed( CMenuElementButton *pButton ) override;
+
 public:
 	inline Color GetRemapColor( void ) { return m_pHUDColor->GetColor32(); }
 
 private:
+	CMenuElementButton *m_pButtonSven;
+	CMenuElementButton *m_pButtonYellow;
+	CMenuElementButton *m_pButtonGreen;
+	CMenuElementButton *m_pButtonBlue;
+	CMenuElementButton *m_pButtonRed;
 	CMenuValueColorRGB *m_pHUDColor;
 
 	void *m_pfnSPR_Set;

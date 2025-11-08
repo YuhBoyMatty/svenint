@@ -6169,10 +6169,11 @@ inline void UnpackRGBA( unsigned char &r, unsigned char &g, unsigned char &b, un
 
 #define RGBA_DRAW_TEXT_DEFAULT 0xB4DCFFFF
 
-#define RGB_BLUEISH 0x006482C8  //100,130,200 sven copium
+#define RGB_SVENISH 0x006482C8  //100,130,200 sven copium
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,16,16
 #define RGB_GREENISH 0x0000A000 //0,160,0
+#define RGB_BLUEISH 0x005F5FFF //95,95,255
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS 2
