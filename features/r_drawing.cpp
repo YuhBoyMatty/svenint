@@ -611,6 +611,7 @@ CDrawing::CDrawing( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	m_hFontESP2 = 0;
 	m_hFontFriends = 0;
 	m_hFontVotePopup = 0;
+	m_hFontChat = 0;
 
 	m_iNumberWidth = 0;
 	m_iNumberHeight = 0;
@@ -644,11 +645,13 @@ void CDrawing::PostLoad( void )
 	m_hFontESP2 = surface->CreateFont();
 	m_hFontFriends = surface->CreateFont();
 	m_hFontVotePopup = surface->CreateFont();
+	m_hFontChat = surface->CreateFont();
 
 	surface->AddGlyphSetToFont( m_hFontESP, "Verdana", iWidth <= 800 ? 8 : 12, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontESP2, "Verdana", iWidth <= 800 ? 22 : 26, FW_SEMIBOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontFriends, "Verdana", iWidth <= 800 ? 16 : 20, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontVotePopup, "Lucida-Console", iWidth <= 800 ? 16 : 20, FW_EXTRABOLD, NULL, NULL, vgui::ISurface::FONTFLAG_NONE, 0, 0 );
+	surface->AddGlyphSetToFont( m_hFontChat, "Tahoma", iWidth <= 800 ? 16 : 20, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 
 	InitSprites();
 

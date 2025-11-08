@@ -44,6 +44,7 @@ public:
 	inline vgui::HFont GetFontESP2( void ) { return m_hFontESP2; }
 	inline vgui::HFont GetFontFriends( void ) { return m_hFontFriends; }
 	inline vgui::HFont GetFontVotePopup( void ) { return m_hFontVotePopup; }
+	inline vgui::HFont GetFontChat( void ) { return m_hFontChat; }
 
 public:
 	void FillArea( int x, int y, int w, int h, int r, int g, int b, int a );
@@ -99,6 +100,7 @@ private:
 	vgui::HFont m_hFontESP2;
 	vgui::HFont m_hFontFriends;
 	vgui::HFont m_hFontVotePopup;
+	vgui::HFont m_hFontChat;
 
 	int m_iNumberWidth;
 	int m_iNumberHeight;
