@@ -8,8 +8,6 @@
 #pragma once
 #endif
 
-#ifdef SINT_PROPRIETARY
-
 
 
 #endif // SINT_FEATURE_ANTIGRAB_H
