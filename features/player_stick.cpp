@@ -4,6 +4,9 @@
 #include "stdafx.h"
 #include "player_stick.h"
 #include "mov_edgejump.h"
+#include "r_draw_context.h"
+#include "misc_entity_list.h"
+#include "game/messagebuffer.h"
 
 using namespace Globals;
 
@@ -13,6 +16,8 @@ using namespace Globals;
 
 EXPOSE_FEATURE_SINGLETON( CStick, stick, "Player", "Stick" );
 
+static UserMsgHookFn ORIG_UserMsgHook_SayText = NULL;
+
 //-----------------------------------------------------------------------------
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
@@ -20,6 +25,76 @@ EXPOSE_FEATURE_SINGLETON( CStick, stick, "Player", "Stick" );
 FEATURE_CON_COMMAND_TOGGLE( sc_stick, "Stick to a player" );
 
 ConVar sc_stick_target( "sc_stick_target", "0", FCVAR_EXTDLL, "Player's index to stick" );
+
+//-----------------------------------------------------------------------------
+// UserMsg SayText
+//-----------------------------------------------------------------------------
+
+static int UserMsgHook_SayText( const char *pszName, int iSize, void *pBuffer )
+{
+	if ( !THIS_FEATURE_IS_ENABLED() ||
+		 !THIS_FEATURE()->IsStealingMessages() ||
+		 sc_stick_target.GetInt() == 0 )
+	{
+		return ORIG_UserMsgHook_SayText( pszName, iSize, pBuffer );
+	}
+
+	CMessageBuffer message( pszName, pBuffer, iSize, true );
+
+	int src;
+	bool bTeam = false;
+	int client = message.ReadByte();
+	const char *pszMessage = message.ReadString();
+
+	if ( *pszMessage > 0 && *pszMessage <= 3 )
+	{
+		src = *pszMessage;
+		pszMessage = pszMessage + 1;
+	}
+	else
+	{
+		src = 0;
+		client = 0;
+	}
+
+	if ( src < 2 || pszMessage[ 0 ] == '\0' || client != sc_stick_target.GetInt() )
+		return ORIG_UserMsgHook_SayText( pszName, iSize, pBuffer );
+
+	player_info_t *pPlayerInfo = enginestudio->PlayerInfo( client - 1 );
+	if ( pPlayerInfo == NULL )
+		return ORIG_UserMsgHook_SayText( pszName, iSize, pBuffer );
+
+	if ( src == 2 )
+	{
+		if ( strncmp( pPlayerInfo->name, pszMessage, strlen( pPlayerInfo->name ) ) == 0 )
+		{
+			pszMessage += strlen( pPlayerInfo->name ) + 2;
+		}
+		else
+		{
+			pszMessage += strlen( pPlayerInfo->name ) + 2 + Q_ARRAYSIZE( "(TEAM)" );
+			bTeam = true;
+		}
+	}
+	else
+	{
+		if ( strncmp( "* (TEAM)", pszMessage, Q_ARRAYSIZE( "* (TEAM)" ) - 1 ) == 0 )
+		{
+			pszMessage += strlen( pPlayerInfo->name ) + 1 + Q_ARRAYSIZE( "* (TEAM)" );
+			bTeam = true;
+		}
+		else
+		{
+			pszMessage += strlen( pPlayerInfo->name ) + Q_ARRAYSIZE( "* " );
+		}
+	}
+
+	char cmd[ 192 ];
+	snprintf( cmd, Q_ARRAYSIZE( cmd ), "%s %s%s", bTeam ? "say_team " : "say ", src == 3 ? "/me " : "", pszMessage );
+	cl_enginefuncs->pfnClientCmd( cmd );
+
+	return ORIG_UserMsgHook_SayText( pszName, iSize, pBuffer );
+}
 
 //-----------------------------------------------------------------------------
 // Find a target
@@ -39,7 +114,7 @@ cl_entity_t *CStick::FindTarget( void )
 		if ( pPlayer != NULL
 			 && pPlayer != pLocal
 			 && pPlayer->curstate.messagenum >= pLocal->curstate.messagenum &&
-			 extraplayerinfo->GetHealth( i ) != 0.f &&
+			 Features::entitylist->GetList()[ i ].m_bAlive &&
 			 ( pPlayer->curstate.sequence < 12 ||
 			 pPlayer->curstate.sequence > 18 ) )
 		{
@@ -62,9 +137,7 @@ cl_entity_t *CStick::FindTarget( void )
 
 void CStick::Idle( usercmd_t *cmd )
 {
-	if ( m_pAuto->GetBool() &&
-		 sc_stick_target.GetInt() == 0 &&
-		 !( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) ) )
+	if ( m_pAuto->GetBool() && sc_stick_target.GetInt() == 0 )
 	{
 		if ( localplayer->GetWaterLevel() == WL_EYES )
 			cmd->upmove = localplayer->GetMaxSpeed();
@@ -107,7 +180,7 @@ void CStick::TryMimic( cl_entity_t *pPlayer, usercmd_t *cmd )
 		{
 			cmd->buttons |= IN_ATTACK;
 		}
-		else if ( pPlayer->curstate.sequence == 21 /* || pPlayer->curstate.sequence == 24 */ ) // crowbar / wrench
+		else if ( pPlayer->curstate.sequence == 21  || !pPlayer->curstate.usehull && pPlayer->curstate.sequence == 24 ) // crowbar / wrench
 		{
 			cmd->buttons |= IN_ATTACK;
 		}
@@ -183,7 +256,7 @@ void CStick::TryMimic( cl_entity_t *pPlayer, usercmd_t *cmd )
 		{
 			cmd->buttons |= IN_ATTACK;
 		}
-		else if ( /* pPlayer->curstate.sequence == 94 || */ pPlayer->curstate.sequence == 97 ) // displacer gun
+		else if ( pPlayer->curstate.usehull && pPlayer->curstate.sequence == 94 || pPlayer->curstate.sequence == 97 ) // displacer gun
 		{
 			cmd->buttons |= IN_ATTACK;
 		}
@@ -342,7 +415,7 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 
 	if ( pLadder == NULL )
 	{
-		cmd->buttons |= IN_JUMP;
+		//cmd->buttons |= IN_JUMP;
 		m_iClimb = 0;
 		return false;
 	}
@@ -355,7 +428,7 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 
 	if ( m_iClimb == 0 )
 	{
-		if ( pPlayer->curstate.origin.z > playermove->origin()->z )
+		if ( pPlayer->curstate.origin.z >= playermove->origin()->z )
 		{
 			// up
 			m_iClimb = 1;
@@ -393,7 +466,7 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 	{
 		if ( pPlayer->curstate.origin.z + 2.f <= playermove->origin()->z )
 		{
-			cmd->buttons |= IN_JUMP;
+			cmd->buttons |= ( IN_JUMP | IN_DUCK );
 		}
 		else
 		{
@@ -407,7 +480,7 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 	{
 		if ( pPlayer->curstate.origin.z >= playermove->origin()->z )
 		{
-			cmd->buttons |= IN_JUMP;
+			cmd->buttons |= ( IN_JUMP | IN_DUCK );
 		}
 		else
 		{
@@ -425,7 +498,7 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 // TryMove
 //-----------------------------------------------------------------------------
 
-void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPos, Vector2D &vecDir )
+void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecFollowPoint, Vector2D &vecDir )
 {
 	if ( !( m_pStrafeMode->GetInt() == 1 && !localplayer->IsOnGround() || m_pStrafeMode->GetInt() == 2 ) )
 	{
@@ -462,8 +535,8 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPo
 											 Strafe::StrafeDir::POINT,
 											 Strafe::StrafeType::MAXACCEL,
 											 cmd->viewangles.y,
-											 vecPredictPos.x,
-											 vecPredictPos.y );
+											 vecFollowPoint.x,
+											 vecFollowPoint.y );
 
 		Strafe::ProcessedFrame out;
 		out.Yaw = cmd->viewangles.y;
@@ -500,10 +573,34 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPo
 
 	// Jump when too far
 	if ( m_pStrafeMode->GetInt() > 0 && localplayer->IsOnGround() &&
-		 ( vecPredictPos.AsVector2D() - localplayer->GetOrigin().AsVector2D() ).LengthSqr() > M_SQR( 300.f ) )
+		 ( pPlayer->curstate.origin.AsVector2D() - localplayer->GetOrigin().AsVector2D() ).LengthSqr() > M_SQR( 300.f ) )
 	{
 		cmd->buttons |= IN_JUMP;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Get follow point
+//-----------------------------------------------------------------------------
+
+Vector CStick::GetFollowPoint( cl_entity_t *pPlayer, float flDistanceSqr )
+{
+	if ( m_pInterpMode->GetInt() == 0 || m_pPositionHistoryOffset->GetInt() == 0 || flDistanceSqr <= M_SQR( 45.f ) )
+		return pPlayer->curstate.origin;
+
+	int prevpos = pPlayer->current_position - m_pPositionHistoryOffset->GetInt();
+	if ( prevpos < 0 )
+		prevpos += HISTORY_MAX;
+
+	Vector vecMyPos = *playermove->origin();
+	Vector vecActualPos = pPlayer->curstate.origin;
+	Vector vecPos = pPlayer->ph[ prevpos ].origin;
+
+	if ( m_pInterpMode->GetInt() == 1 )
+		return ( vecMyPos + vecActualPos + vecPos ) / 3.f;
+
+	Vector fraction = vecMyPos + ( vecActualPos - vecMyPos ) * UTIL_SimpleSpline( m_pInterpTargetActualPos->GetFloat() );
+	return fraction + ( vecPos - fraction ) * UTIL_SimpleSpline( m_pInterpTargetPrevPos->GetFloat() );
 }
 
 //-----------------------------------------------------------------------------
@@ -525,7 +622,7 @@ bool CStick::TryUnstuck( usercmd_t *cmd, Vector2D &vecDir )
 
 	static bool bTryUnstuck = false;
 
-	Vector vecUp = localplayer->GetOrigin() + Vector( 0, 0, 12 );
+	Vector vecUp = localplayer->GetOrigin() + Vector( 0, 0, 14 );
 
 	cl_enginefuncs->pEventAPI->EV_SetTraceHull( ( localplayer->GetFlags() & FL_DUCKING ) ? PM_HULL_DUCKED_PLAYER : PM_HULL_PLAYER );
 	cl_enginefuncs->pEventAPI->EV_PlayerTrace( vecUp, vecUp + vecDir.ToVector() * 4.f, PM_WORLD_ONLY, -1, &trace );
@@ -581,13 +678,16 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		return kHookContinue;
 	}
 
+	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) )
+		 return kHookContinue;
+
 	if ( m_pAuto->GetBool() )
 	{
 		int iPrevTarget = sc_stick_target.GetInt();
 		cl_entity_t *pTarget = FindTarget();
 
 		if ( pTarget != NULL &&
-			 ( cl_enginefuncs->GetLocalPlayer()->curstate.origin - pTarget->curstate.origin ).LengthSqr() <= M_SQR( 512.f ) )
+			 ( cl_enginefuncs->GetLocalPlayer()->curstate.origin - pTarget->curstate.origin ).LengthSqr() <= M_SQR( 600.f ) )
 		{
 			if ( cl_enginefuncs->GetAbsoluteTime() - m_flSwitchTargetTime > 0.5 )
 			{
@@ -618,9 +718,16 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 			return kHookContinue;
 		}
 
-		Vector vecPredictPos = pPlayer->curstate.origin + ( pPlayer->curstate.origin - pPlayer->prevstate.origin );
+		const float flDistanceSqr = ( cl_enginefuncs->GetLocalPlayer()->curstate.origin - pPlayer->curstate.origin ).LengthSqr();
+		Vector vecFollowPoint = GetFollowPoint( pPlayer, flDistanceSqr ) + ( pPlayer->curstate.origin - pPlayer->prevstate.origin );
 
-		Vector2D vecDir = vecPredictPos.AsVector2D() - playermove->origin()->AsVector2D();
+		if ( m_pVisualizePoint->GetBool() )
+		{
+			CDrawBoxNoDepthBuffer *pContext = new CDrawBoxNoDepthBuffer( vecFollowPoint, pPlayer->curstate.mins, pPlayer->curstate.maxs, Color( 255, 255, 255, 127 ) );
+			Features::drawcontext->AddDrawContext( pContext );
+		}
+
+		Vector2D vecDir = vecFollowPoint.AsVector2D() - playermove->origin()->AsVector2D();
 		vecDir.NormalizeInPlace();
 
 		SetViewAngles( pPlayer, cmd );
@@ -643,7 +750,7 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		if ( !bMovedOnLadder )
 		{
-			TryMove( pPlayer, cmd, vecPredictPos, vecDir );
+			TryMove( pPlayer, cmd, vecFollowPoint, vecDir );
 		}
 
 		if ( localplayer->GetWaterLevel() > WL_NOT_IN_WATER &&
@@ -670,17 +777,26 @@ CStick::CStick( const char *pszCategoryName, const char *pszName ) : CBaseFeatur
 
 	m_pAuto = NULL;
 	m_pStealModel = NULL;
+	m_pStealMessages = NULL;
 	m_pLookAtTarget = NULL;
 	m_pOvercomeObstacles = NULL;
 	m_pEdgejump = NULL;
 	m_pMimic = NULL;
 	m_pStrafeMode = NULL;
 
+	m_pVisualizePoint = NULL;
+	m_pInterpMode = NULL;
+	m_pInterpTargetActualPos = NULL;
+	m_pInterpTargetPrevPos = NULL;
+	m_pPositionHistoryOffset = NULL;
+
 	m_iClimb = 0;
 	m_flSwitchTargetTime = 0.0;
 
 	m_bForcePitch = false;
 	m_flSavedPitchAngle = 0.f;
+
+	m_hUserMsgHook_SayText = DETOUR_INVALID_HANDLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -713,11 +829,20 @@ bool CStick::Load( void )
 
 	m_pAuto = Modules::menu->AddParamBool( this, "Auto", NULL, true );
 	m_pStealModel = Modules::menu->AddParamBool( this, "StealModel", NULL, false );
+	m_pStealMessages = Modules::menu->AddParamBool( this, "StealMessages", NULL, false );
 	m_pLookAtTarget = Modules::menu->AddParamBool( this, "LookAtTarget", NULL, false );
 	m_pOvercomeObstacles = Modules::menu->AddParamBool( this, "OvercomeObstacles", NULL, true );
 	m_pEdgejump = Modules::menu->AddParamBool( this, "Edgejump", NULL, true );
 	m_pMimic = Modules::menu->AddParamBool( this, "Mimic", NULL, false );
 	m_pStrafeMode = Modules::menu->AddParamList( this, "StrafeMode", NULL, 1, " 0 - None\0 1 - In Air\0 2 - Everytime\0\0" );
+
+	Modules::menu->AddElementSeparator( this, "Follow Parameters" );
+
+	m_pVisualizePoint = Modules::menu->AddParamBool( this, "VisualizePoint", NULL, false );
+	m_pInterpMode = Modules::menu->AddParamList( this, "InterpMode", NULL, 0, " 0 - OFF\0 1 - Mid Point\0 2 - Interp\0\0" );
+	m_pInterpTargetActualPos = Modules::menu->AddParamFloat( this, "InterpTargetActualPos", "Fraction distance to actual position", 0.5f, 0.f, 1.f );
+	m_pInterpTargetPrevPos = Modules::menu->AddParamFloat( this, "InterpTargetPrevPos", "Fraction distance to previous position", 0.5f, 0.f, 1.f );
+	m_pPositionHistoryOffset = Modules::menu->AddParamInteger( this, "PositionHistoryOffset", "Previous Position ( 0 - Current )", 10, 0, HISTORY_MAX - 1 );
 
 	return true;
 }
@@ -728,6 +853,8 @@ bool CStick::Load( void )
 
 void CStick::PostLoad( void )
 {
+	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText );
+
 	FEATURE_REGISTER_CCMD( sc_stick );
 	FEATURE_REGISTER_CVAR( sc_stick_target );
 }
@@ -738,6 +865,8 @@ void CStick::PostLoad( void )
 
 void CStick::Unload( void )
 {
+	gamehooks->UnhookUserMessage( m_hUserMsgHook_SayText );
+
 	FEATURE_UNREGISTER_CCMD( sc_stick );
 	FEATURE_UNREGISTER_CVAR( sc_stick_target );
 }

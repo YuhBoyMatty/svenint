@@ -30,6 +30,9 @@ public:
 
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
+public:
+	inline bool IsStealingMessages( void ) const { return m_pStealMessages->GetBool(); }
+
 private:
 	cl_entity_t *FindTarget( void );
 	void Idle( usercmd_t *cmd );
@@ -39,15 +42,23 @@ private:
 	void TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPos, Vector2D &vecDir );
 	bool TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd );
 	void TryMimic( cl_entity_t *pPlayer, usercmd_t *cmd );
+	Vector GetFollowPoint( cl_entity_t *pPlayer, float flDistanceSqr );
 
 private:
 	CMenuValueBool *m_pAuto;
 	CMenuValueBool *m_pStealModel;
+	CMenuValueBool *m_pStealMessages;
 	CMenuValueBool *m_pLookAtTarget;
 	CMenuValueBool *m_pOvercomeObstacles;
 	CMenuValueBool *m_pEdgejump;
 	CMenuValueBool *m_pMimic;
 	CMenuValueList *m_pStrafeMode;
+
+	CMenuValueBool *m_pVisualizePoint;
+	CMenuValueList *m_pInterpMode;
+	CMenuValueFloat *m_pInterpTargetActualPos;
+	CMenuValueFloat *m_pInterpTargetPrevPos;
+	CMenuValueInteger *m_pPositionHistoryOffset;
 
 	int m_iClimb;
 	double m_flSwitchTargetTime;
@@ -56,6 +67,8 @@ private:
 	float m_flSavedPitchAngle;
 
 	Strafe::StrafeData m_strafeData;
+
+	DetourHandle_t m_hUserMsgHook_SayText;
 };
 
 EXTERN_FEATURE( CStick, stick );
