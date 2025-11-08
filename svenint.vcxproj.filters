@@ -550,6 +550,21 @@
     <ClCompile Include="features\visual_radar.cpp">
       <Filter>features\Visual</Filter>
     </ClCompile>
+    <ClCompile Include="features\hud_chat_history.cpp">
+      <Filter>features\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_perfect_jumpbug.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_vote_manipulation.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_server_stresser.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_server_crasher.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1178,6 +1193,21 @@
     </ClInclude>
     <ClInclude Include="features\visual_radar.h">
       <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\hud_chat_history.h">
+      <Filter>features\HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_perfect_jumpbug.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_vote_manipulation.h">
+      <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_server_stresser.h">
+      <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_server_crasher.h">
+      <Filter>features\Exploit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

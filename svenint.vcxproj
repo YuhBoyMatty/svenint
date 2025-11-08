@@ -72,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SINT_PROPRIETARY;GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;NDEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;NDEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
@@ -96,7 +96,11 @@
     <ClInclude Include="features\exploit_action_burst.h" />
     <ClInclude Include="features\exploit_fakelag.h" />
     <ClInclude Include="features\exploit_movcmdratelimiter.h" />
+    <ClInclude Include="features\exploit_server_crasher.h" />
+    <ClInclude Include="features\exploit_server_stresser.h" />
+    <ClInclude Include="features\exploit_vote_manipulation.h" />
     <ClInclude Include="features\hud_chat_colors.h" />
+    <ClInclude Include="features\hud_chat_history.h" />
     <ClInclude Include="features\hud_grenade_timer.h" />
     <ClInclude Include="features\hud_remap_colors.h" />
     <ClInclude Include="features\hud_speedometer.h" />
@@ -123,6 +127,7 @@
     <ClInclude Include="features\mov_edgejump.h" />
     <ClInclude Include="features\mov_fastrun.h" />
     <ClInclude Include="features\mov_jumpbug.h" />
+    <ClInclude Include="features\mov_perfect_jumpbug.h" />
     <ClInclude Include="features\mov_selfsink.h" />
     <ClInclude Include="features\mov_strafer.h" />
     <ClInclude Include="features\mov_wallstrafe.h" />
@@ -309,8 +314,12 @@
     <ClCompile Include="features\exploit_action_burst.cpp" />
     <ClCompile Include="features\exploit_fakelag.cpp" />
     <ClCompile Include="features\exploit_movcmdratelimiter.cpp" />
+    <ClCompile Include="features\exploit_server_crasher.cpp" />
+    <ClCompile Include="features\exploit_server_stresser.cpp" />
+    <ClCompile Include="features\exploit_vote_manipulation.cpp" />
     <ClCompile Include="features\features.cpp" />
     <ClCompile Include="features\hud_chat_colors.cpp" />
+    <ClCompile Include="features\hud_chat_history.cpp" />
     <ClCompile Include="features\hud_grenade_timer.cpp" />
     <ClCompile Include="features\hud_remap_colors.cpp" />
     <ClCompile Include="features\hud_speedometer.cpp" />
@@ -337,6 +346,7 @@
     <ClCompile Include="features\mov_edgejump.cpp" />
     <ClCompile Include="features\mov_fastrun.cpp" />
     <ClCompile Include="features\mov_jumpbug.cpp" />
+    <ClCompile Include="features\mov_perfect_jumpbug.cpp" />
     <ClCompile Include="features\mov_selfsink.cpp" />
     <ClCompile Include="features\mov_strafer.cpp" />
     <ClCompile Include="features\mov_wallstrafe.cpp" />
