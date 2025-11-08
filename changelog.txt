@@ -1,4 +1,12 @@
 SvenInt v3 Changelog
 
+08/11/2025 - Version 3.1.0:
+- Added 5.11 signatures for ESP Sound, Mute Manager, Soundcache & Patch for 31 FPS unlock
+- [No Recoil] Fixed incorrect work when Ragebot / Silent Aimbot is used
+- [Edgejump] Won't work on ladders anymore
+- [Remap Colors] Added buttons to change the remap color to Sven-like, HL-like, OP4-like, BS-like & just red one
+- [Stick] Added message stealer, interpolation methods of follow point & small fixes
+- [Chat History] Added Source-like chat history to replace poorely looking vanilla one
+
 06/11/2025 - Version 3.0.0:
 - Completely rewritten from scratch as an injectable DLL library
