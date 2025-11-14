@@ -90,7 +90,7 @@ static int UserMsgHook_SayText( const char *pszName, int iSize, void *pBuffer )
 	}
 
 	char cmd[ 192 ];
-	snprintf( cmd, Q_ARRAYSIZE( cmd ), "%s %s%s", bTeam ? "say_team " : "say ", src == 3 ? "/me " : "", pszMessage );
+	snprintf( cmd, Q_ARRAYSIZE( cmd ), "%s \"%s%s\"", bTeam ? "say_team " : "say ", src == 3 ? "/me " : "", pszMessage );
 	cl_enginefuncs->pfnClientCmd( cmd );
 
 	return ORIG_UserMsgHook_SayText( pszName, iSize, pBuffer );
