@@ -1,5 +1,12 @@
 SvenInt v3 Changelog
 
+14/11/2025 - Version 3.1.1:
+- Fixed text rendering artifacts in VGUI after almost 4 years LOL
+- [Aim] Some adjustment of No Recoil
+- [Input Manager] Experimental recording
+- [Demo Capture] Registered ConVars that I forgot to
+- [Stick] Fixed possible slowhack when message stealer is enabled
+
 08/11/2025 - Version 3.1.0:
 - Added 5.11 signatures for ESP Sound, Mute Manager, Soundcache & Patch for 31 FPS unlock
 - [No Recoil] Fixed incorrect work when Ragebot / Silent Aimbot is used
