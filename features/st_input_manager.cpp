@@ -21,6 +21,8 @@ DECLARE_HOOK( int, __cdecl, ServerCmd, const char * );
 
 EXPOSE_FEATURE_SINGLETON( CInputManager, inputmanager, "Speedrun Tools", "Input Manager" );
 
+FILE *m_pExperimental = NULL;
+
 //-----------------------------------------------------------------------------
 // Utilities
 //-----------------------------------------------------------------------------
@@ -51,6 +53,7 @@ ConVar sc_im_autorecord( "sc_im_autorecord", "0", FCVAR_EXTDLL, "Automatically r
 ConVar sc_im_autoplay( "sc_im_autoplay", "0", FCVAR_EXTDLL, "Automatically play inputs at map start" );
 ConVar sc_im_exact( "sc_im_exact", "0", FCVAR_EXTDLL, "Set origin & velocity" );
 ConVar sc_im_goto_exact( "sc_im_goto_exact", "1", FCVAR_EXTDLL, "Set origin & velocity when forwarding / backwarding / goto" );
+ConVar sc_im_experimental( "sc_im_experimental", "0", FCVAR_EXTDLL, "Experimental recording" );
 
 static void sc_im_record( const CCommand &args );
 static void command_wrapper__sc_im_record() { CCommand args( CVar()->ArgC(), CVar()->ArgV() ); sc_im_record( args ); } \
@@ -178,6 +181,7 @@ DECLARE_FUNC( int, __cdecl, HOOKED_ServerCmd, const char *pszCommand )
 
 CInputContext::CInputContext()
 {
+	memset( &m_FrameBuffer, 0, sizeof( m_FrameBuffer ) );
 	m_iVersion = 0;
 	m_iCurrentFrame = 0;
 	m_bSavedInfos = false;
@@ -616,6 +620,20 @@ void CInputContext::RecordInput( float frametime, usercmd_t *cmd, int active )
 
 	// Save input
 	m_frames.push_back( m_FrameBuffer );
+
+	if ( sc_im_experimental.GetBool() && m_pExperimental != NULL )
+	{
+		static char buffar[ 2048 ];
+
+		edict_t *pPlayer;
+
+		if ( Modules::server->Host_IsServerActive() &&
+			 ( pPlayer = sv_enginefuncs->pfnPEntityOfEntIndex( playermove->player_index() + 1 ) ) != NULL )
+		{
+			fprintf( m_pExperimental, "%d:%.3f %.3f %.3f:%.3f %.3f %.3f:%.3f %.3f %.3f\n",
+					 cmd->buttons, VectorExpand( va ), VectorExpand( pPlayer->v.origin ), VectorExpand( pPlayer->v.velocity ) );
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -678,6 +696,9 @@ bool CInputManager::Record( const char *pszFilename )
 	m_bSavedInputs = false;
 	m_bForceViewAngles = false;
 	m_sQueuedCommands.clear();
+
+	if ( sc_im_experimental.GetBool() )
+		m_pExperimental = fopen( SVENINT_FOLDER_NAME "/input_manager/experimental.txt", "w" );
 
 	return true;
 }
@@ -775,6 +796,9 @@ bool CInputManager::Stop( bool bAutoStop /* = false */ )
 				gameutils->PrintChatText( "Stopped playing back inputs from file \"%s\" (frames: %d)\n", m_InputContext.FileName(), GetCurrentFrame() );
 		}
 	}
+
+	if ( m_pExperimental != NULL )
+		fclose( m_pExperimental );
 
 	m_InputContext.Clear();
 
@@ -1210,6 +1234,7 @@ void CInputManager::PostLoad( void )
 	FEATURE_REGISTER_CVAR( sc_im_autoplay );
 	FEATURE_REGISTER_CVAR( sc_im_exact );
 	FEATURE_REGISTER_CVAR( sc_im_goto_exact );
+	FEATURE_REGISTER_CVAR( sc_im_experimental );
 	FEATURE_REGISTER_CCMD( sc_im_record_ );
 	FEATURE_REGISTER_CCMD( sc_im_play );
 	FEATURE_REGISTER_CCMD( sc_im_split );
@@ -1232,6 +1257,7 @@ void CInputManager::Unload( void )
 	FEATURE_UNREGISTER_CVAR( sc_im_autoplay );
 	FEATURE_UNREGISTER_CVAR( sc_im_exact );
 	FEATURE_UNREGISTER_CVAR( sc_im_goto_exact );
+	FEATURE_UNREGISTER_CVAR( sc_im_experimental );
 	FEATURE_UNREGISTER_CCMD( sc_im_record_ );
 	FEATURE_UNREGISTER_CCMD( sc_im_play );
 	FEATURE_UNREGISTER_CCMD( sc_im_split );
