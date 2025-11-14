@@ -269,18 +269,7 @@ void CAim::NoRecoil( usercmd_t *cmd )
 	{
 		if ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanPrimaryAttack() ) )
 		{
-			Vector vecNoRecoil;
-
-			if ( localplayer->GetCurrentWeaponID() == WEAPON_M249 )
-			{
-				vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
-			}
-			else
-			{
-				vecNoRecoil = ( m_vecPunchAngle + m_vecEvPunchAngle ) * 2;
-			}
-
-			//vecNoRecoil.z = 0.f;
+			Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
 
 			if ( Features::silentangles->IsSet() )
 				Features::silentangles->SubtractAngles( vecNoRecoil );
@@ -292,8 +281,7 @@ void CAim::NoRecoil( usercmd_t *cmd )
 	{
 		if ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanSecondaryAttack() ) )
 		{
-			Vector vecNoRecoil = ( m_vecPunchAngle + m_vecEvPunchAngle ) * 2;
-			//vecNoRecoil.z = 0.f;
+			Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
 
 			if ( Features::silentangles->IsSet() )
 				Features::silentangles->SubtractAngles( vecNoRecoil );
