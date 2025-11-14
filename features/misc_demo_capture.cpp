@@ -317,6 +317,20 @@ void CDemoCapture::OnDisable( void )
 }
 
 //-----------------------------------------------------------------------------
+// Post load feature
+//-----------------------------------------------------------------------------
+
+void CDemoCapture::PostLoad( void )
+{
+	FEATURE_REGISTER_CVAR( sc_cap_fps );
+	FEATURE_REGISTER_CVAR( sc_cap_slowdown );
+	FEATURE_REGISTER_CVAR( sc_cap_sampling_min_fps );
+	FEATURE_REGISTER_CVAR( sc_cap_sampling_round_fps );
+	FEATURE_REGISTER_CCMD( sc_cap_start );
+	FEATURE_REGISTER_CCMD( sc_cap_stop );
+}
+
+//-----------------------------------------------------------------------------
 // Unload feature: revert PostLoad routine
 //-----------------------------------------------------------------------------
 
@@ -326,4 +340,11 @@ void CDemoCapture::Unload( void )
 	{
 		Stop();
 	}
+
+	FEATURE_UNREGISTER_CVAR( sc_cap_fps );
+	FEATURE_UNREGISTER_CVAR( sc_cap_slowdown );
+	FEATURE_UNREGISTER_CVAR( sc_cap_sampling_min_fps );
+	FEATURE_UNREGISTER_CVAR( sc_cap_sampling_round_fps );
+	FEATURE_UNREGISTER_CCMD( sc_cap_start );
+	FEATURE_UNREGISTER_CCMD( sc_cap_stop );
 }
