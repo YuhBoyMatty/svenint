@@ -168,24 +168,13 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Redraw, float time, int intermission )
 	HOOK_EVENT_PUSH_ARG( time );
 	HOOK_EVENT_PUSH_ARG( intermission );
 	HOOK_EVENT_SET_RETURN( result );
-	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( Globals::localplayer->DrawDebugInfo();
-		if ( Globals::gameversion < 515 )
-		{
-			CREATE_HOOK_EVENT( kVGuiClientPanelPaint_HookEvent );
-			HOOK_EVENT_CALL_CHAIN_NO_SUPERCEDE();
-		}, result )
+	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( Globals::localplayer->DrawDebugInfo(), result )
 	
 	result = ORIG_HUD_Redraw( time, intermission );
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
 	Globals::localplayer->DrawDebugInfo();
-
-	if ( Globals::gameversion < 515 )
-	{
-		CREATE_HOOK_EVENT( kVGuiClientPanelPaint_HookEvent );
-		HOOK_EVENT_CALL_CHAIN_NO_SUPERCEDE();
-	}
 
 	return result;
 }
@@ -507,13 +496,6 @@ DECLARE_FUNC( BOOL, APIENTRY, HOOKED_wglSwapBuffers, HDC hdc )
 
 DECLARE_CLASS_FUNC( void, HOOKED_Panel__PaintTraverse, vgui::IPanel *thisptr, vgui::VPANEL vguiPanel, bool forceRepaint, bool allowForce )
 {
-	// Artifacts in 5.11 when a VGUI text is being drawn, so we do some checks
-	if ( Globals::gameversion < 515 )
-	{
-		ORIG_Panel__PaintTraverse( thisptr, vguiPanel, forceRepaint, allowForce );
-		return;
-	}
-
 	static vgui::VPANEL hClientPanel = 0;
 	if ( hClientPanel == 0 )
 	{

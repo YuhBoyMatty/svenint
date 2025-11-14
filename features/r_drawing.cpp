@@ -329,6 +329,8 @@ void CDrawing::DrawTexture( int id, int x0, int y0, int x1, int y1, int r, int g
 
 void CDrawing::DrawStringF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	enginesurface->ResetViewPort();
+
 	va_list va_alist;
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
@@ -344,10 +346,14 @@ void CDrawing::DrawStringF( vgui::HFont font, int x, int y, int r, int g, int b,
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 void CDrawing::DrawStringExF( vgui::HFont font, int x, int y, int r, int g, int b, int a, int &width, int &height, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	enginesurface->ResetViewPort();
+
 	va_list va_alist;
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
@@ -362,10 +368,14 @@ void CDrawing::DrawStringExF( vgui::HFont font, int x, int y, int r, int g, int 
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 void CDrawing::DrawStringACPF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	enginesurface->ResetViewPort();
+
 	va_list va_alist;
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
@@ -381,10 +391,14 @@ void CDrawing::DrawStringACPF( vgui::HFont font, int x, int y, int r, int g, int
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 void CDrawing::DrawWideStringF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const wchar_t *pwszString, ... )
 {
+	enginesurface->ResetViewPort();
+
 	va_list va_alist;
 	va_start( va_alist, pwszString );
 	vswprintf( s_wszBuffer, sizeof( s_wszBuffer ) / sizeof( wchar_t ), pwszString, va_alist );
@@ -399,6 +413,8 @@ void CDrawing::DrawWideStringF( vgui::HFont font, int x, int y, int r, int g, in
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 //-----------------------------------------------------------------------------
@@ -407,6 +423,8 @@ void CDrawing::DrawWideStringF( vgui::HFont font, int x, int y, int r, int g, in
 
 void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString )
 {
+	enginesurface->ResetViewPort();
+
 	MultiByteToWideChar( CP_UTF8, 0, pszString, 256, s_wszBuffer, 256 );
 
 	int width, height;
@@ -418,10 +436,14 @@ void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, 
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b, int a, int &width, int &height, FontAlignFlags_t alignment, const char *pszString )
 {
+	enginesurface->ResetViewPort();
+
 	MultiByteToWideChar( CP_UTF8, 0, pszString, 256, s_wszBuffer, 256 );
 
 	surface->GetTextSize( font, s_wszBuffer, width, height );
@@ -432,10 +454,14 @@ void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
+
+	surface->DrawFlushText();
 }
 
 void CDrawing::DrawStringACP( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString )
 {
+	enginesurface->ResetViewPort();
+
 	MultiByteToWideChar( CP_ACP, 0, pszString, 256, s_wszBuffer, 256 );
 
 	int width, height;
@@ -447,11 +473,14 @@ void CDrawing::DrawStringACP( vgui::HFont font, int x, int y, int r, int g, int 
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( s_wszBuffer, wcslen( s_wszBuffer ) );
-}
 
+	surface->DrawFlushText();
+}
 
 void CDrawing::DrawWideString( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const wchar_t *pwszString )
 {
+	enginesurface->ResetViewPort();
+
 	int width, height;
 	surface->GetTextSize( font, pwszString, width, height );
 
@@ -461,6 +490,8 @@ void CDrawing::DrawWideString( vgui::HFont font, int x, int y, int r, int g, int
 	surface->DrawSetTextColor( r, g, b, a );
 	surface->DrawSetTextPos( x, y - height / 2 );
 	surface->DrawPrintText( pwszString, wcslen( pwszString ) );
+
+	surface->DrawFlushText();
 }
 
 //-----------------------------------------------------------------------------

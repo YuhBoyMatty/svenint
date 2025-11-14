@@ -159,7 +159,7 @@ void CSpeedometer::OnEnable( void )
 	ResetJumpSpeed();
 
 	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent );
-	hookevents->RegisterListener( this, kHUD_Redraw_HookEvent, kHookPostCall );
+	hookevents->RegisterListener( this, kHUD_Redraw_HookEvent );
 }
 
 //-----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ void CSpeedometer::OnEnable( void )
 void CSpeedometer::OnDisable( void )
 {
 	hookevents->UnregisterListener( this, kHUD_VidInit_HookEvent );
-	hookevents->UnregisterListener( this, kHUD_Redraw_HookEvent, kHookPostCall );
+	hookevents->UnregisterListener( this, kHUD_Redraw_HookEvent );
 }
 
 //-----------------------------------------------------------------------------

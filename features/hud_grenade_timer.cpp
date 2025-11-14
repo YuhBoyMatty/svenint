@@ -87,7 +87,7 @@ CGrenadeTimer::CGrenadeTimer( const char *pszCategoryName, const char *pszName )
 
 void CGrenadeTimer::OnEnable( void )
 {
-	hookevents->RegisterListener( this, kHUD_Redraw_HookEvent, kHookPostCall );
+	hookevents->RegisterListener( this, kHUD_Redraw_HookEvent );
 }
 
 //-----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ void CGrenadeTimer::OnEnable( void )
 
 void CGrenadeTimer::OnDisable( void )
 {
-	hookevents->UnregisterListener( this, kHUD_Redraw_HookEvent, kHookPostCall );
+	hookevents->UnregisterListener( this, kHUD_Redraw_HookEvent );
 }
 
 //-----------------------------------------------------------------------------
