@@ -1,5 +1,9 @@
 SvenInt v3 Changelog
 
+25/11/2025 - Version 3.1.2:
+- [Private Chat] In Misc. category added experimental private chat (expect some bugs) which encrypts outgoing messages & decrypts incoming messages, it uses customizable 256-bit encryption key, use prefix /pm to write an encrypted messages, i.e. open in-game chat and write /pm hello, a whitelist (with file private_chat_whitelist.txt) is enabled by default which decrypts messages from specified players
+- [Stick] Added auto suicide when we're stalling for too long (no any valid target), added to menu customizable stick radius, autojump radius & delay of target switch 
+
 14/11/2025 - Version 3.1.1:
 - Fixed text rendering artifacts in VGUI after almost 4 years LOL
 - [Aim] Some adjustment of No Recoil
