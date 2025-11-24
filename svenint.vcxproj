@@ -117,6 +117,7 @@
     <ClInclude Include="features\misc_message_spammer.h" />
     <ClInclude Include="features\misc_mute_manager.h" />
     <ClInclude Include="features\misc_nosleep.h" />
+    <ClInclude Include="features\misc_private_chat.h" />
     <ClInclude Include="features\misc_random_generator.h" />
     <ClInclude Include="features\misc_soundcache.h" />
     <ClInclude Include="features\misc_votebot.h" />
@@ -299,6 +300,7 @@
     <ClInclude Include="strafe\strafe_utils.h" />
     <ClInclude Include="utils\detours.h" />
     <ClInclude Include="utils\generichash.h" />
+    <ClInclude Include="utils\GOST_28147.h" />
     <ClInclude Include="utils\hash.h" />
     <ClInclude Include="utils\hashdict.h" />
     <ClInclude Include="utils\hashtable.h" />
@@ -336,6 +338,7 @@
     <ClCompile Include="features\misc_message_spammer.cpp" />
     <ClCompile Include="features\misc_mute_manager.cpp" />
     <ClCompile Include="features\misc_nosleep.cpp" />
+    <ClCompile Include="features\misc_private_chat.cpp" />
     <ClCompile Include="features\misc_random_generator.cpp" />
     <ClCompile Include="features\misc_soundcache.cpp" />
     <ClCompile Include="features\misc_votebot.cpp" />
@@ -655,6 +658,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utils\detours.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\GOST_28147.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>

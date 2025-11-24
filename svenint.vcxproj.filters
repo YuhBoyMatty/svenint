@@ -565,6 +565,12 @@
     <ClCompile Include="features\exploit_server_crasher.cpp">
       <Filter>features\Exploit</Filter>
     </ClCompile>
+    <ClCompile Include="features\misc_private_chat.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\GOST_28147.c">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1208,6 +1214,12 @@
     </ClInclude>
     <ClInclude Include="features\exploit_server_crasher.h">
       <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_private_chat.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\GOST_28147.h">
+      <Filter>utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
