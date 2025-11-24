@@ -15,7 +15,7 @@ https://youtu.be/h59zz0tma4U?si=um7QOgV7PSSO6dd6
 * **Visual:** Crosshair, ESP, Friends List, Hit Markers, No Fade, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Rader
 * **Render:** BSP, Chams / Glow, Draw Entities, Fog, Frame Skipper, Lightmap, Models Replacement, Skybox Replacement, Viewmodel Tweaks, Wallhack
 * **Exploit:** Action Burst, Fake Lag
-* **Misc:** Anti Sound Spam (Studio Events), Bypass Cvar Query, Game Patches (Tertiary Attack Glitch / Unlock 31 FPS at map loading), Ignore Different Map Versions, Mute Manager (Useless since 5.26), No Sleep (When the game is minimized), Soundcache (Saves downloaded soundcache to enter the server faster), Votebot
+* **Misc:** Anti Sound Spam (Studio Events), Bypass Cvar Query, Game Patches (Tertiary Attack Glitch / Unlock 31 FPS at map loading), Ignore Different Map Versions, Mute Manager (Useless since 5.26), No Sleep (When the game is minimized), Private Chat (encrypted messages), Soundcache (Saves downloaded soundcache to enter the server faster), Votebot
 * **Speedrun Tools:** HUD, Landing Prediction, Legit Mode, Player Hulls Visualization, Revive Area Visualization, Revive Boost Info, Revive Info, Timer, Timescale, Usables Visualization
 * **Shaders:** Bloom, Chromatic Aberration, Color Correction, Depth Buffer, DoF Blur, Menu Background Blur, Motion Blur, SSAO, Vignette
 * **Configs Save & Auto Load**
