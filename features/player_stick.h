@@ -38,6 +38,7 @@ private:
 	void Idle( usercmd_t *cmd );
 	void SetViewAngles( cl_entity_t *pPlayer, usercmd_t *cmd );
 	void StealModel( void );
+	void SuicideWhenAlone( void );
 	bool TryUnstuck( usercmd_t *cmd, Vector2D &vecDir );
 	void TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPos, Vector2D &vecDir );
 	bool TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd );
@@ -52,7 +53,12 @@ private:
 	CMenuValueBool *m_pOvercomeObstacles;
 	CMenuValueBool *m_pEdgejump;
 	CMenuValueBool *m_pMimic;
+	CMenuValueFloat *m_pStickRadius;
+	CMenuValueFloat *m_pAutoJumpRadius;
+	CMenuValueFloat *m_pSwitchTargetDelay;
 	CMenuValueList *m_pStrafeMode;
+	CMenuValueBool *m_pLongStallSuicide;
+	CMenuValueFloat *m_pLongStallSuicideTime;
 
 	CMenuValueBool *m_pVisualizePoint;
 	CMenuValueList *m_pInterpMode;
@@ -61,7 +67,8 @@ private:
 	CMenuValueInteger *m_pPositionHistoryOffset;
 
 	int m_iClimb;
-	double m_flSwitchTargetTime;
+	float m_flSwitchTargetTime;
+	float m_flLastStartedStall;
 
 	bool m_bForcePitch;
 	float m_flSavedPitchAngle;

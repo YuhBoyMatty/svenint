@@ -139,6 +139,9 @@ void CStick::Idle( usercmd_t *cmd )
 {
 	if ( m_pAuto->GetBool() && sc_stick_target.GetInt() == 0 )
 	{
+		if ( m_flLastStartedStall == -1.f )
+			m_flLastStartedStall = cl_enginefuncs->GetClientTime();
+
 		if ( localplayer->GetWaterLevel() == WL_EYES )
 			cmd->upmove = localplayer->GetMaxSpeed();
 		if ( localplayer->GetMoveType() == MOVETYPE_FLY )
@@ -149,6 +152,92 @@ void CStick::Idle( usercmd_t *cmd )
 		cmd->forwardmove = forward_step ? 50.0f : -50.0f;
 
 		forward_step = !forward_step;
+
+		SuicideWhenAlone();
+	}
+	else
+	{
+		m_flLastStartedStall = -1.f;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Suicide when there is no alive players left except us
+//-----------------------------------------------------------------------------
+
+void CStick::SuicideWhenAlone( void )
+{
+	if ( !m_pLongStallSuicide->GetBool() )
+		return;
+	
+	if ( localplayer->IsDead() || localplayer->IsDying() || localplayer->IsSpectating() )
+		return;
+
+	if ( cl_enginefuncs->GetClientTime() - m_flLastStartedStall < m_pLongStallSuicideTime->GetFloat() )
+		return;
+
+	bool bSuicided = false;
+	bool bHasAnyWeapon = false;
+
+	switch ( localplayer->GetCurrentWeaponID() )
+	{
+	case WEAPON_CROWBAR:
+	case WEAPON_MEDKIT:
+	case WEAPON_WRENCH:
+	case WEAPON_BARNACLE_GRAPPLE:
+		cl_enginefuncs->pfnClientCmd( "kill\n" );
+
+		bSuicided = true;
+		break;
+	}
+
+	if ( bSuicided )
+		return;
+	
+	bool bFound = false;
+	WEAPON *pWeapon = NULL;
+
+	for ( int i = 0; i < inventory->GetMaxWeaponSlots(); i++ )
+	{
+		for ( int j = 0; j < inventory->GetMaxWeaponPositions(); j++ )
+		{
+			if ( pWeapon = inventory->GetWeapon( i, j ) )
+			{
+				if ( !bHasAnyWeapon && inventory->HasAmmo( pWeapon ) )
+					bHasAnyWeapon = true;
+
+				switch ( pWeapon->iId )
+				{
+				case WEAPON_CROWBAR:
+				case WEAPON_WRENCH:
+				case WEAPON_BARNACLE_GRAPPLE:
+					inventory->SelectWeapon( pWeapon );
+					bFound = true;
+
+					break;
+
+				case WEAPON_MEDKIT:
+					if ( inventory->GetPrimaryAmmoCount( pWeapon ) > 0 )
+					{
+						inventory->SelectWeapon( pWeapon );
+						bFound = true;
+					}
+
+					break;
+				}
+
+				if ( bFound )
+					break;
+			}
+		}
+
+		if ( bFound )
+			break;
+	}
+
+	if ( !bFound )
+	{
+		cl_enginefuncs->pfnClientCmd( "kill\n" );
 	}
 }
 
@@ -573,7 +662,7 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecFollowPoi
 
 	// Jump when too far
 	if ( m_pStrafeMode->GetInt() > 0 && localplayer->IsOnGround() &&
-		 ( pPlayer->curstate.origin.AsVector2D() - localplayer->GetOrigin().AsVector2D() ).LengthSqr() > M_SQR( 300.f ) )
+		 ( pPlayer->curstate.origin.AsVector2D() - localplayer->GetOrigin().AsVector2D() ).LengthSqr() > M_SQR( m_pAutoJumpRadius->GetFloat() ) )
 	{
 		cmd->buttons |= IN_JUMP;
 	}
@@ -647,7 +736,12 @@ bool CStick::TryUnstuck( usercmd_t *cmd, Vector2D &vecDir )
 
 EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
-	if ( pEvent->GetType() == kV_CalcRefdef_HookEvent )
+	if ( pEvent->GetType() == kHUD_VidInit_HookEvent )
+	{
+		m_flLastStartedStall = -1.f;
+		return kHookContinue;
+	}
+	else if ( pEvent->GetType() == kV_CalcRefdef_HookEvent )
 	{
 		cl_entity_t *pLocal = cl_enginefuncs->GetLocalPlayer();
 		if ( pLocal == NULL || !m_bForcePitch )
@@ -675,6 +769,7 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 			sc_stick_target.SetValue( 0 );
 
 		m_iClimb = 0;
+		m_flLastStartedStall = -1.f;
 		return kHookContinue;
 	}
 
@@ -687,9 +782,9 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		cl_entity_t *pTarget = FindTarget();
 
 		if ( pTarget != NULL &&
-			 ( cl_enginefuncs->GetLocalPlayer()->curstate.origin - pTarget->curstate.origin ).LengthSqr() <= M_SQR( 600.f ) )
+			 ( cl_enginefuncs->GetLocalPlayer()->curstate.origin - pTarget->curstate.origin ).LengthSqr() <= M_SQR( m_pStickRadius->GetFloat() ) )
 		{
-			if ( cl_enginefuncs->GetAbsoluteTime() - m_flSwitchTargetTime > 0.5 )
+			if ( (float)cl_enginefuncs->GetAbsoluteTime() - m_flSwitchTargetTime > m_pSwitchTargetDelay->GetFloat() )
 			{
 				if ( iPrevTarget != pTarget->index )
 				{
@@ -697,7 +792,7 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 				}
 
 				sc_stick_target.SetValue( pTarget->index );
-				m_flSwitchTargetTime = cl_enginefuncs->GetAbsoluteTime();
+				m_flSwitchTargetTime = (float)cl_enginefuncs->GetAbsoluteTime();
 			}
 		}
 		else
@@ -782,7 +877,12 @@ CStick::CStick( const char *pszCategoryName, const char *pszName ) : CBaseFeatur
 	m_pOvercomeObstacles = NULL;
 	m_pEdgejump = NULL;
 	m_pMimic = NULL;
+	m_pStickRadius = NULL;
+	m_pAutoJumpRadius = NULL;
+	m_pSwitchTargetDelay = NULL;
 	m_pStrafeMode = NULL;
+	m_pLongStallSuicide = NULL;
+	m_pLongStallSuicideTime = NULL;
 
 	m_pVisualizePoint = NULL;
 	m_pInterpMode = NULL;
@@ -791,7 +891,8 @@ CStick::CStick( const char *pszCategoryName, const char *pszName ) : CBaseFeatur
 	m_pPositionHistoryOffset = NULL;
 
 	m_iClimb = 0;
-	m_flSwitchTargetTime = 0.0;
+	m_flSwitchTargetTime = 0.f;
+	m_flLastStartedStall = -1.f;
 
 	m_bForcePitch = false;
 	m_flSavedPitchAngle = 0.f;
@@ -805,6 +906,9 @@ CStick::CStick( const char *pszCategoryName, const char *pszName ) : CBaseFeatur
 
 void CStick::OnEnable( void )
 {
+	m_flLastStartedStall = -1.f;
+
+	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->RegisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
 	hookevents->RegisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 }
@@ -815,6 +919,7 @@ void CStick::OnEnable( void )
 
 void CStick::OnDisable( void )
 {
+	hookevents->UnregisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->UnregisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
 	hookevents->UnregisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 }
@@ -826,14 +931,26 @@ void CStick::OnDisable( void )
 bool CStick::Load( void )
 {
 	Modules::menu->BindFeature( this );
+	Modules::menu->AddElementResetButton( this, "Reset" );
 
 	m_pAuto = Modules::menu->AddParamBool( this, "Auto", NULL, true );
+
+	Modules::menu->AddElementSeparator( this, "Behavior" );
+
 	m_pStealModel = Modules::menu->AddParamBool( this, "StealModel", NULL, false );
 	m_pStealMessages = Modules::menu->AddParamBool( this, "StealMessages", NULL, false );
 	m_pLookAtTarget = Modules::menu->AddParamBool( this, "LookAtTarget", NULL, false );
 	m_pOvercomeObstacles = Modules::menu->AddParamBool( this, "OvercomeObstacles", NULL, true );
 	m_pEdgejump = Modules::menu->AddParamBool( this, "Edgejump", NULL, true );
 	m_pMimic = Modules::menu->AddParamBool( this, "Mimic", NULL, false );
+	m_pLongStallSuicide = Modules::menu->AddParamBool( this, "LongStallSuicide", "Auto suicide when stalling too long", true );
+	m_pLongStallSuicideTime = Modules::menu->AddParamFloat( this, "LongStallSuicideTime", NULL, 60.f, 0.f, 300.f );
+
+	Modules::menu->AddElementSeparator( this, "Movement Parameters" );
+
+	m_pStickRadius = Modules::menu->AddParamFloat( this, "StickRadius", NULL, 600.f, 0.f, 2048.f );
+	m_pAutoJumpRadius = Modules::menu->AddParamFloat( this, "AutoJumpRadius", NULL, 300.f, 0.f, 2048.f );
+	m_pSwitchTargetDelay = Modules::menu->AddParamFloat( this, "SwitchTargetDelay", NULL, 0.5f, 0.f, 5.f );
 	m_pStrafeMode = Modules::menu->AddParamList( this, "StrafeMode", NULL, 1, " 0 - None\0 1 - In Air\0 2 - Everytime\0\0" );
 
 	Modules::menu->AddElementSeparator( this, "Follow Parameters" );
