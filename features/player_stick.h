@@ -40,7 +40,7 @@ private:
 	void StealModel( void );
 	void SuicideWhenAlone( void );
 	bool TryUnstuck( usercmd_t *cmd, Vector2D &vecDir );
-	void TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecPredictPos, Vector2D &vecDir );
+	void TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, float frametime, Vector &vecPredictPos, Vector2D &vecDir );
 	bool TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd );
 	void TryMimic( cl_entity_t *pPlayer, usercmd_t *cmd );
 	Vector GetFollowPoint( cl_entity_t *pPlayer, float flDistanceSqr );

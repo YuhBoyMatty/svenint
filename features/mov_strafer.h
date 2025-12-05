@@ -31,7 +31,7 @@ public:
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
 public:
-	void UpdateStrafeData( Strafe::StrafeData &strafedata, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY );
+	void UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY );
 	inline bool IsBypassEnabled( void ) const { return m_pBypassAntiStrafer->GetBool(); }
 
 private:

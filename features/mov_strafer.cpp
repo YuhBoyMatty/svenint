@@ -5,6 +5,7 @@
 #include "mov_strafer.h"
 #include "mov_autojump.h"
 #include "player_antiafk.h"
+#include "player_stick.h"
 
 using namespace Globals;
 
@@ -117,7 +118,7 @@ static void CvarChangeHook_sc_strafe_type( cvar_t *pCvar, const char *pszOldValu
 // Hook event
 //-----------------------------------------------------------------------------
 
-void CStrafer::UpdateStrafeData( Strafe::StrafeData &strafedata, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY )
+void CStrafer::UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY )
 {
 	*reinterpret_cast<Vector *>( strafedata.player.Velocity ) = *playermove->velocity();
 	*reinterpret_cast<Vector *>( strafedata.player.Origin ) = *playermove->origin();
@@ -144,7 +145,8 @@ void CStrafer::UpdateStrafeData( Strafe::StrafeData &strafedata, bool bStrafe, S
 	}
 
 	//strafedata.vars.Frametime = 1.f / CVar()->FindCvar("fps_max")->value;
-	strafedata.vars.Frametime = playermove->frametime(); // 1.0f / 200.0f (1.0f / fps_max)
+	//strafedata.vars.Frametime = playermove->frametime(); // 1.0f / 200.0f (1.0f / fps_max)
+	strafedata.vars.Frametime = frametime; // 1.0f / 200.0f (1.0f / fps_max)
 
 	strafedata.frame.Strafe = bStrafe;
 	strafedata.frame.SetDir( dir );
@@ -179,6 +181,7 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		return kHookContinue;
 
 	if ( Features::antiafk->IsEnabled() ||
+		 Features::stick->IsEnabled() ||
 		 playermove->dead() ||
 		 playermove->iuser1() != 0 ||
 		 playermove->movetype() != MOVETYPE_WALK ||
@@ -208,6 +211,7 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	}
 
 	UpdateStrafeData( m_strafeData,
+					  pEvent->GetArg<float>( "frametime" ),
 					  true,
 					  static_cast<Strafe::StrafeDir>( sc_strafe_dir.GetInt() ),
 					  static_cast<Strafe::StrafeType>( sc_strafe_type.GetInt() ),

@@ -111,20 +111,27 @@ cl_entity_t *CStick::FindTarget( void )
 	{
 		cl_entity_t *pPlayer = cl_enginefuncs->GetEntityByIndex( i );
 
-		if ( pPlayer != NULL
-			 && pPlayer != pLocal
-			 && pPlayer->curstate.messagenum >= pLocal->curstate.messagenum &&
-			 Features::entitylist->GetList()[ i ].m_bAlive &&
-			 ( pPlayer->curstate.sequence < 12 ||
-			 pPlayer->curstate.sequence > 18 ) )
-		{
-			float dist_sqr = ( pLocal->curstate.origin - pPlayer->curstate.origin ).LengthSqr();
+		if ( pPlayer == NULL )
+			continue;
+		
+		if ( pPlayer == pLocal )
+			continue;
+		
+		if ( pPlayer->curstate.messagenum < pLocal->curstate.messagenum )
+			continue;
+		
+		if ( !Features::entitylist->GetList()[ i ].m_bAlive )
+			continue;
+		
+		if ( pPlayer->curstate.sequence >= 12 && pPlayer->curstate.sequence <= 18 )
+			continue;
 
-			if ( dist_sqr < flDistanceSqr )
-			{
-				pTarget = pPlayer;
-				flDistanceSqr = dist_sqr;
-			}
+		const float dist_sqr = ( pLocal->curstate.origin - pPlayer->curstate.origin ).LengthSqr();
+
+		if ( dist_sqr < flDistanceSqr )
+		{
+			pTarget = pPlayer;
+			flDistanceSqr = dist_sqr;
 		}
 	}
 
@@ -587,15 +594,15 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 // TryMove
 //-----------------------------------------------------------------------------
 
-void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecFollowPoint, Vector2D &vecDir )
+void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, float frametime, Vector &vecFollowPoint, Vector2D &vecDir )
 {
 	if ( !( m_pStrafeMode->GetInt() == 1 && !localplayer->IsOnGround() || m_pStrafeMode->GetInt() == 2 ) )
 	{
 		Vector2D vecForward;
 		Vector2D vecRight;
 
-		vecForward.x = cosf( cmd->viewangles.y * static_cast<float>( M_PI / 180.0 ) );
-		vecForward.y = sinf( cmd->viewangles.y * static_cast<float>( M_PI / 180.0 ) );
+		vecForward.x = cosf( VEC_DEG2RAD( cmd->viewangles.y ) );
+		vecForward.y = sinf( VEC_DEG2RAD( cmd->viewangles.y ) );
 
 		vecRight.x = vecForward.y;
 		vecRight.y = -vecForward.x;
@@ -620,6 +627,7 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecFollowPoi
 		//cl_enginefuncs->GetViewAngles( va );
 
 		Features::strafer->UpdateStrafeData( m_strafeData,
+											 frametime,
 											 true,
 											 Strafe::StrafeDir::POINT,
 											 Strafe::StrafeType::MAXACCEL,
@@ -657,7 +665,6 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, Vector &vecFollowPoi
 					s_bFlip = !s_bFlip;
 			}
 		}
-
 	}
 
 	// Jump when too far
@@ -845,7 +852,7 @@ EHookResult CStick::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		if ( !bMovedOnLadder )
 		{
-			TryMove( pPlayer, cmd, vecFollowPoint, vecDir );
+			TryMove( pPlayer, cmd, pEvent->GetArg<float>( "frametime" ), vecFollowPoint, vecDir );
 		}
 
 		if ( localplayer->GetWaterLevel() > WL_NOT_IN_WATER &&
@@ -941,12 +948,12 @@ bool CStick::Load( void )
 	m_pStealMessages = Modules::menu->AddParamBool( this, "StealMessages", NULL, false );
 	m_pLookAtTarget = Modules::menu->AddParamBool( this, "LookAtTarget", NULL, false );
 	m_pOvercomeObstacles = Modules::menu->AddParamBool( this, "OvercomeObstacles", NULL, true );
-	m_pEdgejump = Modules::menu->AddParamBool( this, "Edgejump", NULL, true );
-	m_pMimic = Modules::menu->AddParamBool( this, "Mimic", NULL, false );
+	m_pEdgejump = Modules::menu->AddParamBool( this, "Edgejump", "Auto jump on edges", true );
+	m_pMimic = Modules::menu->AddParamBool( this, "Mimic", "Mimic the target (viewangles, duck + jump, weapon firing)", false );
 	m_pLongStallSuicide = Modules::menu->AddParamBool( this, "LongStallSuicide", "Auto suicide when stalling too long", true );
 	m_pLongStallSuicideTime = Modules::menu->AddParamFloat( this, "LongStallSuicideTime", NULL, 60.f, 0.f, 300.f );
 
-	Modules::menu->AddElementSeparator( this, "Movement Parameters" );
+	Modules::menu->AddElementSeparator( this, "Misc. Parameters" );
 
 	m_pStickRadius = Modules::menu->AddParamFloat( this, "StickRadius", NULL, 600.f, 0.f, 2048.f );
 	m_pAutoJumpRadius = Modules::menu->AddParamFloat( this, "AutoJumpRadius", NULL, 300.f, 0.f, 2048.f );
