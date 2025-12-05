@@ -94,6 +94,7 @@
   <ItemGroup>
     <ClInclude Include="features\base_feature.h" />
     <ClInclude Include="features\exploit_action_burst.h" />
+    <ClInclude Include="features\exploit_airstuck.h" />
     <ClInclude Include="features\exploit_fakelag.h" />
     <ClInclude Include="features\exploit_movcmdratelimiter.h" />
     <ClInclude Include="features\exploit_server_crasher.h" />
@@ -142,8 +143,10 @@
     <ClInclude Include="features\player_firstperson_roaming.h" />
     <ClInclude Include="features\player_flashlight.h" />
     <ClInclude Include="features\player_freeze.h" />
+    <ClInclude Include="features\player_gib_abuse.h" />
     <ClInclude Include="features\player_keyspam.h" />
     <ClInclude Include="features\player_lookat.h" />
+    <ClInclude Include="features\player_npc_abuse.h" />
     <ClInclude Include="features\player_silent_angles.h" />
     <ClInclude Include="features\player_speedhack.h" />
     <ClInclude Include="features\player_spinner.h" />
@@ -314,6 +317,7 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="features\exploit_action_burst.cpp" />
+    <ClCompile Include="features\exploit_airstuck.cpp" />
     <ClCompile Include="features\exploit_fakelag.cpp" />
     <ClCompile Include="features\exploit_movcmdratelimiter.cpp" />
     <ClCompile Include="features\exploit_server_crasher.cpp" />
@@ -363,8 +367,10 @@
     <ClCompile Include="features\player_firstperson_roaming.cpp" />
     <ClCompile Include="features\player_flashlight.cpp" />
     <ClCompile Include="features\player_freeze.cpp" />
+    <ClCompile Include="features\player_gib_abuse.cpp" />
     <ClCompile Include="features\player_keyspam.cpp" />
     <ClCompile Include="features\player_lookat.cpp" />
+    <ClCompile Include="features\player_npc_abuse.cpp" />
     <ClCompile Include="features\player_silent_angles.cpp" />
     <ClCompile Include="features\player_speedhack.cpp" />
     <ClCompile Include="features\player_spinner.cpp" />

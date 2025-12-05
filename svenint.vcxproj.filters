@@ -571,6 +571,15 @@
     <ClCompile Include="utils\GOST_28147.c">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="features\player_gib_abuse.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\player_npc_abuse.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="features\exploit_airstuck.cpp">
+      <Filter>features\Exploit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1220,6 +1229,15 @@
     </ClInclude>
     <ClInclude Include="utils\GOST_28147.h">
       <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_gib_abuse.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_npc_abuse.h">
+      <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="features\exploit_airstuck.h">
+      <Filter>features\Exploit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

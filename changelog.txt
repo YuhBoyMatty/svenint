@@ -1,5 +1,14 @@
 SvenInt v3 Changelog
 
+05/12/2025 - Version 3.1.3:
+- [Air Stuck] Added Air Stuck feature in the Exploit category
+- [Gib Abuse] Added Gib Abuse (Fly Mode) in the Player category, sends the command(s) 'gibme' every X (m)sec to fly up due to the dealen damage of 5000 HP. Use the holdable ConCommand '+sc_gibabuse', so no need to spam K (gibme) button everytime
+- [NPC Abuse] Added Auto NPC Abuse in the Player category, which performs auto NPC Abuse on the specified map (currently supported hl_c10). You're supposed to stand near the place where the trick is to be performed, also an NPC must follow you
+- [Spinner] Added Anti-Aim modes. Credits @guwi <3
+- [Strafer] Fixen broken strafer when the player's speed is high
+- [Game Patches] Ignore ALT button being used (causing player movement to block) in third person. Credits @a1
+- [Client Module] Added ConCommand 'append': appends a command into the beginning of command queue
+
 25/11/2025 - Version 3.1.2:
 - [Private Chat] In Misc. category added experimental private chat (expect some bugs) which encrypts outgoing messages & decrypts incoming messages, it uses customizable 256-bit encryption key, use prefix /pm to write an encrypted messages, i.e. open in-game chat and write /pm hello, a whitelist (with file private_chat_whitelist.txt) is enabled by default which decrypts messages from specified players
 - [Stick] Added auto suicide when we're stalling for too long (no any valid target), added to menu customizable stick radius, autojump radius & delay of target switch 
@@ -20,4 +29,4 @@ SvenInt v3 Changelog
 - [Chat History] Added Source-like chat history to replace poorely looking vanilla one
 
 06/11/2025 - Version 3.0.0:
-- Completely rewritten from scratch as an injectable DLL library
+- Completely rewritten from scratch as an injectable DLL
