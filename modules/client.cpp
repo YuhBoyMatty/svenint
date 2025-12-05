@@ -336,6 +336,18 @@ CON_COMMAND( multvar, "Multiply a cvar" )
 	}
 }
 
+
+CON_COMMAND( append, "Append a command into the beginning of command queue\n Similar to how \"special\" appends \"_special\"\n" )
+{
+	if ( args.ArgC() < 2 )
+	{
+		ConMsg( "Usage:  append <command>\n" );
+		return;
+	}
+
+	Globals::cl_enginefuncs->pfnClientCmd( args[ 1 ] );
+}
+
 CON_COMMAND( sc_test, "Retrieve an entity's info" )
 {
 	if ( args.ArgC() > 1 )
@@ -703,6 +715,7 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( toggle ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( incrementvar ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( multvar ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( append ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_test ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_steamids ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_steamid_to_steam64id ) );
@@ -749,6 +762,7 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( toggle ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( incrementvar ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( multvar ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( append ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_test ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_steamids ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_steamid_to_steam64id ) );
