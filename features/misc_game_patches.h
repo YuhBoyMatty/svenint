@@ -29,12 +29,14 @@ public:
 
 public:
 	inline DetourHandle_t GetGLStringDetour( void ) { return m_hglGetString; }
+	inline bool IgnoreAltInThirdPerson( void ) const { return m_pIgnoreAltInThirdPerson->GetBool(); }
 
 private:
 	void InitTertiaryAttackPatches( void );
 	bool GuessTertiaryAttackVtidx( void );
 
 private:
+	CMenuValueBool *m_pIgnoreAltInThirdPerson;
 	CMenuValueBool *m_pTertiaryAttackGlitch;
 
 	bool m_bTertiaryAttackGlitchPatchable;

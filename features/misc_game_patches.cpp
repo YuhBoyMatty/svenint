@@ -109,6 +109,9 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_CCamera__Process, void *thisptr, void *unk )
 	if ( cl_enginefuncs->GetLocalPlayer() == NULL )
 		return true;
 
+	if ( THIS_FEATURE()->IgnoreAltInThirdPerson() )
+		return true; // a1 does good, unlike Sniper.
+
 	return ORIG_CCamera__Process( thisptr, unk );
 }
 
@@ -263,6 +266,7 @@ void CGamePatches::InitTertiaryAttackPatches( void )
 CGamePatches::CGamePatches( const char *pszCategoryName, const char *pszName ) : CBaseFeature( pszCategoryName, pszName )
 {
 	m_pTertiaryAttackGlitch = NULL;
+	m_pIgnoreAltInThirdPerson = NULL;
 
 	m_bTertiaryAttackGlitchPatchable = false;
 	m_vtidx_CBasePlayerWeapon_TertiaryAttack = ~0;
@@ -273,6 +277,8 @@ CGamePatches::CGamePatches( const char *pszCategoryName, const char *pszName ) :
 	m_pfnCCamera__Process = NULL;
 	m_pfnCL_ComputeClientInterpolationAmount = NULL;
 
+	m_hSDL_GL_ExtensionSupported = DETOUR_INVALID_HANDLE;
+	m_hglGetString = DETOUR_INVALID_HANDLE;
 	m_hCCamera__Process = DETOUR_INVALID_HANDLE;
 	m_hCL_ComputeClientInterpolationAmount = DETOUR_INVALID_HANDLE;
 }
@@ -320,6 +326,8 @@ bool CGamePatches::Load( void )
 	bool bOK = true;
 
 	Modules::menu->BindFeature( this );
+
+	m_pIgnoreAltInThirdPerson = Modules::menu->AddParamBool( this, "IgnoreAltInThirdPerson", NULL, true );
 
 	if ( gameversion >= 524 )
 	{
