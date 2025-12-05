@@ -32,6 +32,10 @@ public:
 
 private:
 	CMenuValueBool *m_pRotateDeadBody;
+
+	CMenuValueList *m_pAntiAimModePitch;
+	CMenuValueList *m_pAntiAimModeYaw;
+
 	CMenuValueBool *m_pRevertPitch;
 	CMenuValueBool *m_pRevertYaw;
 
@@ -40,6 +44,9 @@ private:
 
 	CMenuValueBool *m_pLockYaw;
 	CMenuValueFloat *m_pYawAngle;
+	
+	CMenuValueBool *m_pLockRoll;
+	CMenuValueFloat *m_pRollAngle;
 
 	CMenuValueBool *m_pSpinPitch;
 	CMenuValueFloat *m_pSpinPitchAngle;
