@@ -13,16 +13,30 @@
 #include "features/base_feature.h"
 
 #include "imgui.h"
-#include "imgui/backends/imgui_impl_win32.h"
 
-#if !IMGUI_USE_GL3
-#include "imgui/backends/imgui_impl_opengl2.h"
-#else
+#if IMGUI_USE_GL3
 #include "imgui/backends/imgui_impl_opengl3.h"
+#else
+#include "imgui/backends/imgui_impl_opengl2.h"
+#endif
+
+#ifdef IMGUI_USE_SDL
+#include <SDL.h>
+#include "imgui/backends/imgui_impl_sdl2.h"
+#else
+#include "imgui/backends/imgui_impl_win32.h"
+#endif
+
+#ifndef WIN32
+#include <time.h>
+#include <dirent.h>
+#include <limits.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #endif
 
 // ImGui's WndProc / SDL events handler
-#if IMGUI_USE_SDL
+#ifdef IMGUI_USE_SDL
 extern bool ImGui_ImplSDL2_ProcessEvent( const SDL_Event *event );
 #else
 extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
@@ -360,7 +374,9 @@ CMenuValueBool *CMenuModule::AddParamBool( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyBoolean, &bDefaultValue ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyBoolean, &bDefaultValue );
-			CMenuValueBool *pValueBool = new CMenuValueBool( pszDescription, pFeature, pProp );
+
+			CMenuValueBool *pValueBool = new( MemAlloc( sizeof( CMenuValueBool ) ) ) CMenuValueBool( pszDescription, pFeature, pProp );
+			//CMenuValueBool *pValueBool = new CMenuValueBool( pszDescription, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueBool );
 			return pValueBool;
@@ -393,7 +409,9 @@ CMenuValueInteger *CMenuModule::AddParamInteger( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyInteger, &iDefaultValue ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyInteger, &iDefaultValue );
-			CMenuValueInteger *pValueInt = new CMenuValueInteger( pszDescription, iMin, iMax, pFeature, pProp );
+
+			CMenuValueInteger *pValueInt = new( MemAlloc( sizeof( CMenuValueInteger ) ) ) CMenuValueInteger( pszDescription, iMin, iMax, pFeature, pProp );
+			//CMenuValueInteger *pValueInt = new CMenuValueInteger( pszDescription, iMin, iMax, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueInt );
 			return pValueInt;
@@ -426,7 +444,9 @@ CMenuValueFloat *CMenuModule::AddParamFloat( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyFloat, &flDefaultValue ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyFloat, &flDefaultValue );
-			CMenuValueFloat *pValueFloat = new CMenuValueFloat( pszDescription, flMin, flMax, pFeature, pProp );
+
+			CMenuValueFloat *pValueFloat = new( MemAlloc( sizeof( CMenuValueFloat ) ) ) CMenuValueFloat( pszDescription, flMin, flMax, pFeature, pProp );
+			//CMenuValueFloat *pValueFloat = new CMenuValueFloat( pszDescription, flMin, flMax, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueFloat );
 			return pValueFloat;
@@ -462,7 +482,9 @@ CMenuValueColorRGB *CMenuModule::AddParamColorRGB( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyColorRGB, pflColor ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyColorRGB, pflColor );
-			CMenuValueColorRGB *pValueColorRGB = new CMenuValueColorRGB( pszDescription, pFeature, pProp );
+
+			CMenuValueColorRGB *pValueColorRGB = new( MemAlloc( sizeof( CMenuValueColorRGB ) ) ) CMenuValueColorRGB( pszDescription, pFeature, pProp );
+			//CMenuValueColorRGB *pValueColorRGB = new CMenuValueColorRGB( pszDescription, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueColorRGB );
 			return pValueColorRGB;
@@ -499,7 +521,9 @@ CMenuValueColorRGBA *CMenuModule::AddParamColorRGBA( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyColorRGBA, pflColor ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyColorRGBA, pflColor );
-			CMenuValueColorRGBA *pValueColorRGBA = new CMenuValueColorRGBA( pszDescription, pFeature, pProp );
+
+			CMenuValueColorRGBA *pValueColorRGBA = new( MemAlloc( sizeof( CMenuValueColorRGBA ) ) ) CMenuValueColorRGBA( pszDescription, pFeature, pProp );
+			//CMenuValueColorRGBA *pValueColorRGBA = new CMenuValueColorRGBA( pszDescription, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueColorRGBA );
 			return pValueColorRGBA;
@@ -533,7 +557,9 @@ CMenuValueVector *CMenuModule::AddParamVector( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyVector, &vecDefault ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyVector, &vecDefault );
-			CMenuValueVector *pValueVector = new CMenuValueVector( pszDescription, flStep, flMin, flMax, pFeature, pProp );
+
+			CMenuValueVector *pValueVector = new( MemAlloc( sizeof( CMenuValueVector ) ) ) CMenuValueVector( pszDescription, flStep, flMin, flMax, pFeature, pProp );
+			//CMenuValueVector *pValueVector = new CMenuValueVector( pszDescription, flStep, flMin, flMax, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueVector );
 			return pValueVector;
@@ -565,7 +591,9 @@ CMenuValueList *CMenuModule::AddParamList( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyInteger, &iDefaultValue ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyInteger, &iDefaultValue );
-			CMenuValueList *pValueList = new CMenuValueList( pszDescription, pszItems, pFeature, pProp );
+
+			CMenuValueList *pValueList = new( MemAlloc( sizeof( CMenuValueList ) ) ) CMenuValueList( pszDescription, pszItems, pFeature, pProp );
+			//CMenuValueList *pValueList = new CMenuValueList( pszDescription, pszItems, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueList );
 			return pValueList;
@@ -596,7 +624,9 @@ CMenuValueText *CMenuModule::AddParamText( CBaseFeature *pFeature,
 			CConfigProperty *pProp = !feature.m_bShaderFeature ?
 				Modules::config->AddProperty( pszFeatureName, pszCfgPropName, kCfgPropertyCString, (char *)pszDefaultValue ) :
 				Modules::config->AddShadersProperty( pszFeatureName, pszCfgPropName, kCfgPropertyCString, (char *)pszDefaultValue );
-			CMenuValueText *pValueText = new CMenuValueText( pszDescription, pFeature, pProp );
+
+			CMenuValueText *pValueText = new( MemAlloc( sizeof( CMenuValueText ) ) ) CMenuValueText( pszDescription, pFeature, pProp );
+			//CMenuValueText *pValueText = new CMenuValueText( pszDescription, pFeature, pProp );
 
 			feature.m_elements.push_back( pValueText );
 			return pValueText;
@@ -621,7 +651,8 @@ void CMenuModule::AddElementSeparator( CBaseFeature *pFeature, const char *pszTe
 			if ( feature.m_pFeature != pFeature )
 				continue;
 
-			CMenuElementSeparator *pSeparator = new CMenuElementSeparator( pszTextSeparator, pFeature );
+			CMenuElementSeparator *pSeparator = new( MemAlloc( sizeof( CMenuElementSeparator ) ) ) CMenuElementSeparator( pszTextSeparator, pFeature );
+			//CMenuElementSeparator *pSeparator = new CMenuElementSeparator( pszTextSeparator, pFeature );
 			feature.m_elements.push_back( pSeparator );
 		}
 	}
@@ -642,7 +673,8 @@ CMenuElementButton *CMenuModule::AddElementButton( CBaseFeature *pFeature, IMenu
 			if ( feature.m_pFeature != pFeature )
 				continue;
 
-			CMenuElementButton *pButton = new CMenuElementButton( pszDescription, pCallback, pFeature );
+			CMenuElementButton *pButton = new( MemAlloc( sizeof( CMenuElementButton ) ) ) CMenuElementButton( pszDescription, pCallback, pFeature );
+			//CMenuElementButton *pButton = new CMenuElementButton( pszDescription, pCallback, pFeature );
 			feature.m_elements.push_back( pButton );
 			return pButton;
 		}
@@ -666,7 +698,8 @@ void CMenuModule::AddElementResetButton( CBaseFeature *pFeature, const char *psz
 			if ( feature.m_pFeature != pFeature )
 				continue;
 
-			CMenuElementResetButton *pResetButton = new CMenuElementResetButton( pszDescription, pFeature );
+			CMenuElementResetButton *pResetButton = new( MemAlloc( sizeof( CMenuElementResetButton ) ) ) CMenuElementResetButton( pszDescription, pFeature );
+			//CMenuElementResetButton *pResetButton = new CMenuElementResetButton( pszDescription, pFeature );
 			feature.m_elements.push_back( pResetButton );
 		}
 	}
@@ -687,16 +720,18 @@ void CMenuModule::AddElementSameLine( CBaseFeature *pFeature )
 			if ( feature.m_pFeature != pFeature )
 				continue;
 
-			CMenuElementSameLine *pSameLine = new CMenuElementSameLine( NULL, pFeature );
+			CMenuElementSameLine *pSameLine = new( MemAlloc( sizeof( CMenuElementSameLine ) ) ) CMenuElementSameLine( NULL, pFeature );
+			//CMenuElementSameLine *pSameLine = new CMenuElementSameLine( NULL, pFeature );
 			feature.m_elements.push_back( pSameLine );
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-// SDL_PollEvent / WndProc hook
+// WndProc hook
 //-----------------------------------------------------------------------------
 
+#ifndef IMGUI_USE_SDL
 DECLARE_FUNC( LRESULT, CALLBACK, HOOKED_WndProc, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	if ( Modules::menu->WndProc( hWnd, uMsg, wParam, lParam ) )
@@ -704,19 +739,20 @@ DECLARE_FUNC( LRESULT, CALLBACK, HOOKED_WndProc, HWND hWnd, UINT uMsg, WPARAM wP
 
 	return CallWindowProc( Modules::menu->GetGameWindowProc(), hWnd, uMsg, wParam, lParam );
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // SDL_PollEvent / WndProc event
 //-----------------------------------------------------------------------------
 
-#if IMGUI_USE_SDL
+#ifdef IMGUI_USE_SDL
 bool CMenuModule::SDL_PollEvent( SDL_Event *event )
 #else
 bool CMenuModule::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 #endif
 {
-#if IMGUI_USE_SDL
-	if ( event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_INSERT ) // FIXME
+#ifdef IMGUI_USE_SDL
+	if ( event->type == SDL_KEYDOWN && GetVirtualKey( event->key.keysym.sym ) == m_pCfgMenuKey->GetInt() )
 #else
 	if ( uMsg == WM_KEYDOWN && wParam == m_pCfgMenuKey->GetInt() )
 #endif
@@ -728,15 +764,17 @@ bool CMenuModule::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 		else
 			OnClose();
 
+	#ifdef IMGUI_USE_SDL
+		SDL_WarpMouseInWindow( m_pSdlWindow, Globals::gameutils->GetScreenWidth() / 2, Globals::gameutils->GetScreenHeight() / 2 );
+	#elif defined(WIN32)
 		SetCursorPos( Globals::gameutils->GetScreenWidth() / 2, Globals::gameutils->GetScreenHeight() / 2 );
+	#endif
 		Globals::cl_funcs->IN_ClearStates();
-
-		return true;
 	}
 
 	if ( m_bOpened )
 	{
-	#if IMGUI_USE_SDL
+	#ifdef IMGUI_USE_SDL
 		ImGui_ImplSDL2_ProcessEvent( event );
 	#else
 		ImGui_ImplWin32_WndProcHandler( hWnd, uMsg, wParam, lParam );
@@ -750,22 +788,23 @@ bool CMenuModule::WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 // SDL_GL_SwapWindow / wglSwapBuffers event
 //-----------------------------------------------------------------------------
 
-#if IMGUI_USE_SDL
-DECLARE_FUNC( int, __cdecl, HOOKED_SDL_GL_SwapWindow, SDL_Window *window )
+#ifdef IMGUI_USE_SDL
+// DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_SDL_GL_SwapWindow, SDL_Window *window )
+void CMenuModule::SDL_GL_SwapWindow( SDL_Window *window )
 #else
 void CMenuModule::wglSwapBuffers( HDC hdc )
 #endif
 {
 	if ( !m_bImGuiInitialized )
 	{
-	#if !IMGUI_USE_SDL
+	#ifndef IMGUI_USE_SDL
 		m_hGameWnd = WindowFromDC( hdc );
 		m_hGameWndProc = (WNDPROC)SetWindowLong( m_hGameWnd, GWL_WNDPROC, (LONG)HOOKED_WndProc );
 	#endif
 
 		ImGui::CreateContext();
 
-	#if IMGUI_USE_SDL
+	#ifdef IMGUI_USE_SDL
 		ImGui_ImplSDL2_InitForOpenGL( window, NULL );
 	#else
 		ImGui_ImplWin32_Init( m_hGameWnd );
@@ -790,6 +829,10 @@ void CMenuModule::wglSwapBuffers( HDC hdc )
 		m_bImGuiInitialized = true;
 	}
 
+#ifdef IMGUI_USE_SDL
+	m_pSdlWindow = window;
+#endif
+
 	if ( !m_bOpened && m_pCfgMenuHide->GetBool() )
 		return;
 
@@ -799,7 +842,7 @@ void CMenuModule::wglSwapBuffers( HDC hdc )
 	ImGui_ImplOpenGL2_NewFrame();
 #endif
 
-#if IMGUI_USE_SDL
+#ifdef IMGUI_USE_SDL
 	ImGui_ImplSDL2_NewFrame();
 #else
 	ImGui_ImplWin32_NewFrame();
@@ -815,6 +858,49 @@ void CMenuModule::wglSwapBuffers( HDC hdc )
 	ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 #else
 	ImGui_ImplOpenGL2_RenderDrawData( ImGui::GetDrawData() );
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// SDL_IsKeyPressed
+//-----------------------------------------------------------------------------
+
+#ifdef IMGUI_USE_SDL
+bool CMenuModule::SDL_IsKeyPressed( uint32_t scancode )
+{
+    int numkeys;
+    const Uint8 *state = SDL_GetKeyboardState( &numkeys );
+
+    if ( scancode < numkeys )
+        return state[ scancode ];
+
+    return false;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// GetVirtualKey
+//-----------------------------------------------------------------------------
+
+int CMenuModule::GetVirtualKey( int iWinApiOrSdl, bool bSDL /* = true */ )
+{
+#ifdef IMGUI_USE_SDL
+	if ( bSDL )
+	{
+		int *winapikey = m_MapKeysSDLToWinAPI.Find( iWinApiOrSdl & ~SDLK_SCANCODE_MASK );
+		if ( winapikey == NULL )
+			return 0;
+
+		return *winapikey;
+	}
+
+	int *sdlkey = m_MapKeysWinAPIToSDL.Find( iWinApiOrSdl );
+	if ( sdlkey == NULL )
+		return 0;
+
+	return *sdlkey;
+#else
+	return 0;
 #endif
 }
 
@@ -852,7 +938,7 @@ void CMenuModule::OnClose( void )
 
 void CMenuModule::OnVidInit( void )
 {
-	m_flOpenTime = m_flCloseTime = -1.f;
+	m_flRainbowUpdateTime = m_flOpenTime = m_flCloseTime = -1.f;
 }
 
 //-----------------------------------------------------------------------------
@@ -1003,7 +1089,7 @@ void CMenuModule::Draw( void )
 	const float flMainWidth = ImGui::GetIO().DisplaySize.x;
 	const float flMainHeight = 1.f; // m_height / 60.f;
 
-	ImGui::GetIO().MouseDrawCursor = m_bOpened;
+	ImGui::GetIO().MouseDrawCursor = m_bOpened && !Globals::gameUI->IsGameUIActive();
 	ImGui::GetStyle().Alpha = m_pCfgMenuOpacity->GetFloat();
 
 	if ( m_pCfgMenuRainbowEnable->GetBool() )
@@ -1024,7 +1110,7 @@ void CMenuModule::Draw( void )
 		if ( pDefaultFont == m_pFontL4D )
 			ImGui::SetCursorPosY( ImGui::GetCursorPos().y + pDefaultFont->LegacySize * 0.25f );
 
-		ImGui::TextUnformatted( "SvenInt v" SVENINT_VERSION );
+		ImGui::TextUnformatted( "SvenInt v" SVENINT_VERSION_STRING );
 
 		if ( m_pCfgMenuRainbowEnable->GetBool() )
 		{
@@ -1371,12 +1457,27 @@ void CMenuModule::DrawMiscInfo( void )
 	flLastTextWidth = ImGui::CalcTextSize( "1000" ).x + flLastTextWidth;
 
 	// Time
+#ifdef WIN32
 	SYSTEMTIME systime;
 	GetLocalTime( &systime );
+#else
+	time_t now = time( NULL );
+	struct tm *systime = localtime( &now );
+#endif
 
 	flTextWidth = ImGui::CalcTextSize( "Time: 00:00:00" ).x;
 	ImGui::SetCursorPosX( ImGui::GetWindowWidth() - flLastTextWidth - flTextWidth - ImGui::GetStyle().ItemSpacing.x * 1.2f );
+#ifdef WIN32
 	ImGui::Text( "Time: %02d:%02d:%02d", systime.wHour, systime.wMinute, systime.wSecond );
+#else
+	ImGui::Text( "Time: %02d:%02d:%02d", systime->tm_hour, systime->tm_min, systime->tm_sec );
+#endif
+
+	// Consumed memory
+	flLastTextWidth = flLastTextWidth + flTextWidth;
+	flTextWidth = ImGui::CalcTextSize( "Memory: 00000 KB" ).x;
+	ImGui::SetCursorPosX( ImGui::GetWindowWidth() - flLastTextWidth - flTextWidth - ImGui::GetStyle().ItemSpacing.x * 2.f );
+	ImGui::Text( "Memory: %d KB", MemConsumed() / 1024 );
 }
 
 //-----------------------------------------------------------------------------
@@ -1528,7 +1629,11 @@ void CMenuModule::DrawConfigs( void )
 		std::string sDir = m_sConfigsFullPath;
 		sDir += m_sSelectedConfig;
 
+	#ifdef WIN32
 		DeleteFile( sDir.c_str() );
+	#else
+		remove( sDir.c_str() );
+	#endif
 
 		m_sSelectedConfig.clear();
 	}
@@ -1554,7 +1659,11 @@ void CMenuModule::DrawConfigs( void )
 		sCurrentName += m_sSelectedConfig;
 		sNewName += sNewConfigName;
 
+	#ifdef WIN32
 		MoveFile( sCurrentName.c_str(), sNewName.c_str() );
+	#else
+		rename( sCurrentName.c_str(), sNewName.c_str() );
+	#endif
 
 		m_sSelectedConfig.clear();
 	}
@@ -1623,7 +1732,11 @@ void CMenuModule::DrawShaderConfigs( void )
 		std::string sDir = m_sShaderConfigsFullPath;
 		sDir += m_sSelectedShadersConfig;
 
+	#ifdef WIN32
 		DeleteFile( sDir.c_str() );
+	#else
+		remove( sDir.c_str() );
+	#endif
 
 		m_sSelectedShadersConfig.clear();
 	}
@@ -1649,7 +1762,12 @@ void CMenuModule::DrawShaderConfigs( void )
 		sCurrentName += m_sSelectedShadersConfig;
 		sNewName += sNewConfigName;
 
+	#ifdef WIN32
 		MoveFile( sCurrentName.c_str(), sNewName.c_str() );
+	#else
+		rename( sCurrentName.c_str(), sNewName.c_str() );
+	#endif
+
 
 		m_sSelectedShadersConfig.clear();
 	}
@@ -1698,6 +1816,7 @@ void CMenuModule::UpdateConfigs( void )
 	m_Configs.clear();
 	s_flUpdateTime = Globals::cl_enginefuncs->GetClientTime() + 0.4f;
 
+#ifdef WIN32
 	HANDLE hFile;
 	WIN32_FIND_DATAA FileInformation;
 
@@ -1734,6 +1853,33 @@ void CMenuModule::UpdateConfigs( void )
 
 		::FindClose( hFile );
 	}
+#else
+    DIR *dir = opendir( m_sConfigsFullPath.c_str() );
+    if ( dir != NULL )
+	{
+		struct dirent *entry;
+		while ( ( entry = readdir( dir ) ) != NULL )
+		{
+			if ( stricmp( entry->d_name, ".")  == 0 || stricmp( entry->d_name, ".." ) == 0 )
+				continue;
+
+			char szFullPath[ PATH_MAX ];
+			snprintf( szFullPath, Q_ARRAYSIZE( szFullPath ), "%s/%s", m_sConfigsFullPath.c_str(), entry->d_name );
+
+			struct stat st;
+			if ( stat( szFullPath, &st ) == 0 && S_ISDIR( st.st_mode ) )
+				continue;
+
+			const char *pszExtension = strrchr( entry->d_name, '.' );
+			if ( pszExtension && stricmp( pszExtension, ".ini" ) == 0 )
+			{
+				m_Configs.push_back( entry->d_name );
+			}
+		}
+
+		closedir(dir);
+	}
+#endif
 
 	std::vector<std::string>::iterator it = std::find( m_Configs.begin(), m_Configs.end(), m_sSelectedConfig.c_str() );
 
@@ -1759,6 +1905,7 @@ void CMenuModule::UpdateShaderConfigs( void )
 	m_ShaderConfigs.clear();
 	s_flUpdateTime = Globals::cl_enginefuncs->GetClientTime() + 0.4f;
 
+#ifdef WIN32
 	HANDLE hFile;
 	WIN32_FIND_DATAA FileInformation;
 
@@ -1795,6 +1942,33 @@ void CMenuModule::UpdateShaderConfigs( void )
 
 		::FindClose( hFile );
 	}
+#else
+    DIR *dir = opendir( m_sShaderConfigsFullPath.c_str() );
+    if ( dir != NULL )
+	{
+		struct dirent *entry;
+		while ( ( entry = readdir( dir ) ) != NULL )
+		{
+			if ( stricmp( entry->d_name, ".")  == 0 || stricmp( entry->d_name, ".." ) == 0 )
+				continue;
+
+			char szFullPath[ PATH_MAX ];
+			snprintf( szFullPath, Q_ARRAYSIZE( szFullPath ), "%s/%s", m_sShaderConfigsFullPath.c_str(), entry->d_name );
+
+			struct stat st;
+			if ( stat( szFullPath, &st ) == 0 && S_ISDIR( st.st_mode ) )
+				continue;
+
+			const char *pszExtension = strrchr( entry->d_name, '.' );
+			if ( pszExtension && stricmp( pszExtension, ".ini" ) == 0 )
+			{
+				m_ShaderConfigs.push_back( entry->d_name );
+			}
+		}
+
+		closedir(dir);
+	}
+#endif
 
 	std::vector<std::string>::iterator it = std::find( m_ShaderConfigs.begin(), m_ShaderConfigs.end(), m_sSelectedShadersConfig.c_str() );
 
@@ -1815,6 +1989,7 @@ void CMenuModule::BuildConfigsFullPath( void )
 	if ( !m_sConfigsFullPath.empty() && !m_sShaderConfigsFullPath.empty() )
 		return;
 
+#ifdef WIN32
 	char szLongPath[ MAX_PATH ];
 	char szShortPath[ MAX_PATH ];
 	char *pszPath = NULL;
@@ -1830,6 +2005,19 @@ void CMenuModule::BuildConfigsFullPath( void )
 		if ( pszPath[ 0 ] )
 			pszPath[ 1 ] = 0;
 	}
+#else
+	char szLongPath[ PATH_MAX ];
+
+	szLongPath[ 0 ] = 0;
+
+	if ( readlink( "/proc/self/exe", szLongPath, PATH_MAX ) != -1 )
+	{
+		char *pszPath = strrchr( szLongPath, '/' );
+
+		if ( pszPath[ 0 ] )
+			pszPath[ 1 ] = 0;
+	}
+#endif
 
 	m_sConfigsFullPath = szLongPath;
 	m_sShaderConfigsFullPath = szLongPath;
@@ -1837,8 +2025,10 @@ void CMenuModule::BuildConfigsFullPath( void )
 	m_sConfigsFullPath += SVENINT_MAKE_PATH( SVENINT_CONFIG_FOLDER );
 	m_sShaderConfigsFullPath += SVENINT_MAKE_PATH( SVENINT_SHADERS_CONFIG_FOLDER );
 
+#ifdef WIN32
 	std::replace( m_sConfigsFullPath.begin(), m_sConfigsFullPath.end(), '/', '\\' );
 	std::replace( m_sShaderConfigsFullPath.begin(), m_sShaderConfigsFullPath.end(), '/', '\\' );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1961,6 +2151,9 @@ void CMenuModule::OnConfigSave( const char *pszFilename, bool bShaderConfig )
 //-----------------------------------------------------------------------------
 
 CMenuModule::CMenuModule() : m_MenuConVarBinds( 63, m_Functor, m_Functor )
+#ifdef IMGUI_USE_SDL
+							, m_MapKeysWinAPIToSDL( 15 ), m_MapKeysSDLToWinAPI( 15 )
+#endif
 {
 	m_bOpened = false;
 	m_bThemeLoaded = false;
@@ -1988,12 +2181,74 @@ CMenuModule::CMenuModule() : m_MenuConVarBinds( 63, m_Functor, m_Functor )
 	m_pFont = NULL;
 	m_pFontL4D = NULL;
 
-#if !IMGUI_USE_SDL
+#ifndef IMGUI_USE_SDL
 	m_hGameWnd = NULL;
 	m_hGameWndProc = NULL;
+#else
+	m_pSdlWindow = NULL;
 #endif
 
 	PreInit();
+}
+
+//-----------------------------------------------------------------------------
+// InitKeyMappings
+//-----------------------------------------------------------------------------
+
+void CMenuModule::InitKeyMappings( void )
+{
+#ifdef IMGUI_USE_SDL
+	m_MapKeysWinAPIToSDL.Insert( VK_F1, SDL_SCANCODE_F1 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F2, SDL_SCANCODE_F2 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F3, SDL_SCANCODE_F3 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F4, SDL_SCANCODE_F4 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F5, SDL_SCANCODE_F5 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F6, SDL_SCANCODE_F6 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F7, SDL_SCANCODE_F7 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F8, SDL_SCANCODE_F8 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F9, SDL_SCANCODE_F9 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F10, SDL_SCANCODE_F10 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F11, SDL_SCANCODE_F11 );
+	m_MapKeysWinAPIToSDL.Insert( VK_F12, SDL_SCANCODE_F12 );
+	m_MapKeysWinAPIToSDL.Insert( VK_SPACE, SDL_SCANCODE_SPACE );
+	m_MapKeysWinAPIToSDL.Insert( VK_PAUSE, SDL_SCANCODE_PAUSE );
+	m_MapKeysWinAPIToSDL.Insert( VK_INSERT, SDL_SCANCODE_INSERT );
+	m_MapKeysWinAPIToSDL.Insert( VK_HOME, SDL_SCANCODE_HOME );
+	m_MapKeysWinAPIToSDL.Insert( VK_PRIOR, SDL_SCANCODE_PAGEUP );
+	m_MapKeysWinAPIToSDL.Insert( VK_DELETE, SDL_SCANCODE_DELETE );
+	m_MapKeysWinAPIToSDL.Insert( VK_END, SDL_SCANCODE_END );
+	m_MapKeysWinAPIToSDL.Insert( VK_NEXT, SDL_SCANCODE_PAGEDOWN );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD0, SDL_SCANCODE_KP_0 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD1, SDL_SCANCODE_KP_1 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD2, SDL_SCANCODE_KP_2 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD3, SDL_SCANCODE_KP_3 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD4, SDL_SCANCODE_KP_4 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD5, SDL_SCANCODE_KP_5 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD6, SDL_SCANCODE_KP_6 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD7, SDL_SCANCODE_KP_7 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD8, SDL_SCANCODE_KP_8 );
+	m_MapKeysWinAPIToSDL.Insert( VK_NUMPAD9, SDL_SCANCODE_KP_9 );
+	m_MapKeysWinAPIToSDL.Insert( VK_EXECUTE, SDL_SCANCODE_EXECUTE );
+	m_MapKeysWinAPIToSDL.Insert( VK_SELECT, SDL_SCANCODE_SELECT );
+	m_MapKeysWinAPIToSDL.Insert( VK_RCONTROL, SDL_SCANCODE_RCTRL );
+	m_MapKeysWinAPIToSDL.Insert( VK_RSHIFT, SDL_SCANCODE_RSHIFT );
+	m_MapKeysWinAPIToSDL.Insert( VK_RMENU, SDL_SCANCODE_RALT );
+
+	for ( int i = 0; i < m_MapKeysWinAPIToSDL.Count(); i++ )
+	{
+		HashTableIterator_t it = m_MapKeysWinAPIToSDL.First( i );
+
+		while ( m_MapKeysWinAPIToSDL.IsValidIterator( it ) )
+		{
+			int &winapikey = m_MapKeysWinAPIToSDL.KeyAt( i, it );
+			int &sdlkey = m_MapKeysWinAPIToSDL.ValueAt( i, it );
+
+			m_MapKeysSDLToWinAPI.Insert( sdlkey, winapikey );
+
+			it = m_MapKeysWinAPIToSDL.Next( i, it );
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2040,11 +2295,11 @@ void CMenuModule::RemoveEmptyCategories( void )
 
 void CMenuModule::InitConfigProperties( void )
 {
-	int defaultKey = VK_INSERT;
 	float defaultOpacity = 1.f;
 	int defaultTheme = 0;
 
-	m_pCfgMenuKey = Modules::config->AddProperty( "Settings", "MenuButton", VK_INSERT );
+	m_pCfgMenuKey = Modules::config->AddProperty<int>( "Settings", "MenuButton", VK_INSERT );
+
 	m_pCfgMenuKey->SetRadix( 16 );
 
 	m_pCfgMenuHide = Modules::config->AddProperty( "Settings", "MenuHide", true );
@@ -2089,6 +2344,7 @@ void CMenuModule::InitConfigProperties( void )
 
 bool CMenuModule::Init( void )
 {
+	InitKeyMappings();
 	InitConfigProperties();
 
 	m_flRainbowColor[ 0 ] = m_flRainbowColor[ 1 ] = m_flRainbowColor[ 2 ] = 0.f;
@@ -2108,7 +2364,7 @@ void CMenuModule::Shutdown( void )
 {
 	Modules::config->UnregisterListener( this );
 
-#if !IMGUI_USE_SDL
+#ifndef IMGUI_USE_SDL
 	if ( m_hGameWnd != NULL && m_hGameWndProc != NULL )
 	{
 		SetWindowLong( m_hGameWnd, GWL_WNDPROC, (LONG)m_hGameWndProc );
@@ -2124,7 +2380,8 @@ void CMenuModule::Shutdown( void )
 		{
 			for ( CBaseMenuElement *element : feature.m_elements )
 			{
-				delete element;
+				MemFree( element );
+				//delete element;
 			}
 
 			feature.m_elements.clear();

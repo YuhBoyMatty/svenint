@@ -580,6 +580,27 @@
     <ClCompile Include="features\exploit_airstuck.cpp">
       <Filter>features\Exploit</Filter>
     </ClCompile>
+    <ClCompile Include="features\mov_use_key.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\memalloc.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\prof.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_sdl2.cpp">
+      <Filter>imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_models_downloader.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\misc_chatsounds.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_ignore_unicode.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1238,6 +1259,27 @@
     </ClInclude>
     <ClInclude Include="features\exploit_airstuck.h">
       <Filter>features\Exploit</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_use_key.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\memalloc.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\prof.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\backends\imgui_impl_sdl2.h">
+      <Filter>imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_models_downloader.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_chatsounds.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_ignore_unicode.h">
+      <Filter>features\Visual</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

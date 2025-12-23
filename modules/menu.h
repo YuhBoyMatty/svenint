@@ -10,8 +10,55 @@
 
 #include "config.h"
 
-#define IMGUI_USE_SDL ( 0 )
+#ifdef WIN32
+//#define IMGUI_USE_SDL
+#endif
 #define IMGUI_USE_GL3 ( 1 )
+
+//-----------------------------------------------------------------------------
+// WinAPI virtual keycodes
+//-----------------------------------------------------------------------------
+
+#ifndef WIN32
+#define VK_CANCEL	0x03	// Control - break processing
+#define VK_CLEAR	0x0C	// Clear key
+#define VK_MENU	0x12	// Alt key
+#define VK_PAUSE	0x13	// Pause key
+#define VK_SPACE	0x20	// Space bar
+#define VK_PRIOR	0x21	// Page up key
+#define VK_NEXT	0x22	// Page down key
+#define VK_END	0x23	// End key
+#define VK_HOME	0x24	// Home key
+#define VK_SELECT	0x29	// Select key
+#define VK_EXECUTE	0x2B	// Execute key
+#define VK_INSERT	0x2D	// Insert key
+#define VK_DELETE	0x2E	// Delete key
+#define VK_NUMPAD0	0x60	// Numeric keypad 0 key
+#define VK_NUMPAD1	0x61	// Numeric keypad 1 key
+#define VK_NUMPAD2	0x62	// Numeric keypad 2 key
+#define VK_NUMPAD3	0x63	// Numeric keypad 3 key
+#define VK_NUMPAD4	0x64	// Numeric keypad 4 key
+#define VK_NUMPAD5	0x65	// Numeric keypad 5 key
+#define VK_NUMPAD6	0x66	// Numeric keypad 6 key
+#define VK_NUMPAD7	0x67	// Numeric keypad 7 key
+#define VK_NUMPAD8	0x68	// Numeric keypad 8 key
+#define VK_NUMPAD9	0x69	// Numeric keypad 9 key
+#define VK_F1	0x70	// F1 key
+#define VK_F2	0x71	// F2 key
+#define VK_F3	0x72	// F3 key
+#define VK_F4	0x73	// F4 key
+#define VK_F5	0x74	// F5 key
+#define VK_F6	0x75	// F6 key
+#define VK_F7	0x76	// F7 key
+#define VK_F8	0x77	// F8 key
+#define VK_F9	0x78	// F9 key
+#define VK_F10	0x79	// F10 key
+#define VK_F11	0x7A	// F11 key
+#define VK_F12	0x7B	// F12 key
+#define VK_RSHIFT	0xA1	// Right Shift key
+#define VK_RCONTROL	0xA3	// Right Ctrl key
+#define VK_RMENU	0xA5	// Right Alt key
+#endif
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -412,9 +459,9 @@ public:
 	void				AddElementSameLine( CBaseFeature *pFeature );
 
 public:
-#if IMGUI_USE_SDL
-	bool			SDL_PollEvent( SDL_Event *event );
-	void			SDL_GL_SwapWindow( SDL_Window *window );
+#ifdef IMGUI_USE_SDL
+	bool			SDL_PollEvent( union SDL_Event *event );
+	void			SDL_GL_SwapWindow( struct SDL_Window *window );
 #else
 	bool			WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 	void			wglSwapBuffers( HDC hdc );
@@ -424,7 +471,15 @@ public:
 	inline bool		IsOpen( void ) const { return m_bOpened; }
 	inline float	GetOpenTime( void ) const { return m_flOpenTime; }
 	inline float	GetCloseTime( void ) const { return m_flCloseTime; }
+#ifndef IMGUI_USE_SDL
 	inline WNDPROC	GetGameWindowProc( void ) const { return m_hGameWndProc; }
+	inline bool		UsingSDL( void ) const { return false; }
+#else
+	inline bool		UsingSDL( void ) const { return true; }
+	bool			SDL_IsKeyPressed( uint32_t scancode );
+#endif
+
+	int				GetVirtualKey( int iWinApiOrSdl, bool bSDL = true );
 
 	inline Vector	&GetFrozenCameraAngles( void ) { return m_va; }
 	void			KeepCameraFrozen( void );
@@ -435,6 +490,7 @@ public:
 	void			OnCvarChange( cvar_t *pCvar, const char *pszOldValue, float flOldValue );
 
 private:
+	void			InitKeyMappings( void );
 	void			PreInit( void );
 	void			RemoveEmptyCategories( void );
 	void			InitConfigProperties( void );
@@ -554,6 +610,11 @@ private:
 	CLookupFunctor m_Functor;
 	CHash<MenuConVarBind_t, CLookupFunctor &, CLookupFunctor &> m_MenuConVarBinds;
 
+#ifdef IMGUI_USE_SDL
+	CHashTable<int, int> m_MapKeysWinAPIToSDL;
+	CHashTable<int, int> m_MapKeysSDLToWinAPI;
+#endif
+
 	std::vector<CMenuCategory> m_categories;
 
 	std::vector<std::string> m_Configs;
@@ -564,9 +625,11 @@ private:
 	std::string m_sConfigsFullPath;
 	std::string m_sShaderConfigsFullPath;
 
-#if !IMGUI_USE_SDL
+#ifndef IMGUI_USE_SDL
 	HWND			m_hGameWnd;
 	WNDPROC			m_hGameWndProc;
+#else
+	SDL_Window		*m_pSdlWindow;
 #endif
 };
 

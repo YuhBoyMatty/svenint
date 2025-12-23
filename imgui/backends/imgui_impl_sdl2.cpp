@@ -114,7 +114,7 @@
 
 // SDL
 #include <SDL.h>
-#include <SDL_syswm.h>
+// #include <SDL_syswm.h> FIXME
 #include <stdio.h>              // for snprintf()
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -123,6 +123,12 @@
 #include <emscripten/em_js.h>
 #endif
 #undef Status // X11 headers are leaking this.
+
+#if defined(SC_5_26)
+#define SDL_FORCE_USE_OLD_API ( 0 )
+#else
+#define SDL_FORCE_USE_OLD_API ( 1 )
+#endif
 
 #if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
@@ -391,7 +397,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
             if (ImGui_ImplSDL2_GetViewportForWindowID(event->wheel.windowID) == nullptr)
                 return false;
             //IMGUI_DEBUG_LOG("wheel %.2f %.2f, precise %.2f %.2f\n", (float)event->wheel.x, (float)event->wheel.y, event->wheel.preciseX, event->wheel.preciseY);
-#if SDL_VERSION_ATLEAST(2,0,18) // If this fails to compile on Emscripten: update to latest Emscripten!
+#if SDL_VERSION_ATLEAST(2,0,18) && !SDL_FORCE_USE_OLD_API // If this fails to compile on Emscripten: update to latest Emscripten!
             float wheel_x = -event->wheel.preciseX;
             float wheel_y = event->wheel.preciseY;
 #else
@@ -552,6 +558,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     main_viewport->PlatformHandle = (void*)(intptr_t)bd->WindowID;
     main_viewport->PlatformHandleRaw = nullptr;
+    /* FIXME
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info))
@@ -561,7 +568,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
 #elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
         main_viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
 #endif
-    }
+    }*/
 
     // From 2.0.5: Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
     // Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
@@ -652,7 +659,7 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     ImGuiIO& io = ImGui::GetIO();
 
     // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
-#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
+#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE && !SDL_FORCE_USE_OLD_API
     // - SDL_CaptureMouse() let the OS know e.g. that our drags can extend outside of parent boundaries (we want updated position) and shouldn't trigger other operations outside.
     // - Debuggers under Linux tends to leave captured mouse on break, which may be very inconvenient, so to mitigate the issue we wait until mouse has moved to begin capture.
     if (bd->MouseCanUseCapture)
@@ -685,7 +692,11 @@ static void ImGui_ImplSDL2_UpdateMouseData()
             // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
             int mouse_x, mouse_y;
             int window_x, window_y;
+        #if !SDL_FORCE_USE_OLD_API
             SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+        #else
+            SDL_GetMouseState( &mouse_x, &mouse_y );
+        #endif
             SDL_GetWindowPosition(focused_window, &window_x, &window_y);
             mouse_x -= window_x;
             mouse_y -= window_y;
@@ -853,6 +864,7 @@ static void ImGui_ImplSDL2_GetWindowSizeAndFramebufferScale(SDL_Window* window, 
     SDL_GetWindowSize(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
         w = h = 0;
+#if !SDL_FORCE_USE_OLD_API
     if (renderer != nullptr)
         SDL_GetRendererOutputSize(renderer, &display_w, &display_h);
 #if SDL_HAS_VULKAN
@@ -861,6 +873,10 @@ static void ImGui_ImplSDL2_GetWindowSizeAndFramebufferScale(SDL_Window* window, 
 #endif
     else
         SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+#else
+    display_w = w;
+    display_h = h;
+#endif
     if (out_size != nullptr)
         *out_size = ImVec2((float)w, (float)h);
     if (out_framebuffer_scale != nullptr)

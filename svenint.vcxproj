@@ -55,15 +55,15 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <OpenMPSupport>false</OpenMPSupport>
-      <AdditionalIncludeDirectories>./;imgui/;glew/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;imgui/;glew/include/;SDL2/include/</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>glew\lib\Release\Win32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32;SDL2\lib\x86;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGL32.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,7 +78,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <OpenMPSupport>false</OpenMPSupport>
       <AdditionalOptions>/GR-</AdditionalOptions>
-      <AdditionalIncludeDirectories>./;imgui/;glew/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;imgui/;glew/include/;SDL2/include/</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -87,8 +87,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>glew\lib\Release\Win32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>glew\lib\Release\Win32;SDL2\lib\x86;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenGL32.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>true</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -108,6 +109,7 @@
     <ClInclude Include="features\hud_vote_popup.h" />
     <ClInclude Include="features\misc_antisoundspam.h" />
     <ClInclude Include="features\misc_bypass_cvar_query.h" />
+    <ClInclude Include="features\misc_chatsounds.h" />
     <ClInclude Include="features\misc_clientmenu.h" />
     <ClInclude Include="features\misc_demo_capture.h" />
     <ClInclude Include="features\misc_demo_message.h" />
@@ -116,6 +118,7 @@
     <ClInclude Include="features\misc_game_patches.h" />
     <ClInclude Include="features\misc_ignore_different_maps.h" />
     <ClInclude Include="features\misc_message_spammer.h" />
+    <ClInclude Include="features\misc_models_downloader.h" />
     <ClInclude Include="features\misc_mute_manager.h" />
     <ClInclude Include="features\misc_nosleep.h" />
     <ClInclude Include="features\misc_private_chat.h" />
@@ -132,6 +135,7 @@
     <ClInclude Include="features\mov_perfect_jumpbug.h" />
     <ClInclude Include="features\mov_selfsink.h" />
     <ClInclude Include="features\mov_strafer.h" />
+    <ClInclude Include="features\mov_use_key.h" />
     <ClInclude Include="features\mov_wallstrafe.h" />
     <ClInclude Include="features\player_aim.h" />
     <ClInclude Include="features\player_antiafk.h" />
@@ -189,6 +193,7 @@
     <ClInclude Include="features\visual_esp.h" />
     <ClInclude Include="features\visual_friends.h" />
     <ClInclude Include="features\visual_hitmarkers.h" />
+    <ClInclude Include="features\visual_ignore_unicode.h" />
     <ClInclude Include="features\visual_nofade.h" />
     <ClInclude Include="features\visual_noshake.h" />
     <ClInclude Include="features\visual_noviewentity.h" />
@@ -242,6 +247,7 @@
     <ClInclude Include="glew\include\GL\glew.h" />
     <ClInclude Include="imgui\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="imgui\backends\imgui_impl_sdl2.h" />
     <ClInclude Include="imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
@@ -307,11 +313,13 @@
     <ClInclude Include="utils\hash.h" />
     <ClInclude Include="utils\hashdict.h" />
     <ClInclude Include="utils\hashtable.h" />
+    <ClInclude Include="utils\memalloc.h" />
     <ClInclude Include="utils\memory_utils.h" />
     <ClInclude Include="utils\menu_fonts.h" />
     <ClInclude Include="utils\menu_styles.h" />
     <ClInclude Include="utils\patterns.h" />
     <ClInclude Include="svenint.h" />
+    <ClInclude Include="utils\prof.h" />
     <ClInclude Include="utils\util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -332,6 +340,7 @@
     <ClCompile Include="features\hud_vote_popup.cpp" />
     <ClCompile Include="features\misc_antisoundspam.cpp" />
     <ClCompile Include="features\misc_bypass_cvar_query.cpp" />
+    <ClCompile Include="features\misc_chatsounds.cpp" />
     <ClCompile Include="features\misc_clientmenu.cpp" />
     <ClCompile Include="features\misc_demo_capture.cpp" />
     <ClCompile Include="features\misc_demo_message.cpp" />
@@ -340,6 +349,7 @@
     <ClCompile Include="features\misc_game_patches.cpp" />
     <ClCompile Include="features\misc_ignore_different_maps.cpp" />
     <ClCompile Include="features\misc_message_spammer.cpp" />
+    <ClCompile Include="features\misc_models_downloader.cpp" />
     <ClCompile Include="features\misc_mute_manager.cpp" />
     <ClCompile Include="features\misc_nosleep.cpp" />
     <ClCompile Include="features\misc_private_chat.cpp" />
@@ -356,6 +366,7 @@
     <ClCompile Include="features\mov_perfect_jumpbug.cpp" />
     <ClCompile Include="features\mov_selfsink.cpp" />
     <ClCompile Include="features\mov_strafer.cpp" />
+    <ClCompile Include="features\mov_use_key.cpp" />
     <ClCompile Include="features\mov_wallstrafe.cpp" />
     <ClCompile Include="features\player_aim.cpp" />
     <ClCompile Include="features\player_antiafk.cpp" />
@@ -413,6 +424,7 @@
     <ClCompile Include="features\visual_esp.cpp" />
     <ClCompile Include="features\visual_friends.cpp" />
     <ClCompile Include="features\visual_hitmarkers.cpp" />
+    <ClCompile Include="features\visual_ignore_unicode.cpp" />
     <ClCompile Include="features\visual_nofade.cpp" />
     <ClCompile Include="features\visual_noshake.cpp" />
     <ClCompile Include="features\visual_noviewentity.cpp" />
@@ -451,6 +463,10 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;LIBUDIS86_EXPORTS;WIN32;NDEBUG;SVENINT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="imgui\backends\imgui_impl_sdl2.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -671,6 +687,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utils\memalloc.cpp" />
     <ClCompile Include="utils\memory_utils.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -679,6 +696,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utils\prof.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
