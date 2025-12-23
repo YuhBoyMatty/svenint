@@ -39,7 +39,7 @@ EXPOSE_FEATURE_SINGLETON( CUsables, usables, "Speedrun Tools", "Show Usables" );
 EHookResult CUsables::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
 	using namespace GameData::Offsets::Server;
-	FUNC_SIGNATURE( int, __thiscall, CBaseEntity__ObjectCapsFn, CBaseEntity * );
+	FUNC_SIGNATURE( int, CALLCONV_THISCALL, CBaseEntity__ObjectCapsFn, CBaseEntity * );
 
 	if ( vtidx_CBaseEntity_ObjectCaps == ~0 || !Modules::server->Host_IsServerActive() )
 		return kHookContinue;

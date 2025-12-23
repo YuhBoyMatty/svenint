@@ -26,7 +26,7 @@ public:
 	void			DeattachDetours( void );
 
 private:
-	bool			AttachDetour( const char *pszFunctionName, void *pFunction, void *pDetourFunction, void **ppOriginalFunction );
+	bool			AttachDetour( const char *pszFunctionName, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, int iDisasmMinBytes = 5 );
 	bool			AttachDetour( const char *pszFunctionName, void *pClassInstance, int vtidx, void *pDetourFunction, void **ppOriginalFunction );
 
 private:

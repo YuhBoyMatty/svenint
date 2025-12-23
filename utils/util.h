@@ -58,6 +58,42 @@ inline void UTIL_RemoveComment( char *str )
 		*str = '\0';
 }
 
+inline void UTIL_ReplaceUnicodeChars( char *pszInput, char chReplace = ' ' )
+{
+	if ( pszInput == NULL )
+		return;
+
+	for ( size_t i = 0; i < strlen( pszInput ); ++i )
+	{
+		if ( ( static_cast<signed char>( pszInput[ i ] ) ) < 0 )
+		{
+			pszInput[ i ] = chReplace;
+		}
+	}
+}
+
+inline void UTIL_ReplaceUnicodeChars( const char *pszInput, char *pszOutput, char chReplace = ' ' )
+{
+	size_t i = 0;
+
+	if ( pszInput == NULL || pszOutput == NULL )
+		return;
+
+	for ( i = 0; pszInput[ i ] != '\0'; i++ )
+	{
+		if ( (signed char)pszInput[ i ] < 0 )
+		{
+			pszOutput[ i ] = chReplace;
+		}
+		else
+		{
+			pszOutput[ i ] = pszInput[ i ];
+		}
+	}
+
+	pszOutput[ i ] = '\0';
+}
+
 inline float UTIL_Hue2RGB( float p, float q, float t )
 {
 	if ( t < 0.f )

@@ -40,7 +40,7 @@ public:
 	ScriptTypeVariant( bool value ) { m_boolean = value; m_type = LUA_TYPE_BOOLEAN; }
 	ScriptTypeVariant( lua_Integer value ) { m_integer = value; m_type = LUA_TYPE_INTEGER; }
 	ScriptTypeVariant( lua_Number value ) { m_number = value; m_type = LUA_TYPE_NUMBER; }
-	ScriptTypeVariant( const char *value ) { m_cstring = strdup( value ); m_type = LUA_TYPE_CSTRING; }
+	ScriptTypeVariant( const char *value ) { m_cstring = MemStrdup( value ); m_type = LUA_TYPE_CSTRING; }
 	ScriptTypeVariant( lua_CFunction value ) { m_cfunction = value; m_type = LUA_TYPE_CFUNCTION; }
 	//ScriptTypeVariant(Vector value) { m_vector = value; m_type = LUA_TYPE_VECTOR; }
 	ScriptTypeVariant( scriptref_t value ) { m_ref = value; m_type = LUA_TYPE_REFERENCE; }
@@ -53,7 +53,7 @@ public:
 	void operator=( bool value ) { m_boolean = value; m_type = LUA_TYPE_BOOLEAN; }
 	void operator=( lua_Integer value ) { m_integer = value; m_type = LUA_TYPE_INTEGER; }
 	void operator=( lua_Number value ) { m_number = value; m_type = LUA_TYPE_NUMBER; }
-	void operator=( const char *value ) { m_cstring = strdup( value ); m_type = LUA_TYPE_CSTRING; }
+	void operator=( const char *value ) { m_cstring = MemStrdup( value ); m_type = LUA_TYPE_CSTRING; }
 	void operator=( lua_CFunction value ) { m_cfunction = value; m_type = LUA_TYPE_CFUNCTION; }
 	//void operator=(Vector value) { m_vector = value; m_type = LUA_TYPE_VECTOR; }
 	void operator=( scriptref_t value ) { m_ref = value; m_type = LUA_TYPE_REFERENCE; }
@@ -62,7 +62,7 @@ public:
 	{
 		if ( m_type == LUA_TYPE_CSTRING && m_cstring != NULL )
 		{
-			free( (void *)m_cstring );
+			MemFree( (void *)m_cstring );
 			m_cstring = NULL;
 		}
 	}

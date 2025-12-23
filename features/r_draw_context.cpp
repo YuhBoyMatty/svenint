@@ -4,8 +4,6 @@
 #include "stdafx.h"
 #include "r_draw_context.h"
 
-#include <gl/GL.h>
-
 using namespace Globals;
 
 //-----------------------------------------------------------------------------
@@ -161,7 +159,7 @@ CDrawBoxNoDepthBuffer::CDrawBoxNoDepthBuffer( const Vector &vOrigin, const Vecto
 	m_vecMaxs = vMaxs;
 }
 
-void CDrawBoxNoDepthBuffer::Draw()
+void CDrawBoxNoDepthBuffer::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_DEPTH_TEST );
@@ -268,7 +266,7 @@ CWireframeBox::CWireframeBox( const Vector &vOrigin, const Vector &vMins, const 
 	m_bIgnoreDepthBuffer = bIgnoreDepthBuffer;
 }
 
-void CWireframeBox::Draw()
+void CWireframeBox::Draw( void )
 {
 	glEnable( GL_BLEND );
 
@@ -399,6 +397,14 @@ void CWireframeBox::Draw()
 		glEnable( GL_DEPTH_TEST );
 }
 
+bool CWireframeBox::CheckPVS( void )
+{
+	if ( m_bIgnoreDepthBuffer )
+		return true;
+
+	return cl_enginefuncs->pTriAPI->BoxInPVS( m_vecOrigin + m_vecMins, m_vecOrigin + m_vecMaxs ) != 0;
+}
+
 // Draw rotated wireframe box
 CWireframeBoxAngles::CWireframeBoxAngles( const Vector &vOrigin, const Vector &vMins, const Vector &vMaxs, const Vector &vAngles, const Color &color, float width, bool bIgnoreDepthBuffer ) : m_color( color )
 {
@@ -420,7 +426,7 @@ CWireframeBoxAngles::CWireframeBoxAngles( const Vector &vOrigin, const Vector &v
 	m_bIgnoreDepthBuffer = bIgnoreDepthBuffer;
 }
 
-void CWireframeBoxAngles::Draw()
+void CWireframeBoxAngles::Draw( void )
 {
 	glEnable( GL_BLEND );
 
@@ -529,6 +535,14 @@ void CWireframeBoxAngles::Draw()
 		glEnable( GL_DEPTH_TEST );
 }
 
+bool CWireframeBoxAngles::CheckPVS( void )
+{
+	if ( m_bIgnoreDepthBuffer )
+		return true;
+
+	return cl_enginefuncs->pTriAPI->BoxInPVS( m_vecOrigin + m_vecMins, m_vecOrigin + m_vecMaxs ) != 0;
+}
+
 // Draw linear trajectory
 CDrawTrajectory::CDrawTrajectory( const Color &lineColor, const Color &impactColor, float flWidth )
 {
@@ -543,7 +557,7 @@ CDrawTrajectory::~CDrawTrajectory()
 	m_impacts.clear();
 }
 
-void CDrawTrajectory::Draw()
+void CDrawTrajectory::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_DEPTH_TEST );
@@ -652,12 +666,12 @@ void CDrawTrajectory::Draw()
 	glDisable( GL_BLEND );
 }
 
-bool CDrawTrajectory::ShouldStopDraw()
+bool CDrawTrajectory::ShouldStopDraw( void )
 {
 	return false;
 }
 
-const Vector &CDrawTrajectory::GetDrawOrigin() const
+const Vector &CDrawTrajectory::GetDrawOrigin( void ) const
 {
 	return g_vecZero;
 }
@@ -716,10 +730,15 @@ public:
 	CDrawPoint( const Vector &vPoint, const Color &color, float size );
 	virtual ~CDrawPoint() {}
 
-	virtual void Draw() override;
-	virtual bool ShouldStopDraw() override;
+	virtual void Draw( void ) override;
+	virtual bool ShouldStopDraw( void ) override;
 
-	virtual const Vector &GetDrawOrigin() const override;
+	virtual const Vector &GetDrawOrigin( void ) const override;
+
+	virtual bool CheckPVS( void ) override
+	{
+		return cl_enginefuncs->pTriAPI->BoxInPVS( m_vecOrigin + Vector( -1.f, -1.f, -1.f ), m_vecOrigin + Vector( 1.f, 1.f, 1.f ) ) != 0;
+	}
 
 private:
 	Vector m_vecOrigin;
@@ -734,7 +753,7 @@ CDrawPoint::CDrawPoint( const Vector &vPoint, const Color &color, float size ) :
 	m_flSize = size;
 }
 
-void CDrawPoint::Draw()
+void CDrawPoint::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_ALPHA_TEST );
@@ -757,12 +776,12 @@ void CDrawPoint::Draw()
 	glDisable( GL_ALPHA_TEST );
 }
 
-bool CDrawPoint::ShouldStopDraw()
+bool CDrawPoint::ShouldStopDraw( void )
 {
 	return false;
 }
 
-const Vector &CDrawPoint::GetDrawOrigin() const
+const Vector &CDrawPoint::GetDrawOrigin( void ) const
 {
 	return m_vecOrigin;
 }
@@ -774,10 +793,18 @@ public:
 	CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width );
 	virtual ~CDrawLine() {}
 
-	virtual void Draw() override;
-	virtual bool ShouldStopDraw() override;
+	virtual void Draw( void ) override;
+	virtual bool ShouldStopDraw( void ) override;
 
-	virtual const Vector &GetDrawOrigin() const override;
+	virtual const Vector &GetDrawOrigin( void ) const override;
+
+	virtual bool CheckPVS( void ) override
+	{
+		Vector vecMins( Q_min( m_vecStart.x, m_vecEnd.x ), Q_min( m_vecStart.y, m_vecEnd.y ), Q_min( m_vecStart.z, m_vecEnd.z ) );
+		Vector vecMaxs( Q_max( m_vecStart.x, m_vecEnd.x ), Q_max( m_vecStart.y, m_vecEnd.y ), Q_max( m_vecStart.z, m_vecEnd.z ) );
+
+		return cl_enginefuncs->pTriAPI->BoxInPVS( vecMins, vecMaxs ) != 0;
+	}
 
 private:
 	Vector m_vecOrigin;
@@ -797,7 +824,7 @@ CDrawLine::CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &col
 	m_flWidth = width;
 }
 
-void CDrawLine::Draw()
+void CDrawLine::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_ALPHA_TEST );
@@ -821,12 +848,12 @@ void CDrawLine::Draw()
 	glDisable( GL_ALPHA_TEST );
 }
 
-bool CDrawLine::ShouldStopDraw()
+bool CDrawLine::ShouldStopDraw( void )
 {
 	return false;
 }
 
-const Vector &CDrawLine::GetDrawOrigin() const
+const Vector &CDrawLine::GetDrawOrigin( void ) const
 {
 	return m_vecOrigin;
 }
@@ -838,10 +865,12 @@ public:
 	CDrawBox( const Vector &vOrigin, const Vector &vMins, const Vector &vMaxs, const Color &color );
 	virtual ~CDrawBox() {}
 
-	virtual void Draw() override;
-	virtual bool ShouldStopDraw() override;
+	virtual void Draw( void ) override;
+	virtual bool ShouldStopDraw( void ) override;
 
-	virtual const Vector &GetDrawOrigin() const override;
+	virtual const Vector &GetDrawOrigin( void ) const override;
+
+	virtual bool CheckPVS( void ) override { return cl_enginefuncs->pTriAPI->BoxInPVS( m_vecOrigin + m_vecMins, m_vecOrigin + m_vecMaxs ) != 0; }
 
 private:
 	Vector m_vecDrawOrigin;
@@ -869,7 +898,7 @@ CDrawBox::CDrawBox( const Vector &vOrigin, const Vector &vMins, const Vector &vM
 	m_vecMaxs = vMaxs;
 }
 
-void CDrawBox::Draw()
+void CDrawBox::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_ALPHA_TEST );
@@ -954,12 +983,12 @@ void CDrawBox::Draw()
 	glDisable( GL_ALPHA_TEST );
 }
 
-bool CDrawBox::ShouldStopDraw()
+bool CDrawBox::ShouldStopDraw( void )
 {
 	return false;
 }
 
-const Vector &CDrawBox::GetDrawOrigin() const
+const Vector &CDrawBox::GetDrawOrigin( void ) const
 {
 	return m_vecDrawOrigin;
 }
@@ -971,10 +1000,12 @@ public:
 	CDrawBoxAngles( const Vector &vOrigin, const Vector &vMins, const Vector &vMaxs, const Vector &vAngles, const Color &color );
 	virtual ~CDrawBoxAngles() {}
 
-	virtual void Draw() override;
-	virtual bool ShouldStopDraw() override;
+	virtual void Draw( void ) override;
+	virtual bool ShouldStopDraw( void ) override;
 
-	virtual const Vector &GetDrawOrigin() const override;
+	virtual const Vector &GetDrawOrigin( void ) const override;
+
+	virtual bool CheckPVS( void ) override { return cl_enginefuncs->pTriAPI->BoxInPVS( m_vecOrigin + m_vecMins, m_vecOrigin + m_vecMaxs ) != 0; }
 
 private:
 	Vector m_vecDrawOrigin;
@@ -1005,7 +1036,7 @@ CDrawBoxAngles::CDrawBoxAngles( const Vector &vOrigin, const Vector &vMins, cons
 	m_vecMaxs = vMaxs;
 }
 
-void CDrawBoxAngles::Draw()
+void CDrawBoxAngles::Draw( void )
 {
 	glEnable( GL_BLEND );
 	glDisable( GL_ALPHA_TEST );
@@ -1103,12 +1134,12 @@ void CDrawBoxAngles::Draw()
 	glDisable( GL_ALPHA_TEST );
 }
 
-bool CDrawBoxAngles::ShouldStopDraw()
+bool CDrawBoxAngles::ShouldStopDraw( void )
 {
 	return false;
 }
 
-const Vector &CDrawBoxAngles::GetDrawOrigin() const
+const Vector &CDrawBoxAngles::GetDrawOrigin( void ) const
 {
 	return m_vecDrawOrigin;
 }
@@ -1243,6 +1274,9 @@ EHookResult CDrawContext::OnEvent( CHookEvent *pEvent, bool bPostCall )
 				continue;
 			}
 
+			if ( !draw_context.pDrawContext->CheckPVS() )
+				continue;
+
 			draw_context.pDrawContext->Draw();
 		}
 	}
@@ -1294,6 +1328,13 @@ void CDrawContext::PostLoad( void )
 
 void CDrawContext::Unload( void )
 {
+	for ( size_t i = 0; i < m_vDrawContext.size(); i++ )
+	{
+		delete m_vDrawContext[ i ].pDrawContext;
+	}
+
+	m_vDrawContext.clear();
+
 	hookevents->UnregisterListener( this, kHUD_DrawTransparentTriangles_HookEvent, kHookPostCall );
 	hookevents->UnregisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 

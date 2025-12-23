@@ -10,10 +10,10 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( int, __cdecl, SDL_GL_ExtensionSupported, const char * );
-DECLARE_HOOK( const char *, __stdcall, glGetString, int );
-DECLARE_HOOK( bool, __cdecl, CCamera__Process, void *, void * );
-DECLARE_HOOK( void, __cdecl, CL_ComputeClientInterpolationAmount, usercmd_t *cmd );
+DECLARE_HOOK( int, CALLCONV_CDECL, SDL_GL_ExtensionSupported, const char * );
+DECLARE_HOOK( const char *, CALLCONV_STDCALL, glGetString, int );
+DECLARE_HOOK( bool, CALLCONV_CDECL, CCamera__Process, void *, void * );
+DECLARE_HOOK( void, CALLCONV_CDECL, CL_ComputeClientInterpolationAmount, usercmd_t *cmd );
 
 //-----------------------------------------------------------------------------
 // Features gamedata
@@ -64,15 +64,15 @@ EXPOSE_FEATURE_SINGLETON( CGamePatches, gamepatches, "Misc", "Game Patches" );
 #define GL_EXTENSIONS 0x1F03
 #endif //!GL_EXTENSIONS
 
-DECLARE_FUNC( int, __cdecl, HOOKED_SDL_GL_ExtensionSupported, const char *pszExtension )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_SDL_GL_ExtensionSupported, const char *pszExtension )
 {
-	if ( !_strnicmp( pszExtension, DISABLED_EXTENSION, sizeof( DISABLED_EXTENSION ) - 1 ) )
+	if ( !strnicmp( pszExtension, DISABLED_EXTENSION, sizeof( DISABLED_EXTENSION ) - 1 ) )
 		return 0;
 
 	return ORIG_SDL_GL_ExtensionSupported( pszExtension );
 }
 
-DECLARE_FUNC( const char *, __stdcall, HOOKED_glGetString, int type )
+DECLARE_FUNC( const char *, CALLCONV_STDCALL, HOOKED_glGetString, int type )
 {
 	const char *pszResult = ORIG_glGetString( type );
 
@@ -104,7 +104,7 @@ DECLARE_CLASS_FUNC( void, DUMMY_CBasePlayerWeapon__TertiaryAttack, void *thisptr
 // CCamera::Process hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( bool, __cdecl, HOOKED_CCamera__Process, void *thisptr, void *unk )
+DECLARE_FUNC( bool, CALLCONV_CDECL, HOOKED_CCamera__Process, void *thisptr, void *unk )
 {
 	if ( cl_enginefuncs->GetLocalPlayer() == NULL )
 		return true;
@@ -119,7 +119,7 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_CCamera__Process, void *thisptr, void *unk )
 // CL_ComputeClientInterpolationAmount hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_CL_ComputeClientInterpolationAmount, usercmd_t *cmd )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_CL_ComputeClientInterpolationAmount, usercmd_t *cmd )
 {
 	static float flInterpolationAmount = 0.1f;
 	static cvar_t *ex_interp = NULL;
@@ -165,25 +165,42 @@ DECLARE_FUNC( void, __cdecl, HOOKED_CL_ComputeClientInterpolationAmount, usercmd
 
 bool CGamePatches::GuessTertiaryAttackVtidx( void )
 {
-	switch ( gameversion )
+	if ( gamedata->Initialized() )
 	{
-	case 526:
-	{
-		m_vtidx_CBasePlayerWeapon_TertiaryAttack = 150;
-		m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server = 153;
-		break;
-	}
+		m_vtidx_CBasePlayerWeapon_TertiaryAttack = gamedata->FindOffset( GameData::Modules::Client, "Client", "CBasePlayerWeapon::TertiaryAttack" );
+		m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server = gamedata->FindOffset( GameData::Modules::Server, "Server", "CBasePlayerWeapon::TertiaryAttack" );
 
-	case 525:
-	{
-		m_vtidx_CBasePlayerWeapon_TertiaryAttack = 150;
-		m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server = 151;
-		break;
+		if ( m_vtidx_CBasePlayerWeapon_TertiaryAttack == ~0 )
+			return false;
+		if ( m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server == ~0 )
+			return false;
 	}
+	else
+	{
+	#ifdef WIN32
+		switch ( SVEN_VERSION() )
+		{
+		case SVEN_VERSION_CHECK( 5, 26, 0 ):
+		{
+			m_vtidx_CBasePlayerWeapon_TertiaryAttack = 150;
+			m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server = 153;
+			break;
+		}
 
-	default:
-		PrintWarning( "Unable to guess index of virtual method \"CBasePlayerWeapon::TertiaryAttack\" for the game & client DLL (game version: %d)\n", gameversion );
+		case SVEN_VERSION_CHECK( 5, 25, 0 ):
+		{
+			m_vtidx_CBasePlayerWeapon_TertiaryAttack = 150;
+			m_vtidx_CBasePlayerWeapon_TertiaryAttack_Server = 151;
+			break;
+		}
+
+		default:
+			PrintWarning( "Unable to guess index of virtual method \"CBasePlayerWeapon::TertiaryAttack\" for the game & client DLL (game version: %d)\n", gameversion );
+			return false;
+		}
+	#else
 		return false;
+	#endif
 	}
 
 	return true;
@@ -329,7 +346,7 @@ bool CGamePatches::Load( void )
 
 	m_pIgnoreAltInThirdPerson = Modules::menu->AddParamBool( this, "IgnoreAltInThirdPerson", NULL, true );
 
-	if ( gameversion >= 524 )
+	if ( SVEN_VERSION() >= SVEN_VERSION_CHECK( 5, 24, 0 ) )
 	{
 		if ( GuessTertiaryAttackVtidx() )
 		{
@@ -344,47 +361,84 @@ bool CGamePatches::Load( void )
 		}
 	}
 
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fCL_ComputeClientInterpolationAmount );
-	DEFINE_PATTERNS_FUTURE( fHost_FilterTime_31fps );
-
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
-									 FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
-									 fCL_ComputeClientInterpolationAmount );
-	
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
-									 FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
-									 fHost_FilterTime_31fps );
-
-	m_pfnCL_ComputeClientInterpolationAmount = MemoryUtils()->GetPatternFutureValue( fCL_ComputeClientInterpolationAmount, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCL_ComputeClientInterpolationAmount,
-										  "CL_ComputeClientInterpolationAmount",
-										  FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
-										  patternIndex );
-	
-	if ( !bOK )
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
 	{
-		PrintWarning2( "Interpolation bounds weren't patched\n" );
+		std::future<void *> fm_pglClearArg1;
+		std::future<void *> fm_pfnCCamera__Process;
+
+		MAKE_ASYNC( fm_p31fpsFPU, [] { return gamedata->FindRVA( GameData::Modules::Engine, "Engine", "Host_FilterTime (31 FPS Unlock)" ); } );
+		MAKE_ASYNC( fm_pfnCL_ComputeClientInterpolationAmount, [] { return gamedata->FindRVA( GameData::Modules::Engine, "Engine", "CL_ComputeClientInterpolationAmount" ); } );
+
+		if ( SVEN_VERSION() >= SVEN_VERSION_CHECK( 5, 26, 0 ) )
+		{
+			fm_pglClearArg1 = std::async( [] { return gamedata->FindRVA( GameData::Modules::Engine, "Engine", "R_DrawViewModel (glClear)" ); } );
+		}
+		if ( SVEN_VERSION() == SVEN_VERSION_CHECK( 5, 26, 0 ) )
+		{
+			fm_pfnCCamera__Process = std::async( [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CCamera::Process" ); } );
+		}
+
+		m_p31fpsFPU = fm_p31fpsFPU.get();
+		m_pfnCL_ComputeClientInterpolationAmount = fm_pfnCL_ComputeClientInterpolationAmount.get();
+
+		if ( m_pfnCL_ComputeClientInterpolationAmount == NULL )
+			PrintWarning2( "Interpolation bounds weren't patched\n" );
+		if ( fm_pglClearArg1.valid() )
+			m_pglClearArg1 = fm_pglClearArg1.get();
+		if ( fm_pfnCCamera__Process.valid() )
+			m_pfnCCamera__Process = fm_pfnCCamera__Process.get();
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fCL_ComputeClientInterpolationAmount );
+		DEFINE_PATTERNS_FUTURE( fHost_FilterTime_31fps );
+
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
+										 FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
+										 fCL_ComputeClientInterpolationAmount );
+
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine,
+										 FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
+										 fHost_FilterTime_31fps );
+
+		m_pfnCL_ComputeClientInterpolationAmount = MemoryUtils()->GetPatternFutureValue( fCL_ComputeClientInterpolationAmount, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCL_ComputeClientInterpolationAmount,
+											  "CL_ComputeClientInterpolationAmount",
+											  FeaturesGameData::Patterns::Engine::CL_ComputeClientInterpolationAmount,
+											  patternIndex );
+
+		if ( !bOK )
+		{
+			PrintWarning2( "Interpolation bounds weren't patched\n" );
+		}
+
+		if ( SVEN_VERSION() >= SVEN_VERSION_CHECK( 5, 26, 0 ) )
+		{
+			m_pglClearArg1 = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_DrawViewModel_glClear );
+			FEATURE_CHECK_SYMBOL_PATTERN_STATUS( m_pglClearArg1, "R_DrawViewModel (glClear)" );
+		}
+
+		// Sniper is some kind of joke ngl, fix camera crash when we're not even playing
+		// Credits: @xWhitey
+		if ( SVEN_VERSION() == SVEN_VERSION_CHECK( 5, 26, 0 ) )
+		{
+			m_pfnCCamera__Process = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CCamera__Process );
+		}
+
+		m_p31fpsFPU = MemoryUtils()->GetPatternFutureValue( fHost_FilterTime_31fps, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_p31fpsFPU,
+											  "Host_FilterTime (Forced 31 FPS)",
+											  FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
+											  patternIndex );
+	#endif
 	}
 
-	if ( gameversion >= 526 )
-	{
-		m_pglClearArg1 = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_DrawViewModel_glClear );
-		FEATURE_CHECK_SYMBOL_PATTERN_STATUS( m_pglClearArg1, "R_DrawViewModel (glClear)" );
-	}
-
-	// Sniper is some kind of joke ngl, fix camera crash when we're not even playing
-	// Credits: @xWhitey
-	if ( gameversion == 526 )
-	{
-		m_pfnCCamera__Process = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CCamera__Process );
-	}
-
-	m_p31fpsFPU = MemoryUtils()->GetPatternFutureValue( fHost_FilterTime_31fps, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_p31fpsFPU,
-										  "Host_FilterTime (Forced 31 FPS)",
-										  FeaturesGameData::Patterns::Engine::Host_FilterTime_31fps,
-										  patternIndex );
+	GAMEDATA_DUMP_FILE_OFFSET( "Host_FilterTime (Forced 31 FPS)", m_p31fpsFPU, GameData::Modules::Engine );
+	GAMEDATA_DUMP_FILE_OFFSET( "R_DrawViewModel (glClear)", m_pglClearArg1, GameData::Modules::Engine );
+	GAMEDATA_DUMP_FILE_OFFSET( "CCamera::Process", m_pfnCCamera__Process, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "CL_ComputeClientInterpolationAmount", m_pfnCL_ComputeClientInterpolationAmount, GameData::Modules::Engine );
 
 	return true;
 }
@@ -399,16 +453,28 @@ void CGamePatches::PostLoad( void )
 	if ( m_pglClearArg1 != NULL )
 	{
 		int patchValue = 0;
+	#ifdef WIN32
 		MemoryUtils()->PatchMemory( (uint8_t *)m_pglClearArg1 + 0x1, (uint8_t *)&patchValue, sizeof( patchValue ) );
+	#else
+		MemoryUtils()->PatchMemory( (uint8_t *)m_pglClearArg1 + 0x3, (uint8_t *)&patchValue, sizeof( patchValue ) );
+	#endif
 	}
 
 	// Patch locked 31 FPS at game loading
 	// Credits: @xWhitey
+#ifdef WIN32
 	if ( m_p31fpsFPU != NULL && **(float **)( (uint8_t *)m_p31fpsFPU + 2 ) == 31.f )
 	{
-		MemoryUtils()->VirtualProtect( (float *)( (uint8_t *)m_p31fpsFPU + 0x2 ), sizeof( float ), PAGE_EXECUTE_READWRITE, NULL );
+		MemoryUtils()->VirtualProtect( (float *)( (uint8_t *)m_p31fpsFPU + 0x2 ), sizeof( float * ), PAGE_EXECUTE_READWRITE, NULL );
 		*(float **)( (uint8_t *)m_p31fpsFPU + 0x2 ) = &( GameData::Cvars::fps_max->value );
 	}
+#else
+	if ( m_p31fpsFPU != NULL )
+	{
+		MemoryUtils()->VirtualProtect( m_p31fpsFPU, sizeof( float ), PAGE_EXECUTE_READWRITE, NULL );
+		*(float *)( m_p31fpsFPU ) = 200.f;
+	}
+#endif
 
 	m_hSDL_GL_ExtensionSupported = Detours()->DetourFunctionByName( GameData::Modules::SDL2,
 																	"SDL_GL_ExtensionSupported",

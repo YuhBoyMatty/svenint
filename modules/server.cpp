@@ -265,7 +265,7 @@ void CServerModule::OnClientPutInServer( edict_t *pPlayer )
 
 bool CServerModule::Host_IsServerActive( void )
 {
-	return !!function_cast<qboolean ( __cdecl * )( void )>( GameData::Pointers::Engine::Host_IsServerActive )( );
+	return !!function_cast<qboolean ( CALLCONV_CDECL * )( void )>( GameData::Pointers::Engine::Host_IsServerActive )( );
 }
 
 //-----------------------------------------------------------------------------
@@ -320,7 +320,7 @@ bool CServerModule::EnableSurvivalMode( void )
 
 	pSurvivalMode->m_bEnabledNow = ( pSurvivalMode->m_bEnabled == false );
 
-	function_cast<void ( __cdecl * )( void )>( GameData::Pointers::Server::toggle_survival_mode_Callback )();
+	function_cast<void ( CALLCONV_CDECL * )( void )>( GameData::Pointers::Server::toggle_survival_mode_Callback )();
 	return true;
 }
 
@@ -340,7 +340,7 @@ bool CServerModule::DisableSurvivalMode( void )
 
 	pSurvivalMode->m_bEnabledNow = ( pSurvivalMode->m_bEnabled == false );
 
-	function_cast<void( __cdecl * )( void )>( GameData::Pointers::Server::toggle_survival_mode_Callback )( );
+	function_cast<void( CALLCONV_CDECL * )( void )>( GameData::Pointers::Server::toggle_survival_mode_Callback )( );
 	return true;
 }
 

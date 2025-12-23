@@ -52,6 +52,7 @@ namespace KeyValuesParser
 		}
 
 		inline bool IsSection() { return bSection; }
+		inline bool IsPair() { return !bSection; }
 
 		inline void AddItem( KeyValues *kv )
 		{
@@ -65,22 +66,26 @@ namespace KeyValuesParser
 				keyvalues.push_back( &kv );
 		}
 
+		inline KeyValuesParser::KeyValues *FindKey( const char *pszKey )
+		{
+			for ( size_t i = 0; i < keyvalues.size(); i++ )
+			{
+				if ( keyvalues[ i ]->Key() == pszKey )
+					return keyvalues[ i ];
+			}
+
+			return NULL;
+		}
+
 		inline std::string &Key() { return sKey; }
+		inline std::string &GetName() { return sKey; }
 
 		inline std::string &Value() { return sValue; }
+		inline std::string &GetValue() { return sValue; }
 
 		inline std::vector<KeyValues *> &GetList() { return keyvalues; }
 
-		inline void Clear()
-		{
-			if ( bSection )
-			{
-				for ( size_t i = 0; i < keyvalues.size(); i++ )
-				{
-					delete keyvalues[ i ];
-				}
-			}
-		}
+		void Clear();
 
 		bool bSection;
 

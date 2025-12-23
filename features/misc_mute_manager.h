@@ -35,7 +35,6 @@ public:
 	virtual void PostLoad( void ) override;
 	virtual void Unload( void ) override;
 	virtual void OnEnable( void ) override;
-	virtual void OnDisable( void ) override;
 
 public:
 	void LoadMutedPlayers( void );

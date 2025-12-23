@@ -16,7 +16,7 @@
 // Forward declarations
 //-----------------------------------------------------------------------------
 
-FUNC_SIGNATURE( void, __thiscall, CClient_SoundEngine__Play2DSoundFn, void *thisptr, const char *sound, float volume );
+FUNC_SIGNATURE( void, CALLCONV_THISCALL, CClient_SoundEngine__Play2DSoundFn, void *thisptr, const char *sound, float volume );
 
 //-----------------------------------------------------------------------------
 // Chat history message
@@ -73,6 +73,8 @@ private:
 	CMenuValueFloat *m_pTextOpacity;
 	CMenuValueColorRGB *m_pTextColor;
 
+	bool m_bOriginalChatFlushRequired;
+
 	int *key_dest;
 	void **m_pSoundEngine;
 	void *m_pfnCHudTextMessage__MsgFunc_TextMsg;
@@ -80,6 +82,9 @@ private:
 
 	DetourHandle_t m_hUserMsgHook_SayText;
 	DetourHandle_t m_hUserMsgHook_TextMsg;
+#ifdef LINUX
+	DetourHandle_t m_hUserMsgHook_TextMsg2;
+#endif
 
 	std::vector<CChatHistoryMessage> m_textHistory;
 };

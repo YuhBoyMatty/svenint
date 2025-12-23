@@ -13,7 +13,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( struct model_s *, __cdecl, SetupPlayerModel, int index );
+DECLARE_HOOK( struct model_s *, CALLCONV_CDECL, SetupPlayerModel, int index );
 
 //-----------------------------------------------------------------------------
 // Hash Map Functions
@@ -48,7 +48,7 @@ void HOOKED_NetMsgHook_UpdateUserInfo( void )
 	THIS_FEATURE()->ResetPlayerInfo( index );
 }
 
-DECLARE_FUNC( struct model_s *, __cdecl, HOOKED_SetupPlayerModel, int index )
+DECLARE_FUNC( struct model_s *, CALLCONV_CDECL, HOOKED_SetupPlayerModel, int index )
 {
 	if ( THIS_FEATURE()->IsEnabled() )
 		THIS_FEATURE()->UpdatePlayerModel( index );
@@ -401,30 +401,46 @@ bool CModelsReplacement::Load( void )
 	m_pReplaceTargetedPlayers = Modules::menu->AddParamBool( this, "ReplaceTargetedPlayers", "Replace models of targeted players", false );
 	m_pIgnoreSpecifiedPlayers = Modules::menu->AddParamBool( this, "IgnoreSpecifiedPlayers", "Don't replace models on specified players", false );
 	m_pReplaceModel = Modules::menu->AddParamText( this, "ReplaceModel", "Replacement model for all players", "player" );
-
-	MemoryUtils()->InitDisasm( &inst, enginestudio->SetupPlayerModel, 32, 112 );
-
-	while( MemoryUtils()->Disassemble( &inst ) )
+	
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
 	{
-		if ( inst.mnemonic == UD_Ilea &&
-			 inst.operand[ 0 ].type == UD_OP_REG &&
-			 inst.operand[ 1 ].type == UD_OP_MEM &&
-			 inst.operand[ 1 ].offset == 32 )
+		m_pUserInfo = (uint8_t *)gamedata->FindRVA( GameData::Modules::Engine, "Engine", "userinfo" );
+		m_ulModelOffset = gamedata->FindOffset( GameData::Modules::Engine, "Engine", "modeloffset" );
+
+		if ( m_pUserInfo == NULL )
+			return false;
+		if ( m_ulModelOffset == ~0 || m_ulModelOffset == 0 )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		MemoryUtils()->InitDisasm( &inst, enginestudio->SetupPlayerModel, 32, 112 );
+
+		while ( MemoryUtils()->Disassemble( &inst ) )
 		{
-			m_pUserInfo = reinterpret_cast<uint8_t *>( inst.operand[ 1 ].lval.udword );
-			break;
+			if ( inst.mnemonic == UD_Ilea &&
+				 inst.operand[ 0 ].type == UD_OP_REG &&
+				 inst.operand[ 1 ].type == UD_OP_MEM &&
+				 inst.operand[ 1 ].offset == 32 )
+			{
+				m_pUserInfo = reinterpret_cast<uint8_t *>( inst.operand[ 1 ].lval.udword );
+				break;
+			}
+			else if ( inst.mnemonic == UD_Iimul &&
+					  inst.operand[ 0 ].type == UD_OP_REG &&
+					  ( ( inst.operand[ 1 ].type == UD_OP_REG && inst.operand[ 2 ].type == UD_OP_IMM ) || inst.operand[ 1 ].type == UD_OP_IMM ) )
+			{
+				m_ulModelOffset = ( inst.operand[ 1 ].type == UD_OP_IMM ? inst.operand[ 1 ].lval.udword : inst.operand[ 2 ].lval.udword );
+			}
 		}
-		else if ( inst.mnemonic == UD_Iimul &&
-				  inst.operand[ 0 ].type == UD_OP_REG &&
-				  ( ( inst.operand[ 1 ].type == UD_OP_REG && inst.operand[ 2 ].type == UD_OP_IMM ) || inst.operand[ 1 ].type == UD_OP_IMM ) )
-		{
-			m_ulModelOffset = ( inst.operand[ 1 ].type == UD_OP_IMM ? inst.operand[ 1 ].lval.udword : inst.operand[ 2 ].lval.udword );
-		}
+	#endif
+
+		FEATURE_CHECK_SYMBOL( m_pUserInfo, "userinfo" );
+		FEATURE_CHECK_SYMBOL( m_ulModelOffset, "modeloffset" );
 	}
 
-	FEATURE_CHECK_SYMBOL( m_pUserInfo, "userinfo" );
-	FEATURE_CHECK_SYMBOL( m_ulModelOffset, "modeloffset" );
-
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pUserInfo", m_pUserInfo, GameData::Modules::Engine );
 	return true;
 }
 

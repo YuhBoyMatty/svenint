@@ -15,17 +15,27 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Function signatures
-//-----------------------------------------------------------------------------
-
-typedef void ( __thiscall *RichText__InsertColorChangeFn )( void *, Color );
-typedef void ( __thiscall *RichText__InsertStringFn )( void *, const char * );
-
-//-----------------------------------------------------------------------------
 // Macro definitions
 //-----------------------------------------------------------------------------
 
+#ifdef WIN32
+#define COLOR_CAST( clr ) clr
+#else
+#define COLOR_CAST( clr ) *(uint32_t *)&clr
+#endif
+
 #define CONSOLE_PRINT_MESSAGE_LENGTH ( 8192 )
+
+//-----------------------------------------------------------------------------
+// Function signatures
+//-----------------------------------------------------------------------------
+
+#ifdef WIN32
+FUNC_SIGNATURE( void, CALLCONV_THISCALL, RichText__InsertColorChangeFn, void *thisptr, Color clr );
+#else // I really really really cannot understand but I don't care at all, this is cursed, it has no meaning, what's the purpose? How is that possible? The God only knows.
+FUNC_SIGNATURE( void, CALLCONV_THISCALL, RichText__InsertColorChangeFn, void *thisptr, uint32_t clr );
+#endif
+FUNC_SIGNATURE( void, CALLCONV_THISCALL, RichText__InsertStringFn, void *thisptr, const char *msg );
 
 //-----------------------------------------------------------------------------
 // Colors
@@ -42,8 +52,8 @@ static const Color s_Warning2PrintColor = { 255, 255, 90, 255 };
 
 void *gpDbgConsoleFile = NULL;
 
-static char szFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ] = { 0 };
 static std::mutex print_mutex;
+static char szFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ] = { 0 };
 
 //-----------------------------------------------------------------------------
 // Auto lock access to the called function when doing multithreading
@@ -213,7 +223,7 @@ public:
 
 		CGameConsoleDialog *pGameConsoleDialog = m_pGameConsole->GetGameConsoleDialog();
 
-		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, s_ConsoleDefaultPrintColor );
+		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, COLOR_CAST( s_ConsoleDefaultPrintColor ) );
 		m_pfnRichText__InsertString( pGameConsoleDialog->m_pRichText, pszMessage );
 	}
 
@@ -224,7 +234,7 @@ public:
 
 		CGameConsoleDialog *pGameConsoleDialog = m_pGameConsole->GetGameConsoleDialog();
 
-		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, clr );
+		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, COLOR_CAST( clr ) );
 		m_pfnRichText__InsertString( pGameConsoleDialog->m_pRichText, pszMessage );
 	}
 
@@ -235,7 +245,7 @@ public:
 
 		CGameConsoleDialog *pGameConsoleDialog = m_pGameConsole->GetGameConsoleDialog();
 
-		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, s_ConsoleDefaultPrintColor );
+		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, COLOR_CAST( s_ConsoleDefaultPrintColor ) );
 		m_pfnRichText__InsertString( pGameConsoleDialog->m_pRichText, pszMessage );
 	}
 	
@@ -246,7 +256,7 @@ public:
 
 		CGameConsoleDialog *pGameConsoleDialog = m_pGameConsole->GetGameConsoleDialog();
 
-		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, clr );
+		m_pfnRichText__InsertColorChange( pGameConsoleDialog->m_pRichText, COLOR_CAST( clr ) );
 		m_pfnRichText__InsertString( pGameConsoleDialog->m_pRichText, pszMessage );
 	}
 
@@ -265,6 +275,31 @@ static CConsolePrinting gConsolePrinting;
 //-----------------------------------------------------------------------------
 // Printing functions
 //-----------------------------------------------------------------------------
+
+static bool HasFormatSpecifiers( const char *fmt )
+{
+	if ( fmt == NULL )
+		return false;
+
+	for ( const char *p = fmt; *p; ++p )
+	{
+		if ( *p == '%' )
+		{
+			if ( p[ 1 ] == '%' )
+			{
+				++p;
+				continue;
+			}
+
+			if ( p[ 1 ] && ( isalpha( p[ 1 ] ) || p[ 1 ] == '.' || p[ 1 ] == '*' || p[ 1 ] == '-' || p[ 1 ] == '+' || p[ 1 ] == '0' ) )
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 void AllowMsgPrint( bool state )
 {
@@ -299,6 +334,10 @@ void Msg( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+
+#ifdef LINUX
+	printf( "%s", szFormattedMsg );
+#endif
 }
 
 void Warning( const char *pszMessageFormat, ... )
@@ -319,6 +358,10 @@ void Warning( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", szFormattedMsg );
+
+#ifdef LINUX
+	printf( "WARNING: %s", szFormattedMsg );
+#endif
 }
 
 void Warning2( const char *pszMessageFormat, ... )
@@ -339,6 +382,10 @@ void Warning2( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", szFormattedMsg );
+
+#ifdef LINUX
+	printf( "WARNING: %s", szFormattedMsg );
+#endif
 }
 
 void DevMsg( const char *pszMessageFormat, ... )
@@ -359,6 +406,10 @@ void DevMsg( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", szFormattedMsg );
+
+#ifdef LINUX
+	printf( "DEV: %s", szFormattedMsg );
+#endif
 }
 
 void DevWarning( const char *pszMessageFormat, ... )
@@ -379,6 +430,10 @@ void DevWarning( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, "DEV WARNING: %s", szFormattedMsg );
+
+#ifdef LINUX
+	printf( "DEV WARNING: %s", szFormattedMsg );
+#endif
 }
 
 void ConColorMsg( const Color &clr, const char *pszMessageFormat, ... )
@@ -399,6 +454,10 @@ void ConColorMsg( const Color &clr, const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+
+#ifdef LINUX
+	printf( "%s", szFormattedMsg );
+#endif
 }
 
 void ConMsg( const char *pszMessageFormat, ... )
@@ -419,6 +478,10 @@ void ConMsg( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+
+#ifdef LINUX
+	printf( "%s", szFormattedMsg );
+#endif
 }
 
 void ConDMsg( const char *pszMessageFormat, ... )
@@ -439,4 +502,25 @@ void ConDMsg( const char *pszMessageFormat, ... )
 
 	if ( gpDbgConsoleFile != NULL )
 		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", szFormattedMsg );
+
+#ifdef LINUX
+	printf( "DEV: %s", szFormattedMsg );
+#endif
+}
+
+void ConColorMsgNoFormat( const Color &clr, const char *pszMessage )
+{
+	AUTO_LOCK( print_mutex );
+
+	if ( gConsolePrinting.IsPrintAllowed() )
+		gConsolePrinting.ColorPrint( clr, pszMessage );
+	else
+		gConsolePrinting.AddQueuedMessage( kColorPrint, clr, pszMessage );
+
+	if ( gpDbgConsoleFile != NULL )
+		fprintf( (FILE *)gpDbgConsoleFile, pszMessage );
+
+#ifdef LINUX
+	printf( "%s", pszMessage );
+#endif
 }

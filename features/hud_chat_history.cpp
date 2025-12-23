@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "hud_chat_history.h"
+#include "hud_chat_colors.h"
 #include "r_drawing.h"
 #include "game/messagebuffer.h"
 
@@ -52,7 +53,9 @@ DECLARE_CLASS_HOOK( int, CHudTextMessage__MsgFunc_TextMsg, void *, const char *,
 EXPOSE_FEATURE_SINGLETON( CChatHistory, chathistory, "HUD", "Chat History" );
 
 static UserMsgHookFn ORIG_UserMsgHook_SayText = NULL;
-//static UserMsgHookFn ORIG_UserMsgHook_TextMsg = NULL;
+#ifdef LINUX
+static UserMsgHookFn ORIG_UserMsgHook_TextMsg = NULL;
+#endif
 
 //-----------------------------------------------------------------------------
 // User message hook SayText, copypasting from SourceChat, it did good really well :P
@@ -90,24 +93,16 @@ static int UserMsgHook_SayText( const char *pszName, int iSize, void *pBuffer )
 // User message hook TextMsg
 //-----------------------------------------------------------------------------
 
-#if 0
-DECLARE_FUNC( int, __cdecl, UserMsgHook_TextMsg, const char *pszUserMsg, int iSize, void *pBuffer )
-#else
 DECLARE_CLASS_FUNC( int, HOOKED_CHudTextMessage__MsgFunc_TextMsg, void *thisptr, const char *pszUserMsg, int iSize, void *pBuffer )
-#endif
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
-	#if 0
-		return ORIG_UserMsgHook_TextMsg( pszUserMsg, iSize, pBuffer );
-	#else
-		return ORIG_CHudTextMessage__MsgFunc_TextMsg( thisptr, pszUserMsg, iSize, pBuffer );
-	#endif
+		return ORIG_CHudTextMessage__MsgFunc_TextMsg( ARG_THISPTR( thisptr ), pszUserMsg, iSize, pBuffer );
 
 	CMessageBuffer message( pszUserMsg, pBuffer, iSize, true );
 
 	if ( message.ReadByte() == HUD_PRINTTALK )
 	{
-		static char buffer[ 256 ];
+		char buffer[ 256 ];
 
 		const char *str;
 		std::vector<std::string> formattingStrings;
@@ -173,12 +168,88 @@ DECLARE_CLASS_FUNC( int, HOOKED_CHudTextMessage__MsgFunc_TextMsg, void *thisptr,
 		return 0;
 	}
 
-#if 0
-	return ORIG_UserMsgHook_TextMsg( pszUserMsg, iSize, pBuffer );
-#else
-	return ORIG_CHudTextMessage__MsgFunc_TextMsg( thisptr, pszUserMsg, iSize, pBuffer );
-#endif
+	return ORIG_CHudTextMessage__MsgFunc_TextMsg( ARG_THISPTR( thisptr ), pszUserMsg, iSize, pBuffer );
 }
+
+#ifdef LINUX
+static int UserMsgHook_TextMsg( const char *pszUserMsg, int iSize, void *pBuffer )
+{
+	if ( !THIS_FEATURE_IS_ENABLED() )
+		return ORIG_UserMsgHook_TextMsg( pszUserMsg, iSize, pBuffer );
+
+	CMessageBuffer message( pszUserMsg, pBuffer, iSize, true );
+
+	if ( message.ReadByte() == HUD_PRINTTALK )
+	{
+		char buffer[ 256 ];
+
+		const char *str;
+		std::vector<std::string> formattingStrings;
+
+		std::string msg = message.ReadString();
+
+		size_t length = strlen( msg.c_str() ) + 1;
+
+		// #1
+		str = message.ReadString();
+
+		if ( *str != '\0' )
+			formattingStrings.push_back( str );
+
+		// #2
+		str = message.ReadString();
+
+		if ( *str != '\0' )
+			formattingStrings.push_back( str );
+
+		// #3
+		str = message.ReadString();
+
+		if ( *str != '\0' )
+			formattingStrings.push_back( str );
+
+		// #4
+		str = message.ReadString();
+
+		if ( *str != '\0' )
+			formattingStrings.push_back( str );
+
+		switch ( formattingStrings.size() )
+		{
+		case 0:
+			if ( length >= Q_ARRAYSIZE( buffer ) )
+				length = Q_ARRAYSIZE( buffer ) - 1;
+
+			memcpy( buffer, msg.c_str(), length );
+			buffer[ length ] = '\0';
+			break;
+
+		case 1:
+			snprintf( buffer, Q_ARRAYSIZE( buffer ), msg.c_str(), formattingStrings[ 0 ].c_str() );
+			break;
+
+		case 2:
+			snprintf( buffer, Q_ARRAYSIZE( buffer ), msg.c_str(), formattingStrings[ 0 ].c_str(), formattingStrings[ 1 ].c_str() );
+			break;
+
+		case 3:
+			snprintf( buffer, Q_ARRAYSIZE( buffer ), msg.c_str(), formattingStrings[ 0 ].c_str(), formattingStrings[ 1 ].c_str(), formattingStrings[ 2 ].c_str() );
+			break;
+
+		case 4:
+			snprintf( buffer, Q_ARRAYSIZE( buffer ), msg.c_str(), formattingStrings[ 0 ].c_str(), formattingStrings[ 1 ].c_str(), formattingStrings[ 2 ].c_str(), formattingStrings[ 3 ].c_str() );
+			break;
+		}
+
+		if ( buffer[ 0 ] != '\0' )
+			THIS_FEATURE()->OnReceiveMessage( -1, buffer, 0 );
+
+		return 0;
+	}
+
+	return ORIG_UserMsgHook_TextMsg( pszUserMsg, iSize, pBuffer );
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Receive message event
@@ -210,13 +281,13 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 	if ( *pszNewlineChar == '\n' )
 		bFoundNewlineChar = true;
 
-	float *pflClientColor = function_cast<float *( __cdecl * )( int )>( GameData::Pointers::Client::GetClientColor )( client );
+	float *pflClientColor = function_cast<float *( * )( int )>( GameData::Pointers::Client::GetClientColor )( client );
 
 	switch ( src )
 	{
 	case 0: // just message from the Server
 	{
-		ConColorMsg( m_pTextColor->GetColor32(), pszMessage );
+		ConColorMsgNoFormat( m_pTextColor->GetColor32(), pszMessage );
 
 		if ( bFoundNewlineChar )
 			*pszNewlineChar = '\0';
@@ -233,8 +304,8 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 	{
 		const char *pszMessageSender = "<Server Console>";
 
-		ConColorMsg( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), pszMessageSender );
-		ConColorMsg( m_pTextColor->GetColor32(), pszMessage + strlen( pszMessageSender ) );
+		ConColorMsgNoFormat( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), pszMessageSender );
+		ConColorMsgNoFormat( m_pTextColor->GetColor32(), pszMessage + strlen( pszMessageSender ) );
 
 		if ( bFoundNewlineChar )
 			*pszNewlineChar = '\0';
@@ -264,8 +335,8 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 			if ( bFoundNewlineChar )
 				*pszNewlineChar = '\n';
 
-			ConColorMsg( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), pPlayerInfo->name );
-			ConColorMsg( m_pTextColor->GetColor32(), pszMessage + namelen );
+			ConColorMsgNoFormat( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), pPlayerInfo->name );
+			ConColorMsgNoFormat( m_pTextColor->GetColor32(), pszMessage + namelen );
 		}
 		else
 		{
@@ -280,8 +351,8 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 			if ( bFoundNewlineChar )
 				*pszNewlineChar = '\n';
 
-			ConColorMsg( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
-			ConColorMsg( m_pTextColor->GetColor32(), msg );
+			ConColorMsgNoFormat( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
+			ConColorMsgNoFormat( m_pTextColor->GetColor32(), msg );
 		}
 
 		break;
@@ -307,8 +378,8 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 			if ( bFoundNewlineChar )
 				*pszNewlineChar = '\n';
 
-			ConColorMsg( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
-			ConColorMsg( m_pTextColor->GetColor32(), msg );
+			ConColorMsgNoFormat( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
+			ConColorMsgNoFormat( m_pTextColor->GetColor32(), msg );
 		}
 		else
 		{
@@ -323,8 +394,8 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 			if ( bFoundNewlineChar )
 				*pszNewlineChar = '\n';
 
-			ConColorMsg( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
-			ConColorMsg( m_pTextColor->GetColor32(), msg );
+			ConColorMsgNoFormat( Color( pflClientColor[ 0 ], pflClientColor[ 1 ], pflClientColor[ 2 ], 1.f ), sClientNameTeam.c_str() );
+			ConColorMsgNoFormat( m_pTextColor->GetColor32(), msg );
 		}
 
 		break;
@@ -361,6 +432,12 @@ EHookResult CChatHistory::OnEvent( CHookEvent *pEvent, bool bPostCall )
 			msg.m_flReceiveTime = -1.f;
 
 		return kHookContinue;
+	}
+
+	if ( m_bOriginalChatFlushRequired && Features::chatcolors->GetHudBaseTextBlock() != NULL )
+	{
+		Features::chatcolors->GetHudBaseTextBlock()->FlushText();
+		m_bOriginalChatFlushRequired = false;
 	}
 
 	if ( m_textHistory.size() > (size_t)m_pMaxHistory->GetInt() )
@@ -423,6 +500,8 @@ CChatHistory::CChatHistory( const char *pszCategoryName, const char *pszName ) :
 	m_pTextOpacity = NULL;
 	m_pTextColor = NULL;
 
+	m_bOriginalChatFlushRequired = true;
+
 	key_dest = NULL;
 	m_pSoundEngine = NULL;
 	m_pfnCHudTextMessage__MsgFunc_TextMsg = NULL;
@@ -430,6 +509,9 @@ CChatHistory::CChatHistory( const char *pszCategoryName, const char *pszName ) :
 
 	m_hUserMsgHook_SayText = DETOUR_INVALID_HANDLE;
 	m_hUserMsgHook_TextMsg = DETOUR_INVALID_HANDLE;
+#ifdef LINUX
+	m_hUserMsgHook_TextMsg2 = DETOUR_INVALID_HANDLE;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -473,6 +555,7 @@ bool CChatHistory::Load( void )
 	if ( messagemode == NULL )
 		return false;
 
+#ifdef WIN32
 	MemoryUtils()->InitDisasm( &inst, messagemode->function, 32, 16 );
 	if ( MemoryUtils()->Disassemble( &inst ) )
 	{
@@ -484,45 +567,102 @@ bool CChatHistory::Load( void )
 			key_dest = reinterpret_cast<int *>( inst.operand[ 0 ].lval.udword );
 		}
 	}
+#else
+	uint8_t *p = (uint8_t *)messagemode->function;
+	uint32_t ulRelocOffset = 0;
+	int iDisassembledBytes = 0;
+
+	MemoryUtils()->InitDisasm( &inst, messagemode->function, 32, 32 );
+	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+	{
+		if ( inst.mnemonic == UD_Icall && ulRelocOffset == 0 )
+		{
+			ulRelocOffset = (uint32_t)( p + iDisassembledBytes );
+		}
+		else if ( inst.mnemonic == UD_Iadd && inst.operand[ 0 ].type == UD_OP_REG &&
+				  inst.operand[ 0 ].base == UD_R_EBX && inst.operand[ 1 ].type == UD_OP_IMM )
+		{
+			ulRelocOffset += (uint32_t)inst.operand[ 1 ].lval.udword;
+		}
+		else if ( ulRelocOffset != 0 && inst.mnemonic == UD_Ilea &&
+				  inst.operand[ 0 ].type == UD_OP_REG && inst.operand[ 0 ].base == UD_R_EAX &&
+				  inst.operand[ 1 ].type == UD_OP_MEM && inst.operand[ 1 ].base == UD_R_EBX )
+		{
+			ulRelocOffset += (uint32_t)inst.operand[ 1 ].lval.udword;
+			key_dest = reinterpret_cast<int *>( ulRelocOffset );
+			break;
+		}
+
+		p += iDisassembledBytes;
+	}
+#endif
 
 	FEATURE_CHECK_SYMBOL( key_dest, "key_dest" );
 
-	int patternIndex;
-	bool bOK = true;
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		MAKE_ASYNC( fm_pSoundEngine, [] { return (void **)gamedata->FindRVA( GameData::Modules::Client, "Client", "m_pSoundEngine" ); } );
+		MAKE_ASYNC( fm_pfnCHudTextMessage__MsgFunc_TextMsg, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CHudTextMessage::MsgFunc_TextMsg" ); } );
+		MAKE_ASYNC( fm_pfnCClient_SoundEngine__Play2DSound, [] { return (CClient_SoundEngine__Play2DSoundFn)gamedata->FindRVA( GameData::Modules::Client, "Client", "CClient_SoundEngine::Play2DSound" ); } );
 
-	void *pfnSoundEngine;
+		m_pSoundEngine = fm_pSoundEngine.get();
+		m_pfnCHudTextMessage__MsgFunc_TextMsg = fm_pfnCHudTextMessage__MsgFunc_TextMsg.get();
+		m_pfnCClient_SoundEngine__Play2DSound = fm_pfnCClient_SoundEngine__Play2DSound.get();
 
-	DEFINE_PATTERNS_FUTURE( fm_pSoundEngine );
-	DEFINE_PATTERNS_FUTURE( fCHudTextMessage__MsgFunc_TextMsg );
-	DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__Play2DSound );
+		if ( m_pfnCHudTextMessage__MsgFunc_TextMsg == NULL )
+			return false;
+		if ( m_pfnCClient_SoundEngine__Play2DSound == NULL )
+			return false;
+		if ( m_pSoundEngine == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		bool bOK = true;
 
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::m_pSoundEngine, fm_pSoundEngine );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CHudTextMessage__MsgFunc_TextMsg, fCHudTextMessage__MsgFunc_TextMsg );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__Play2DSound, fCClient_SoundEngine__Play2DSound );
+		void *pfnSoundEngine;
 
-	pfnSoundEngine = MemoryUtils()->GetPatternFutureValue( fm_pSoundEngine, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( pfnSoundEngine,
-										  "m_pSoundEngine",
-										  FeaturesGameData::Patterns::Client::m_pSoundEngine,
-										  patternIndex );
-	
-	m_pfnCHudTextMessage__MsgFunc_TextMsg = MemoryUtils()->GetPatternFutureValue( fCHudTextMessage__MsgFunc_TextMsg, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCHudTextMessage__MsgFunc_TextMsg,
-										  "CHudTextMessage::MsgFunc_TextMsg",
-										  FeaturesGameData::Patterns::Client::CHudTextMessage__MsgFunc_TextMsg,
-										  patternIndex );
-	
-	m_pfnCClient_SoundEngine__Play2DSound = (CClient_SoundEngine__Play2DSoundFn)MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__Play2DSound, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCClient_SoundEngine__Play2DSound,
-										  "CClient_SoundEngine::Play2DSound",
-										  FeaturesGameData::Patterns::Client::CClient_SoundEngine__Play2DSound,
-										  patternIndex );
+		DEFINE_PATTERNS_FUTURE( fm_pSoundEngine );
+		DEFINE_PATTERNS_FUTURE( fCHudTextMessage__MsgFunc_TextMsg );
+		DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__Play2DSound );
 
-	if ( !bOK )
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::m_pSoundEngine, fm_pSoundEngine );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CHudTextMessage__MsgFunc_TextMsg, fCHudTextMessage__MsgFunc_TextMsg );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__Play2DSound, fCClient_SoundEngine__Play2DSound );
+
+		pfnSoundEngine = MemoryUtils()->GetPatternFutureValue( fm_pSoundEngine, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( pfnSoundEngine,
+											  "m_pSoundEngine",
+											  FeaturesGameData::Patterns::Client::m_pSoundEngine,
+											  patternIndex );
+
+		m_pfnCHudTextMessage__MsgFunc_TextMsg = MemoryUtils()->GetPatternFutureValue( fCHudTextMessage__MsgFunc_TextMsg, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCHudTextMessage__MsgFunc_TextMsg,
+											  "CHudTextMessage::MsgFunc_TextMsg",
+											  FeaturesGameData::Patterns::Client::CHudTextMessage__MsgFunc_TextMsg,
+											  patternIndex );
+
+		m_pfnCClient_SoundEngine__Play2DSound = (CClient_SoundEngine__Play2DSoundFn)MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__Play2DSound, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCClient_SoundEngine__Play2DSound,
+											  "CClient_SoundEngine::Play2DSound",
+											  FeaturesGameData::Patterns::Client::CClient_SoundEngine__Play2DSound,
+											  patternIndex );
+
+		if ( !bOK )
+			return false;
+
+		// Get pointer to sound engine
+		m_pSoundEngine = (void **)*(uint32_t *)( (uint8_t *)pfnSoundEngine + 1 );
+	#else
 		return false;
+	#endif
+	}
 
-	// Get pointer to sound engine
-	m_pSoundEngine = (void **)*(uint32_t *)( (uint8_t *)pfnSoundEngine + 1 );
+	GAMEDATA_DUMP_FILE_OFFSET( "CHudTextMessage::MsgFunc_TextMsg", m_pfnCHudTextMessage__MsgFunc_TextMsg, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "CClient_SoundEngine::Play2DSound", m_pfnCClient_SoundEngine__Play2DSound, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pSoundEngine", m_pSoundEngine, GameData::Modules::Client );
 
 	return true;
 }
@@ -533,11 +673,14 @@ bool CChatHistory::Load( void )
 
 void CChatHistory::PostLoad( void )
 {
-	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText );
-	//m_hUserMsgHook_TextMsg = gamehooks->HookUserMessage( "TextMsg", UserMsgHook_TextMsg, &ORIG_UserMsgHook_TextMsg );
+	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText, kDetourPriorityLow );
 	m_hUserMsgHook_TextMsg = Detours()->DetourFunction( m_pfnCHudTextMessage__MsgFunc_TextMsg,
 														HOOKED_CHudTextMessage__MsgFunc_TextMsg,
-														GET_FUNC_PTR( ORIG_CHudTextMessage__MsgFunc_TextMsg ) );
+														GET_FUNC_PTR( ORIG_CHudTextMessage__MsgFunc_TextMsg ),
+														kDetourPriorityLow );
+#ifdef LINUX
+	m_hUserMsgHook_TextMsg2 = gamehooks->HookUserMessage( "TextMsg", UserMsgHook_TextMsg, &ORIG_UserMsgHook_TextMsg, kDetourPriorityLow );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -547,6 +690,8 @@ void CChatHistory::PostLoad( void )
 void CChatHistory::Unload( void )
 {
 	gamehooks->UnhookUserMessage( m_hUserMsgHook_SayText );
-	//gamehooks->UnhookUserMessage( m_hUserMsgHook_TextMsg );
 	Detours()->RemoveDetour( m_hUserMsgHook_TextMsg );
+#ifdef LINUX
+	gamehooks->UnhookUserMessage( m_hUserMsgHook_TextMsg2 );
+#endif
 }

@@ -10,7 +10,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( int, __cdecl, R_LoadSkyBoxInt, const char * );
+DECLARE_HOOK( int, CALLCONV_CDECL, R_LoadSkyBoxInt, const char * );
 
 //-----------------------------------------------------------------------------
 // Feature patterns & gamedata
@@ -94,7 +94,7 @@ static const char *g_szSkyboxes[] =
 // R_LoadSkyBoxInt hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_R_LoadSkyBoxInt, const char *pszSkyboxName )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_R_LoadSkyBoxInt, const char *pszSkyboxName )
 {
 	int loaded = ORIG_R_LoadSkyBoxInt( pszSkyboxName );
 
@@ -121,7 +121,12 @@ void CSkybox::R_LoadSkyBoxIntEvent( const char *pszSkyboxName, int loaded )
 
 void CSkybox::Replace( const char *pszSkyboxName )
 {
+#ifdef WIN32
 	strcpy_s( m_szSkyboxName, sizeof( m_szSkyboxName ), pszSkyboxName );
+#else
+	strncpy( m_szSkyboxName, pszSkyboxName, sizeof( m_szSkyboxName ) );
+	m_szSkyboxName[ sizeof( m_szSkyboxName ) - 1 ] = 0;
+#endif
 
 	*m_szCurrentSkyboxName = 0;
 	m_bSkyboxReplaced = true;
@@ -143,8 +148,15 @@ void CSkybox::Reset()
 
 void CSkybox::SaveOriginalSkybox( const char *pszSkyboxName )
 {
+#ifdef WIN32
 	strcpy_s( m_szOriginalSkyboxName, sizeof( m_szOriginalSkyboxName ), pszSkyboxName );
 	strcpy_s( m_szCurrentSkyboxName, sizeof( m_szCurrentSkyboxName ), pszSkyboxName );
+#else
+	strncpy( m_szOriginalSkyboxName, pszSkyboxName, sizeof( m_szOriginalSkyboxName ) );
+	m_szOriginalSkyboxName[ sizeof( m_szOriginalSkyboxName ) - 1 ] = 0;
+	strncpy( m_szCurrentSkyboxName, pszSkyboxName, sizeof( m_szCurrentSkyboxName ) );
+	m_szCurrentSkyboxName[ sizeof( m_szCurrentSkyboxName ) - 1 ] = 0;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -219,8 +231,15 @@ EHookResult CSkybox::OnEvent( CHookEvent *pEvent, bool bPostCall )
 				}
 				else
 				{
-					strcpy_s( m_szOriginalSkyboxName, sizeof( movevars_s::skyName ), playermove->movevars()->skyName);
+				#ifdef WIN32
+					strcpy_s( m_szOriginalSkyboxName, sizeof( movevars_s::skyName ), playermove->movevars()->skyName );
 					strcpy_s( m_szCurrentSkyboxName, sizeof( m_szCurrentSkyboxName ), m_szSkyboxName );
+				#else
+					strncpy( m_szOriginalSkyboxName, playermove->movevars()->skyName, sizeof( movevars_s::skyName ) );
+					m_szOriginalSkyboxName[ sizeof( movevars_s::skyName ) - 1 ] = 0;
+					strncpy( m_szCurrentSkyboxName, m_szSkyboxName, sizeof( m_szCurrentSkyboxName ) );
+					m_szCurrentSkyboxName[ sizeof( m_szCurrentSkyboxName ) - 1 ] = 0;
+				#endif
 				}
 			}
 		}
@@ -283,18 +302,32 @@ bool CSkybox::Load( void )
 	m_pButtonResetSkybox = Modules::menu->AddElementButton( this, this, "Reset Skybox" );
 	m_pSkyboxName = Modules::menu->AddParamList( this, "SkyboxName", NULL, 0, " 0 - None\0 1 - desert\0 2 - 2desert\0 3 - desnoon\0 4 - morning\0 5 - cliff\0 6 - dfcliff\0 7 - dustbowl\0 8 - sandstone\0 9 - sky_blu_\0 10 - sky16\0 11 - sky35\0 12 - sky45\0 13 - tornsky\0 14 - twildes\0 15 - crashsite\0 16 - doom1\0 17 - dusk\0 18 - fodrian\0 19 - night\0 20 - carnival\0 21 - theyh2\0 22 - theyh3\0 23 - thn\0 24 - forest512_\0 25 - tetris\0 26 - 2vs\0 27 - ac_\0 28 - arcn\0 29 - black\0 30 - coliseum\0 31 - gmcity\0 32 - grassy\0 33 - toon\0 34 - parallax-errorlf256_\0 35 - necros-hell256_\0 44 - alien2\0 45 - alien3\0 46 - xen8\0 47 - xen9\0 48 - xen10\0\0" );
 
-	FEATURE_REQUIRE_GAMEDATA( engineclient->GetInstance(), "engineclient");
+	FEATURE_REQUIRE_GAMEDATA( engineclient->GetInstance(), "engineclient" );
 
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fR_LoadSkyboxInt );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_LoadSkyboxInt, fR_LoadSkyboxInt );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnR_LoadSkyboxInt = gamedata->FindRVA( GameData::Modules::Engine, "Engine", "R_LoadSkyboxInt" );
+		if ( m_pfnR_LoadSkyboxInt == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fR_LoadSkyboxInt );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_LoadSkyboxInt, fR_LoadSkyboxInt );
 
-	m_pfnR_LoadSkyboxInt = MemoryUtils()->GetPatternFutureValue( fR_LoadSkyboxInt, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnR_LoadSkyboxInt,
-								   "R_LoadSkyboxInt",
-								   FeaturesGameData::Patterns::Engine::R_LoadSkyboxInt,
-								   patternIndex );
+		m_pfnR_LoadSkyboxInt = MemoryUtils()->GetPatternFutureValue( fR_LoadSkyboxInt, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnR_LoadSkyboxInt,
+									   "R_LoadSkyboxInt",
+									   FeaturesGameData::Patterns::Engine::R_LoadSkyboxInt,
+									   patternIndex );
+	#else
+		return false;
+	#endif
+	}
 
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnR_LoadSkyboxInt", m_pfnR_LoadSkyboxInt, GameData::Modules::Engine );
 	return true;
 }
 

@@ -3,7 +3,12 @@
 
 #include "stdafx.h"
 #include "r_drawing.h"
-#include <gl/GL.h>
+#include "utils/util.h"
+#ifdef LINUX
+#include "features/visual_ignore_unicode.h"
+#endif
+
+#include <stdarg.h>
 
 using namespace Globals;
 
@@ -15,7 +20,6 @@ EXPOSE_FEATURE_SINGLETON( CDrawing, drawing, "Render", "Drawing" );
 
 static char s_szBuffer[ 4096 ];
 static wchar_t s_wszBuffer[ 4096 ];
-static int s_swap_buffer = 0;
 
 //-----------------------------------------------------------------------------
 // Sprite handlers
@@ -245,7 +249,7 @@ void CDrawing::Box( int x, int y, int w, int h, int lw, int r, int g, int b, int
 	FillArea( x + lw, y + h - lw, w - lw * 2, lw, r, g, b, a );
 }
 
-void CDrawing::BoxOutline( float x, float y, float w, float h, float lw, BYTE r, BYTE g, BYTE b, BYTE a )
+void CDrawing::BoxOutline( float x, float y, float w, float h, float lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 {
 	Box( (int)x, (int)y, (int)w, (int)h, (int)lw, r, g, b, a );
 	Box( (int)x - 1, (int)y - 1, (int)w + 2, (int)h + 2, 1, 0, 0, 0, a );
@@ -268,7 +272,7 @@ void CDrawing::DrawCoalBox( int x, int y, int w, int h, int lw, int r, int g, in
 	DrawLine( x + w, y + h - ih, x + w, y + h, r, g, b, a );	// bottom right
 }
 
-void CDrawing::DrawOutlineCoalBox( int x, int y, int w, int h, int  lw, BYTE r, BYTE g, BYTE b, BYTE a )
+void CDrawing::DrawOutlineCoalBox( int x, int y, int w, int h, int  lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 {
 	int iw = w / 4;
 	int ih = h / 4;
@@ -287,7 +291,7 @@ void CDrawing::DrawOutlineCoalBox( int x, int y, int w, int h, int  lw, BYTE r, 
 	DrawCoalBox( x, y, w, h, iw, r, g, b, a );
 }
 
-void CDrawing::BoxCorner( int x, int y, int w, int h, int lw, BYTE r, BYTE g, BYTE b, BYTE a )
+void CDrawing::BoxCorner( int x, int y, int w, int h, int lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 {
 	FillArea( x, y, w / 4, lw, r, g, b, a );
 	FillArea( x + w - w / 4, y, w / 4, lw, r, g, b, a );
@@ -299,7 +303,7 @@ void CDrawing::BoxCorner( int x, int y, int w, int h, int lw, BYTE r, BYTE g, BY
 	FillArea( x + w - w / 4, y + h - lw, w / 4 - lw, lw, r, g, b, a );
 }
 
-void CDrawing::BoxCornerOutline( int x, int y, int w, int h, int lw, BYTE r, BYTE g, BYTE b, BYTE a )
+void CDrawing::BoxCornerOutline( int x, int y, int w, int h, int lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a )
 {
 	BoxCorner( x - 1, y + 1, w, h, lw, 0, 0, 0, a );
 	BoxCorner( x - 1, y - 1, w, h, lw, 0, 0, 0, a );
@@ -335,7 +339,13 @@ void CDrawing::DrawStringF( vgui::HFont font, int x, int y, int r, int g, int b,
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
 	va_end( va_alist );
+#ifdef WIN32
 	MultiByteToWideChar( CP_UTF8, 0, s_szBuffer, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+		UTIL_ReplaceUnicodeChars( s_szBuffer );
+	localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+#endif
 
 	int width, height;
 	surface->GetTextSize( font, s_wszBuffer, width, height );
@@ -358,7 +368,13 @@ void CDrawing::DrawStringExF( vgui::HFont font, int x, int y, int r, int g, int 
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
 	va_end( va_alist );
+#ifdef WIN32
 	MultiByteToWideChar( CP_UTF8, 0, s_szBuffer, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+		UTIL_ReplaceUnicodeChars( s_szBuffer );
+	localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+#endif
 
 	surface->GetTextSize( font, s_wszBuffer, width, height );
 
@@ -380,7 +396,13 @@ void CDrawing::DrawStringACPF( vgui::HFont font, int x, int y, int r, int g, int
 	va_start( va_alist, pszString );
 	vsnprintf( s_szBuffer, sizeof( s_szBuffer ), pszString, va_alist );
 	va_end( va_alist );
+#ifdef WIN32
 	MultiByteToWideChar( CP_ACP, 0, s_szBuffer, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+		UTIL_ReplaceUnicodeChars( s_szBuffer );
+	localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+#endif
 
 	int width, height;
 	surface->GetTextSize( font, s_wszBuffer, width, height );
@@ -425,7 +447,19 @@ void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, 
 {
 	enginesurface->ResetViewPort();
 
+#ifdef WIN32
 	MultiByteToWideChar( CP_UTF8, 0, pszString, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+	{
+		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
+		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+	}
+	else
+	{
+		localize->ConvertANSIToUnicode( pszString, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+	}
+#endif
 
 	int width, height;
 	surface->GetTextSize( font, s_wszBuffer, width, height );
@@ -444,7 +478,19 @@ void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b
 {
 	enginesurface->ResetViewPort();
 
+#ifdef WIN32
 	MultiByteToWideChar( CP_UTF8, 0, pszString, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+	{
+		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
+		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+}
+	else
+	{
+		localize->ConvertANSIToUnicode( pszString, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+	}
+#endif
 
 	surface->GetTextSize( font, s_wszBuffer, width, height );
 
@@ -462,7 +508,19 @@ void CDrawing::DrawStringACP( vgui::HFont font, int x, int y, int r, int g, int 
 {
 	enginesurface->ResetViewPort();
 
+#ifdef WIN32
 	MultiByteToWideChar( CP_ACP, 0, pszString, 256, s_wszBuffer, 256 );
+#else
+	if ( Features::ignoreunicode->IsEnabled() )
+	{
+		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
+		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+	}
+	else
+	{
+		localize->ConvertANSIToUnicode( pszString, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
+	}
+#endif
 
 	int width, height;
 	surface->GetTextSize( font, s_wszBuffer, width, height );

@@ -24,6 +24,8 @@ public:
 	virtual bool	ShouldStopDraw( void ) = 0;
 
 	virtual const Vector &GetDrawOrigin( void ) const = 0;
+
+	virtual bool	CheckPVS( void ) { return true; }
 };
 
 //-----------------------------------------------------------------------------
@@ -66,6 +68,8 @@ public:
 
 	virtual const Vector &GetDrawOrigin( void ) const override { return m_vecDrawOrigin; };
 
+	virtual bool CheckPVS( void ) override;
+
 private:
 	Vector m_vecDrawOrigin;
 	Vector m_vecOrigin;
@@ -93,6 +97,8 @@ public:
 	virtual bool ShouldStopDraw( void ) override { return false; };
 
 	virtual const Vector &GetDrawOrigin( void ) const override { return m_vecDrawOrigin; };
+
+	virtual bool CheckPVS( void ) override;
 
 private:
 	Vector m_vecDrawOrigin;

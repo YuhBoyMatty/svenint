@@ -10,8 +10,8 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( void, __cdecl, R_SetupFrame );
-DECLARE_HOOK( void, __cdecl, V_RenderView );
+DECLARE_HOOK( void, CALLCONV_CDECL, R_SetupFrame );
+DECLARE_HOOK( void, CALLCONV_CDECL, V_RenderView );
 
 //-----------------------------------------------------------------------------
 // Features gamedata
@@ -48,7 +48,7 @@ EXPOSE_FEATURE_SINGLETON( CFog, fog, "Render", "Fog" );
 // R_SetupFrame hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_R_SetupFrame )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_R_SetupFrame )
 {
 	ORIG_R_SetupFrame();
 
@@ -59,7 +59,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_R_SetupFrame )
 // V_RenderView hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_V_RenderView )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_V_RenderView )
 {
 	THIS_FEATURE()->V_RenderViewEvent();
 
@@ -147,29 +147,53 @@ bool CFog::Load( void )
 	m_pFogDensity = Modules::menu->AddParamFloat( this, "Density", NULL, 0.25f, 0.f, 10.f );
 	m_pFogColor = Modules::menu->AddParamColorRGB( this, "Color", NULL, Color( 255, 255, 255, 255 ) );
 
-	int patternIndex;
 	bool bOK = true;
 
-	DEFINE_PATTERNS_FUTURE( fR_SetupFrame );
-	DEFINE_PATTERNS_FUTURE( fV_RenderView );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		MAKE_ASYNC( fm_pfnR_SetupFrame, [] { return gamedata->FindRVA( GameData::Modules::Engine, "Engine", "R_SetupFrame" ); } );
+		MAKE_ASYNC( fm_pfnV_RenderView, [] { return gamedata->FindRVA( GameData::Modules::Engine, "Engine", "V_RenderView" ); } );
 
-	// Find signatures
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_SetupFrame, fR_SetupFrame );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::V_RenderView, fV_RenderView );
+		m_pfnR_SetupFrame = fm_pfnR_SetupFrame.get();
+		m_pfnV_RenderView = fm_pfnV_RenderView.get();
 
-	// R_SetupFrame
-	m_pfnR_SetupFrame = MemoryUtils()->GetPatternFutureValue( fR_SetupFrame, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnR_SetupFrame,
-										  "R_SetupFrame",
-										  FeaturesGameData::Patterns::Engine::R_SetupFrame,
-										  patternIndex );
-	
-	// V_RenderView
-	m_pfnV_RenderView = MemoryUtils()->GetPatternFutureValue( fV_RenderView, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnV_RenderView,
-										  "V_RenderView",
-										  FeaturesGameData::Patterns::Engine::V_RenderView,
-										  patternIndex );
+		if ( m_pfnR_SetupFrame == NULL )
+			bOK = false;
+		if ( m_pfnV_RenderView == NULL )
+			bOK = false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+
+		DEFINE_PATTERNS_FUTURE( fR_SetupFrame );
+		DEFINE_PATTERNS_FUTURE( fV_RenderView );
+
+		// Find signatures
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::R_SetupFrame, fR_SetupFrame );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::V_RenderView, fV_RenderView );
+
+		// R_SetupFrame
+		m_pfnR_SetupFrame = MemoryUtils()->GetPatternFutureValue( fR_SetupFrame, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnR_SetupFrame,
+											  "R_SetupFrame",
+											  FeaturesGameData::Patterns::Engine::R_SetupFrame,
+											  patternIndex );
+
+		// V_RenderView
+		m_pfnV_RenderView = MemoryUtils()->GetPatternFutureValue( fV_RenderView, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnV_RenderView,
+											  "V_RenderView",
+											  FeaturesGameData::Patterns::Engine::V_RenderView,
+											  patternIndex );
+	#else
+		bOK = false;
+	#endif
+	}
+
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnR_SetupFrame", m_pfnR_SetupFrame, GameData::Modules::Engine );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnV_RenderView", m_pfnV_RenderView, GameData::Modules::Engine );
 
 	return bOK;
 }

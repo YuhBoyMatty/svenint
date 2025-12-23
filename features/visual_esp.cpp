@@ -66,14 +66,14 @@ EXPOSE_FEATURE_SINGLETON( CESP, esp, "Visual", "ESP" );
 
 DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex, float flOffset )
 {
-	ORIG_CClient_SoundEngine__PlayFMODSound( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex, flOffset );
+	ORIG_CClient_SoundEngine__PlayFMODSound( ARG_THISPTR( thisptr ), fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex, flOffset );
 
 	THIS_FEATURE()->UpdateEntitySound( entindex, vecOrigin, pszSample );
 }
 
 DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__PlayFMODSound_511, void *thisptr, int fFlags, int entindex, float *vecOrigin, int iChannel, const char *pszSample, float flVolume, float flAttenuation, int iUnknown, int iPitch, int iSoundIndex )
 {
-	ORIG_CClient_SoundEngine__PlayFMODSound_511( thisptr, fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex );
+	ORIG_CClient_SoundEngine__PlayFMODSound_511( ARG_THISPTR( thisptr ), fFlags, entindex, vecOrigin, iChannel, pszSample, flVolume, flAttenuation, iUnknown, iPitch, iSoundIndex );
 
 	THIS_FEATURE()->UpdateEntitySound( entindex, vecOrigin, pszSample );
 }
@@ -1470,19 +1470,34 @@ bool CESP::Load( void )
 	m_pNeutralColor = Modules::menu->AddParamColorRGB( this, "NeutralColor", NULL, Color( 1.f, 1.f, 0.f, 1.f ) );
 
 	bool bOK = true;
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__PlayFMODSound );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__PlayFMODSound, fCClient_SoundEngine__PlayFMODSound );
 
-	m_pfnCClient_SoundEngine__PlayFMODSound = MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__PlayFMODSound, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCClient_SoundEngine__PlayFMODSound,
-										  "CClient_SoundEngine::PlayFMODSound",
-										  FeaturesGameData::Patterns::Client::CClient_SoundEngine__PlayFMODSound,
-										  patternIndex );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnCClient_SoundEngine__PlayFMODSound = gamedata->FindRVA( GameData::Modules::Client, "Client", "CClient_SoundEngine::PlayFMODSound" );
+		if ( m_pfnCClient_SoundEngine__PlayFMODSound == NULL )
+			bOK = false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__PlayFMODSound );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__PlayFMODSound, fCClient_SoundEngine__PlayFMODSound );
+
+		m_pfnCClient_SoundEngine__PlayFMODSound = MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__PlayFMODSound, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCClient_SoundEngine__PlayFMODSound,
+											  "CClient_SoundEngine::PlayFMODSound",
+											  FeaturesGameData::Patterns::Client::CClient_SoundEngine__PlayFMODSound,
+											  patternIndex );
+	#else
+		bOK = false;
+	#endif
+	}
 
 	if ( !bOK )
 		PrintWarning2( "Sound ESP is not available\n" );
 
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCClient_SoundEngine__PlayFMODSound", m_pfnCClient_SoundEngine__PlayFMODSound, GameData::Modules::Client );
 	return true;
 }
 
@@ -1495,7 +1510,7 @@ void CESP::PostLoad( void )
 	if ( m_pfnCClient_SoundEngine__PlayFMODSound == NULL )
 		return;
 
-	if ( gameversion == 511 )
+	if ( SVEN_VERSION() == SVEN_VERSION_CHECK( 5, 11, 0 ) )
 	{
 		m_hCClient_SoundEngine__PlayFMODSound = Detours()->DetourFunction( m_pfnCClient_SoundEngine__PlayFMODSound,
 																		   HOOKED_CClient_SoundEngine__PlayFMODSound_511,

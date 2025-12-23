@@ -20,6 +20,24 @@
 #undef CreateFont
 #endif
 
+#ifndef FW_DONTCARE
+#define FW_DONTCARE 0
+#define FW_THIN 100
+#define FW_EXTRALIGHT 200
+#define FW_LIGHT 300
+#define FW_NORMAL 400
+#define FW_MEDIUM 500
+#define FW_SEMIBOLD 600
+#define FW_BOLD 700
+#define FW_EXTRABOLD 800
+#define FW_HEAVY 900
+#define FW_ULTRALIGHT FW_EXTRALIGHT
+#define FW_REGULAR FW_NORMAL
+#define FW_DEMIBOLD FW_SEMIBOLD
+#define FW_ULTRABOLD FW_EXTRABOLD
+#define FW_BLACK FW_HEAVY
+#endif
+
 class IEngineSurface : public IBaseInterface
 {
 public:

@@ -1,6 +1,8 @@
 // SvenInt (c) Sw1ft
 // features.cpp
 
+#include <stdarg.h>
+
 #include "stdafx.h"
 #include "base_feature.h"
 #include "game/dbg.h"

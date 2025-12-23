@@ -12,8 +12,8 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( int, __cdecl, Cbuf_AddText, const char * );
-DECLARE_HOOK( int, __cdecl, ServerCmd, const char * );
+DECLARE_HOOK( int, CALLCONV_CDECL, Cbuf_AddText, const char * );
+DECLARE_HOOK( int, CALLCONV_CDECL, ServerCmd, const char * );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -37,7 +37,7 @@ static unsigned int IM_HashFunc( const im_cstring_t &a )
 	return HashStringCaseless( a );
 }
 
-static FORCEINLINE bool IM_StringEndsWith( std::string const &str, std::string const &postfix )
+static inline bool IM_StringEndsWith( std::string const &str, std::string const &postfix )
 {
 	if ( postfix.size() > str.size() )
 		return false;
@@ -161,14 +161,14 @@ static void sc_im_record_command( const CCommand &args )
 // Hooked functions
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_Cbuf_AddText, const char *pszCommand )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_Cbuf_AddText, const char *pszCommand )
 {
 	THIS_FEATURE()->OnCbuf_AddText( pszCommand );
 
 	return ORIG_Cbuf_AddText( pszCommand );
 }
 
-DECLARE_FUNC( int, __cdecl, HOOKED_ServerCmd, const char *pszCommand )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_ServerCmd, const char *pszCommand )
 {
 	THIS_FEATURE()->OnServerCmd( pszCommand );
 
@@ -1151,6 +1151,7 @@ bool CInputManager::Load( void )
 {
 	ud_t inst;
 
+#ifdef WIN32
 	m_pfnServerCmd = cl_enginefuncs->pfnServerCmd;
 
 	MemoryUtils()->InitDisasm( &inst, cl_enginefuncs->pfnServerCmd, 32, 17 );
@@ -1192,6 +1193,81 @@ bool CInputManager::Load( void )
 
 		pfnClientCmd += iDisassembledBytes;
 	}
+#else
+	bool bFoundPcThunk = false;
+	int iDisassembledBytes = 0;
+	uint8_t *p = (uint8_t *)cl_enginefuncs->pfnServerCmd;
+
+	MemoryUtils()->InitDisasm( &inst, cl_enginefuncs->pfnServerCmd, 32, 32 );
+	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+	{
+		if ( inst.mnemonic == UD_Icall )
+		{
+			if ( !bFoundPcThunk )
+			{
+				bFoundPcThunk = true;
+			}
+			else
+			{
+				m_pfnServerCmd = (uint8_t *)MemoryUtils()->CalcAbsoluteAddress( p );
+				break;
+			}
+		}
+
+		p += iDisassembledBytes;
+	}
+
+	if ( m_pfnServerCmd == NULL )
+		return false;
+
+	bFoundPcThunk = false;
+	p = (uint8_t *)cl_enginefuncs->pfnClientCmd;
+	uint8_t *pfnClientCmd = (uint8_t *)cl_enginefuncs->pfnClientCmd;
+
+	MemoryUtils()->InitDisasm( &inst, cl_enginefuncs->pfnClientCmd, 32, 32 );
+	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+	{
+		if ( inst.mnemonic == UD_Icall )
+		{
+			if ( !bFoundPcThunk )
+			{
+				bFoundPcThunk = true;
+			}
+			else
+			{
+				pfnClientCmd = (uint8_t *)MemoryUtils()->CalcAbsoluteAddress( p );
+				break;
+			}
+		}
+
+		p += iDisassembledBytes;
+	}
+
+	if ( pfnClientCmd == NULL )
+		return false;
+
+	bFoundPcThunk = false;
+	p = pfnClientCmd;
+
+	MemoryUtils()->InitDisasm( &inst, pfnClientCmd, 32, 32 );
+	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+	{
+		if ( inst.mnemonic == UD_Icall )
+		{
+			if ( !bFoundPcThunk )
+			{
+				bFoundPcThunk = true;
+			}
+			else
+			{
+				m_pfnCbuf_AddText = (uint8_t *)MemoryUtils()->CalcAbsoluteAddress( p );
+				break;
+			}
+		}
+
+		p += iDisassembledBytes;
+	}
+#endif
 
 	FEATURE_CHECK_SYMBOL( m_pfnCbuf_AddText, "Cbuf_AddText" );
 

@@ -10,7 +10,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( int, __cdecl, V_FadeAlpha );
+DECLARE_HOOK( int, CALLCONV_CDECL, V_FadeAlpha );
 
 //-----------------------------------------------------------------------------
 // Features gamedata
@@ -55,7 +55,7 @@ static int UserMsgHook_ScreenFade( const char *pszUserMsg, int iSize, void *pBuf
 // V_FadeAlpha hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_V_FadeAlpha )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_V_FadeAlpha )
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 		return 0;
@@ -84,15 +84,29 @@ bool CNoFade::Load( void )
 
 	int patternIndex;
 
-	DEFINE_PATTERNS_FUTURE( fV_FadeAlpha );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::V_FadeAlpha, fV_FadeAlpha );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnV_FadeAlpha = gamedata->FindRVA( GameData::Modules::Engine, "Engine", "V_FadeAlpha" );
+		if ( m_pfnV_FadeAlpha == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		DEFINE_PATTERNS_FUTURE( fV_FadeAlpha );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::V_FadeAlpha, fV_FadeAlpha );
 
-	m_pfnV_FadeAlpha = MemoryUtils()->GetPatternFutureValue( fV_FadeAlpha, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnV_FadeAlpha,
-								   "V_FadeAlpha",
-								   FeaturesGameData::Patterns::Engine::V_FadeAlpha,
-								   patternIndex );
+		m_pfnV_FadeAlpha = MemoryUtils()->GetPatternFutureValue( fV_FadeAlpha, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnV_FadeAlpha,
+									   "V_FadeAlpha",
+									   FeaturesGameData::Patterns::Engine::V_FadeAlpha,
+									   patternIndex );
+	#else
+		return false;
+	#endif
+	}
 
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnV_FadeAlpha", m_pfnV_FadeAlpha, GameData::Modules::Engine );
 	return true;
 }
 

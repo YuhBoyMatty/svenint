@@ -8,6 +8,8 @@
 #pragma once
 #endif
 
+#ifdef WIN32
+
 #include "base_feature.h"
 #include "utils/detours.h"
 #include "modules/menu.h"
@@ -63,5 +65,7 @@ private:
 };
 
 EXTERN_FEATURE( CDemoCapture, democapture );
+
+#endif
 
 #endif // SINT_FEATURE_DEMO_CAPTURE_H

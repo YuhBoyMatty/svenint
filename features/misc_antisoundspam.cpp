@@ -5,6 +5,8 @@
 #include "misc_antisoundspam.h"
 #include "modules/menu.h"
 
+#include <cstring>
+
 using namespace Globals;
 
 //-----------------------------------------------------------------------------
@@ -34,7 +36,12 @@ EHookResult CAntiSoundSpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	
 	anti_sound_spam_t dummy;
 	dummy.entindex = entity->index;
+#ifdef WIN32
 	strncpy_s( dummy.sound, Q_ARRAYSIZE( anti_sound_spam_t::sound ), studio_event->options, Q_ARRAYSIZE( mstudioevent_t::options ) );
+#else
+	strncpy( dummy.sound, studio_event->options, Q_ARRAYSIZE( anti_sound_spam_t::sound ) );
+	dummy.sound[ Q_ARRAYSIZE( anti_sound_spam_t::sound ) - 1 ] = 0;
+#endif
 
 	float flTime = cl_enginefuncs->GetClientTime();
 	anti_sound_spam_t *sound = m_soundsList.Find( dummy );

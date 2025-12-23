@@ -11,7 +11,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( void, __cdecl, CL_PlayerFlashlight, cl_entity_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, CL_PlayerFlashlight, cl_entity_t * );
 
 //-----------------------------------------------------------------------------
 // Features gamedata
@@ -38,7 +38,7 @@ EXPOSE_FEATURE_SINGLETON( CFlashlight, flashlight, "Player", "Flashlight" );
 // Hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_CL_PlayerFlashlight, cl_entity_t *pEntity )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_CL_PlayerFlashlight, cl_entity_t *pEntity )
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 	{
@@ -216,10 +216,24 @@ bool CFlashlight::Load( void )
 	m_pPlayersLightingDistance = Modules::menu->AddParamFloat( this, "PlayersLightingDistance", NULL, 18.f, 1.f, 1024.f );
 	m_pPlayersLightingRadius = Modules::menu->AddParamFloat( this, "PlayersLightingRadius", NULL, 128.f, 1.f, 1024.f );
 	m_pPlayersLightingColor = Modules::menu->AddParamColorRGB( this, "PlayersLightingColor", NULL, Color( 32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 32.f / 255.f ) );
+	
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnCL_PlayerFlashlight = gamedata->FindRVA( GameData::Modules::Engine, "Engine", "CL_PlayerFlashlight" );
+		if ( m_pfnCL_PlayerFlashlight == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		m_pfnCL_PlayerFlashlight = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::CL_PlayerFlashlight );
+		FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCL_PlayerFlashlight, "CL_PlayerFlashlight" );
+	#else
+		return false;
+	#endif
+	}
 
-	m_pfnCL_PlayerFlashlight = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::CL_PlayerFlashlight );
-	FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCL_PlayerFlashlight, "CL_PlayerFlashlight" );
-
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCL_PlayerFlashlight", m_pfnCL_PlayerFlashlight, GameData::Modules::Engine );
 	return true;
 }
 

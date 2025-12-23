@@ -162,7 +162,7 @@ void CVoteBot::TextMsgEvent( const char *pszUserMsg, int iSize, void *pBuffer )
 		if ( std::regex_search( pszMsgName, match, regex_vote_pattern ) )
 		{
 			TextMsgBuffer.ReadString();
-			const char *pszCaller = strdup( TextMsgBuffer.ReadString() );
+			const char *pszCaller = MemStrdup( TextMsgBuffer.ReadString() );
 
 			player_info_s *pPlayerInfo = enginestudio->PlayerInfo( playermove->player_index() );
 
@@ -199,7 +199,7 @@ void CVoteBot::TextMsgEvent( const char *pszUserMsg, int iSize, void *pBuffer )
 				//cl_enginefuncs->pfnClientCmd("reconnect\n");
 			}
 
-			free( (void *)pszCaller );
+			MemFree( (void *)pszCaller );
 		}
 	}
 }

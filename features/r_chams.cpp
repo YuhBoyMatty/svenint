@@ -11,7 +11,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( void, APIENTRY, glColor4f, GLfloat, GLfloat, GLfloat, GLfloat );
+DECLARE_HOOK( void, CALLCONV_STDCALL, glColor4f, GLfloat, GLfloat, GLfloat, GLfloat );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -23,7 +23,7 @@ EXPOSE_FEATURE_SINGLETON( CChams, chams, "Render", "Chams" );
 // glColor4f hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, APIENTRY, HOOKED_glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
+DECLARE_FUNC( void, CALLCONV_STDCALL, HOOKED_glColor4f, GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 		THIS_FEATURE()->glColor4fEvent( red, green, blue );
@@ -413,7 +413,7 @@ bool CChams::Load( void )
 
 	m_flOverrideColor = m_pChamsPlayersColor->GetColor();
 
-	m_pfnglColor4f = GetProcAddress( (HMODULE)GameData::Modules::OpenGL, "glColor4f" );
+	m_pfnglColor4f = MemoryUtils()->GetProcAddress( GameData::Modules::OpenGL, "glColor4f" );
 	FEATURE_CHECK_SYMBOL( m_pfnglColor4f, "glColor4f" );
 
 	return true;

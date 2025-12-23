@@ -10,7 +10,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( int, __cdecl, CRC_MapFile, uint32_t *ulCRC, char *pszMapName );
+DECLARE_HOOK( int, CALLCONV_CDECL, CRC_MapFile, uint32_t *ulCRC, char *pszMapName );
 
 //-----------------------------------------------------------------------------
 // Features gamedata
@@ -31,13 +31,13 @@ namespace FeaturesGameData
 // Vars
 //-----------------------------------------------------------------------------
 
-EXPOSE_FEATURE_SINGLETON( CIgnoreDifferentMaps, votebot, "Misc", "Ignore Different Maps" );
+EXPOSE_FEATURE_SINGLETON( CIgnoreDifferentMaps, ignorediffmaps, "Misc", "Ignore Different Maps" );
 
 //-----------------------------------------------------------------------------
 // CRC_MapFile hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_CRC_MapFile, uint32_t *ulCRC, char *pszMapName )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_CRC_MapFile, uint32_t *ulCRC, char *pszMapName )
 {
 	int result = ORIG_CRC_MapFile( ulCRC, pszMapName );
 
@@ -117,9 +117,19 @@ bool CIgnoreDifferentMaps::Load( void )
 {
 	Modules::menu->BindFeature( this );
 
-	m_pfnCRC_MapFile = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::CRC_MapFile );
-	FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCRC_MapFile, "CRC_MapFile" );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnCRC_MapFile = gamedata->FindRVA( GameData::Modules::Engine, "Engine", "CRC_MapFile" );
+		if ( m_pfnCRC_MapFile == NULL )
+			return false;
+	}
+	else
+	{
+		m_pfnCRC_MapFile = MemoryUtils()->FindPattern( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::CRC_MapFile );
+		FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCRC_MapFile, "CRC_MapFile" );
+	}
 
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCRC_MapFile", m_pfnCRC_MapFile, GameData::Modules::Engine );
 	return true;
 }
 

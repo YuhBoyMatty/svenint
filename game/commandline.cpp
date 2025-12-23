@@ -523,7 +523,11 @@ int CCommandLine::FindParm( const char *psz ) const
 	// Start at 1 so as to not search the exe name
 	for ( int i = 1; i < m_nParmCount; ++i )
 	{
+	#ifdef WIN32
 		if ( !stricmp( psz, m_ppParms[i] ) )
+	#else
+		if ( !strcasecmp( psz, m_ppParms[i] ) )
+	#endif
 			return i;
 	}
 	return 0;

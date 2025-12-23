@@ -13,7 +13,7 @@ using namespace Globals;
 // Declare func pointer
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC_PTR( vgui::HFont, __cdecl, VGUI2_GetEngineFont );
+DECLARE_FUNC_PTR( vgui::HFont, CALLCONV_CDECL, VGUI2_GetEngineFont );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -810,25 +810,66 @@ bool CSpeedrunHUD::Load( void )
 	m_pEntityInfoHeightScreenFraction = Modules::menu->AddParamFloat( this, "EntityInfoHeightScreenFraction", "Height", 0.47f, 0.f, 1.f );
 
 	void *pfnDrawConsoleString = cl_enginefuncs->pfnDrawConsoleString;
-
+#ifdef WIN32
 	if ( *(uint8_t *)pfnDrawConsoleString == 0xE9 ) // JMP
 		pfnDrawConsoleString = MemoryUtils()->CalcAbsoluteAddress( pfnDrawConsoleString );
+#endif
 
 	ud_t inst;
 	int iDisassembledBytes = 0;
 	uint8_t *p = (uint8_t *)pfnDrawConsoleString;
+
+#ifdef WIN32
+	bool bFoundPcThunk = true;
+#else
+	bool bFoundPcThunk = false;
+#endif
 
 	MemoryUtils()->InitDisasm( &inst, pfnDrawConsoleString, 32, 48 );
 	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
 	{
 		if ( inst.mnemonic == UD_Icall )
 		{
-			VGUI2_GetEngineFont = (VGUI2_GetEngineFontFn)MemoryUtils()->CalcAbsoluteAddress( p );
-			break;
+			if ( !bFoundPcThunk )
+			{
+				bFoundPcThunk = true;
+			}
+			else
+			{
+				VGUI2_GetEngineFont = (VGUI2_GetEngineFontFn)MemoryUtils()->CalcAbsoluteAddress( p );
+				break;
+			}
 		}
 
 		p += iDisassembledBytes;
 	}
+
+#ifdef LINUX
+	if ( VGUI2_GetEngineFont != NULL )
+	{
+		bFoundPcThunk = false;
+		p = (uint8_t *)VGUI2_GetEngineFont;
+
+		MemoryUtils()->InitDisasm( &inst, VGUI2_GetEngineFont, 32, 48 );
+		while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+		{
+			if ( inst.mnemonic == UD_Icall )
+			{
+				if ( !bFoundPcThunk )
+				{
+					bFoundPcThunk = true;
+				}
+				else
+				{
+					VGUI2_GetEngineFont = (VGUI2_GetEngineFontFn)MemoryUtils()->CalcAbsoluteAddress( p );
+					break;
+				}
+			}
+
+			p += iDisassembledBytes;
+		}
+	}
+#endif
 
 	FEATURE_CHECK_SYMBOL_STATUS( VGUI2_GetEngineFont, "VGUI2_GetEngineFont" );
 	if ( !bOK )

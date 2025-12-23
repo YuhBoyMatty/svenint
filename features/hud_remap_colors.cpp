@@ -11,8 +11,8 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( void, __cdecl, SPR_Set, HSPRITE_HL hPic, int r, int g, int b );
-DECLARE_HOOK( void, __cdecl, FillRGBA, int x, int y, int width, int height, int r, int g, int b, int a );
+DECLARE_HOOK( void, CALLCONV_CDECL, SPR_Set, HSPRITE_HL hPic, int r, int g, int b );
+DECLARE_HOOK( void, CALLCONV_CDECL, FillRGBA, int x, int y, int width, int height, int r, int g, int b, int a );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -24,7 +24,7 @@ EXPOSE_FEATURE_SINGLETON( CRemapColors, remapcolors, "HUD", "Remap Colors" );
 // Hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_SPR_Set, HSPRITE_HL hPic, int r, int g, int b )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_SPR_Set, HSPRITE_HL hPic, int r, int g, int b )
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 	{
@@ -38,7 +38,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_SPR_Set, HSPRITE_HL hPic, int r, int g, int 
 	ORIG_SPR_Set( hPic, r, g, b );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_FillRGBA, int x, int y, int width, int height, int r, int g, int b, int a )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_FillRGBA, int x, int y, int width, int height, int r, int g, int b, int a )
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 	{

@@ -17,10 +17,10 @@
 
 typedef void ( *CvarChangeHookFn )( struct cvar_s *pCvar, const char *pszOldValue, float flOldValue );
 
-using CommandCallbackFn = void ( __cdecl * )( void );
-using NetMsgHookFn = void ( __cdecl * )( void );
-using EventHookFn = void ( __cdecl * )( struct event_args_s *args );
-using UserMsgHookFn = int( __cdecl * )( const char *pszName, int iSize, void *pbuf );
+using CommandCallbackFn = void ( CALLCONV_CDECL * )( void );
+using NetMsgHookFn = void ( CALLCONV_CDECL * )( void );
+using EventHookFn = void ( CALLCONV_CDECL * )( struct event_args_s *args );
+using UserMsgHookFn = int( CALLCONV_CDECL * )( const char *pszName, int iSize, void *pbuf );
 
 //-----------------------------------------------------------------------------
 // CGameHooks
@@ -28,7 +28,7 @@ using UserMsgHookFn = int( __cdecl * )( const char *pszName, int iSize, void *pb
 
 class CGameHooks
 {
-	friend DECLARE_FUNC( void, __cdecl, HOOKED_Cvar_DirectSet, struct cvar_s *pCvar, const char *pszValue );
+	friend DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Cvar_DirectSet, struct cvar_s *pCvar, const char *pszValue );
 
 public:
 	CGameHooks();
@@ -36,24 +36,24 @@ public:
 	void					Init();
 	void					Shutdown();
 
-	virtual bool			HookCvarChange( struct cvar_s *pCvar, CvarChangeHookFn pfnCvarChangeHook );
-	virtual bool			UnhookCvarChange( struct cvar_s *pCvar, CvarChangeHookFn pfnCvarChangeHook );
+	virtual bool			HookCvarChange( struct cvar_s *pCvar, CvarChangeHookFn pfnCvarChangeHook, int iDetourPriority = kDetourPriorityNormal );
+	virtual bool			UnhookCvarChange( struct cvar_s *pCvar, CvarChangeHookFn pfnCvarChangeHook, int iDetourPriority = kDetourPriorityNormal );
 
-	virtual DetourHandle_t	HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook );
-	virtual DetourHandle_t	HookNetworkMessage( const char *pszName, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook );
-	virtual DetourHandle_t	HookNetworkMessage( struct netmsg_s *pNetMsg, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook );
+	virtual DetourHandle_t	HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority = kDetourPriorityNormal );
+	virtual DetourHandle_t	HookNetworkMessage( const char *pszName, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority = kDetourPriorityNormal );
+	virtual DetourHandle_t	HookNetworkMessage( struct netmsg_s *pNetMsg, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority = kDetourPriorityNormal );
 	virtual bool			UnhookNetworkMessage( DetourHandle_t hNetMsgHook );
 
-	virtual DetourHandle_t	HookUserMessage( const char *pszName, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook );
-	virtual DetourHandle_t	HookUserMessage( struct usermsg_s *pUserMsg, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook );
+	virtual DetourHandle_t	HookUserMessage( const char *pszName, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook, int iDetourPriority = kDetourPriorityNormal );
+	virtual DetourHandle_t	HookUserMessage( struct usermsg_s *pUserMsg, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook, int iDetourPriority = kDetourPriorityNormal );
 	virtual bool			UnhookUserMessage( DetourHandle_t hUserMsgHook );
 
-	virtual DetourHandle_t	HookEvent( const char *pszName, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook );
-	virtual DetourHandle_t	HookEvent( struct event_hook_s *pEventHook, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook );
+	virtual DetourHandle_t	HookEvent( const char *pszName, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook, int iDetourPriority = kDetourPriorityNormal );
+	virtual DetourHandle_t	HookEvent( struct event_hook_s *pEventHook, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook, int iDetourPriority = kDetourPriorityNormal );
 	virtual bool			UnhookEvent( DetourHandle_t hEventHook );
 
-	virtual DetourHandle_t	HookConsoleCommand( const char *pszName, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback );
-	virtual DetourHandle_t	HookConsoleCommand( struct cmd_function_s *pCommand, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback );
+	virtual DetourHandle_t	HookConsoleCommand( const char *pszName, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback, int iDetourPriority = kDetourPriorityNormal );
+	virtual DetourHandle_t	HookConsoleCommand( struct cmd_function_s *pCommand, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback, int iDetourPriority = kDetourPriorityNormal );
 	virtual bool			UnhookConsoleCommand( DetourHandle_t hCommandCallback );
 
 protected:

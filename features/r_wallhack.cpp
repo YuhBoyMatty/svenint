@@ -10,7 +10,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_HOOK( void, APIENTRY, glBegin, GLenum );
+DECLARE_HOOK( void, CALLCONV_STDCALL, glBegin, GLenum );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -22,7 +22,7 @@ EXPOSE_FEATURE_SINGLETON( CWallhack, wallhack, "Render", "Wallhack" );
 // glBegin hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, APIENTRY, HOOKED_glBegin, GLenum mode ) // wh
+DECLARE_FUNC( void, CALLCONV_STDCALL, HOOKED_glBegin, GLenum mode ) // wh
 {
 	if ( THIS_FEATURE_IS_ENABLED() )
 		THIS_FEATURE()->glBeginEvent( mode );
@@ -124,7 +124,7 @@ bool CWallhack::Load( void )
 	m_pWireframeWidth = Modules::menu->AddParamFloat( this, "WireframeWidth", NULL, 1.5f, 0.f, 10.f );
 	m_pWireframeColor = Modules::menu->AddParamColorRGB( this, "WireframeColor", NULL, Color( 0, 255, 0, 255 ) );
 
-	m_pfnglBegin = GetProcAddress( (HMODULE)GameData::Modules::OpenGL, "glBegin" );
+	m_pfnglBegin = MemoryUtils()->GetProcAddress( GameData::Modules::OpenGL, "glBegin" );
 	FEATURE_CHECK_SYMBOL( m_pfnglBegin, "glBegin" );
 
 	return true;

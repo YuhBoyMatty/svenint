@@ -10,6 +10,11 @@
 
 #include <stdarg.h>
 
+#ifndef WIN32
+#include <unistd.h>
+#include <limits.h>
+#endif
+
 //-----------------------------------------------------------------------------
 // CGameUtils implementation
 //-----------------------------------------------------------------------------
@@ -291,6 +296,7 @@ CGameUtils *GameUtils()
 
 char *UTIL_GetLongPathName( void )
 {
+#ifdef WIN32
 	char szShortPath[ MAX_PATH ];
 	static char szLongPath[ MAX_PATH ];
 	char *pszPath = NULL;
@@ -314,6 +320,27 @@ char *UTIL_GetLongPathName( void )
 				szLongPath[ len - 1 ] = 0;
 		}
 	}
+#else
+	static char szLongPath[ PATH_MAX ];
+
+	szLongPath[ 0 ] = 0;
+
+	if ( readlink( "/proc/self/exe", szLongPath, PATH_MAX ) != -1 )
+	{
+		char *pszPath = strrchr( szLongPath, '/' );
+
+		if ( pszPath[ 0 ] )
+			pszPath[ 1 ] = 0;
+
+		size_t len = strlen( szLongPath );
+
+		if ( len > 0 )
+		{
+			if ( szLongPath[ len - 1 ] == '/' )
+				szLongPath[ len - 1 ] = 0;
+		}
+	}
+#endif
 
 	return szLongPath;
 }

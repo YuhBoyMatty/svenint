@@ -13,8 +13,13 @@ void CHookEvent::ArgAccessFailure( const char *pszArgName )
 	char buffer[ 256 ];
 	snprintf( buffer, Q_ARRAYSIZE( buffer ), "[SvenInt] Accessing a non-existent argument \"%s\" in CHookEvent::GetArg() (event type: %d)", pszArgName, m_nEventType );
 
+#ifdef WIN32
 	MessageBox( NULL, buffer, "Fatal Error", MB_ICONERROR );
 	TerminateProcess( GetCurrentProcess(), EXIT_FAILURE );
+#else
+	printf( buffer );
+	exit( 1 );
+#endif
 }
 
 //-----------------------------------------------------------------------------

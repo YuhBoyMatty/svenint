@@ -42,20 +42,20 @@ static CommandCallbackFn ORIG_slot7 = NULL;
 static CommandCallbackFn ORIG_slot8 = NULL;
 static CommandCallbackFn ORIG_slot9 = NULL;
 
-DECLARE_FUNC_PTR_STATIC( vgui::HFont, __cdecl, VGUI2_GetCreditsFont );
+DECLARE_FUNC_PTR_STATIC( vgui::HFont, CALLCONV_CDECL, VGUI2_GetCreditsFont );
 
 //-----------------------------------------------------------------------------
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-ConVar cl_menu_width_fraction( "cl_menu_width_fraction", "0.0125", FCVAR_CLIENTDLL, "The screen's fraction of width", true, 0.f, true, 1.f );
-ConVar cl_menu_height_fraction( "cl_menu_height_fraction", "0.5", FCVAR_CLIENTDLL, "The screen's fraction of height", true, 0.f, true, 1.f );
-ConVar cl_menu_title_color( "cl_menu_title_color", "255 255 112 255", FCVAR_CLIENTDLL, "Color of the menu's title" );
-ConVar cl_menu_label_color( "cl_menu_label_color", "255 255 255 255", FCVAR_CLIENTDLL, "Color of the menu's label" );
-ConVar cl_menu_label_number_color( "cl_menu_label_number_color", "255 96 96 255", FCVAR_CLIENTDLL, "Color of the menu's number of label" );
-ConVar cl_menu_fade_duration( "cl_menu_fade_duration", "0.5", FCVAR_CLIENTDLL, "Duration of fade when menu is closed", true, 0.f, false, FLT_MAX );
-ConVar cl_menu_duration( "cl_menu_duration", "10", FCVAR_CLIENTDLL, "Duration of menu before it will autoclose, use value \"-1\" to disable it", true, -1.f, false, FLT_MAX );
-ConVar cl_menu_align_center( "cl_menu_align_center", "1", FCVAR_CLIENTDLL, "Align menu to center" );
+ConVar cl_menu_width_fraction( "cl_menu_width_fraction", "0.0125", FCVAR_EXTDLL, "The screen's fraction of width", true, 0.f, true, 1.f );
+ConVar cl_menu_height_fraction( "cl_menu_height_fraction", "0.5", FCVAR_EXTDLL, "The screen's fraction of height", true, 0.f, true, 1.f );
+ConVar cl_menu_title_color( "cl_menu_title_color", "255 255 112 255", FCVAR_EXTDLL, "Color of the menu's title" );
+ConVar cl_menu_label_color( "cl_menu_label_color", "255 255 255 255", FCVAR_EXTDLL, "Color of the menu's label" );
+ConVar cl_menu_label_number_color( "cl_menu_label_number_color", "255 96 96 255", FCVAR_EXTDLL, "Color of the menu's number of label" );
+ConVar cl_menu_fade_duration( "cl_menu_fade_duration", "0.5", FCVAR_EXTDLL, "Duration of fade when menu is closed", true, 0.f, false, FLT_MAX );
+ConVar cl_menu_duration( "cl_menu_duration", "10", FCVAR_EXTDLL, "Duration of menu before it will autoclose, use value \"-1\" to disable it", true, -1.f, false, FLT_MAX );
+ConVar cl_menu_align_center( "cl_menu_align_center", "1", FCVAR_EXTDLL, "Align menu to center" );
 
 CON_COMMAND( cl_menu_show, "Show the client menu" )
 {
@@ -209,9 +209,9 @@ static void HOOKED_slot9( void )
 
 CClientMenuContext::CClientMenuContext()
 {
-	ZeroMemory( m_pwszLabels, 10 * sizeof( wchar_t * ) );
-	ZeroMemory( m_pszCommands, 10 * sizeof( char * ) );
-	ZeroMemory( m_fLabelsFlags, 10 * sizeof( int ) );
+	memset( m_pwszLabels, 0, 10 * sizeof( wchar_t * ) );
+	memset( m_pszCommands, 0, 10 * sizeof( char * ) );
+	memset( m_fLabelsFlags, 0, 10 * sizeof( int ) );
 
 	m_pwszTitle = NULL;
 }
@@ -232,7 +232,7 @@ CClientMenuContext::~CClientMenuContext()
 
 		if ( m_pszCommands[ i ] != NULL )
 		{
-			free( (void *)m_pszCommands[ i ] );
+			MemFree( (void *)m_pszCommands[ i ] );
 		}
 	}
 }
@@ -494,7 +494,7 @@ void CClientMenuContext::FeedCommand( const char *pszCommand, int slot )
 {
 	if ( m_pszCommands[ slot ] == NULL )
 	{
-		m_pszCommands[ slot ] = strdup( pszCommand );
+		m_pszCommands[ slot ] = MemStrdup( pszCommand );
 	}
 }
 
@@ -536,7 +536,7 @@ bool CClientMenu::LoadFromFile( void )
 	{
 		PrintWarning( "[ClientMenu] Expected \"clientmenu/clientmenu.txt\" as main section in the file \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\"\n" );
 
-		delete kv_filemanager;
+		MemFreeInstance( kv_filemanager );
 		return false;
 	}
 
@@ -606,7 +606,7 @@ bool CClientMenu::LoadFromFile( void )
 		if ( kv_clientmenu->Key() != "ClientMenu" )
 		{
 			PrintWarning( "[ClientMenu] Expected \"ClientMenu\" as main section in the file \"../%s\"\n", sPath.c_str() );
-			delete kv_clientmenu;
+			MemFreeInstance( kv_clientmenu );
 		}
 
 		for ( const std::pair<std::string, std::string> &pair : localizationMap )
@@ -653,7 +653,7 @@ bool CClientMenu::LoadFromFile( void )
 			{
 				PrintWarning( "[ClientMenu] Expected \"lang\" as main section in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
-				delete kv_localization;
+				MemFreeInstance( kv_localization );
 				break;
 			}
 
@@ -690,7 +690,7 @@ bool CClientMenu::LoadFromFile( void )
 			{
 				PrintWarning( "[ClientMenu] Key \"Language\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
-				delete kv_localization;
+				MemFreeInstance( kv_localization );
 				break;
 			}
 
@@ -698,7 +698,7 @@ bool CClientMenu::LoadFromFile( void )
 			{
 				PrintWarning( "[ClientMenu] Language mismatch in the key \"Language\" of the localization file \"%s.txt\" (expected \"%s\")\n", sLocalizationFile.c_str(), menu->Value().c_str() );
 
-				delete kv_localization;
+				MemFreeInstance( kv_localization );
 				break;
 			}
 
@@ -706,7 +706,7 @@ bool CClientMenu::LoadFromFile( void )
 			{
 				PrintWarning( "[ClientMenu] Section \"Tokens\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
-				delete kv_localization;
+				MemFreeInstance( kv_localization );
 				break;
 			}
 
@@ -731,7 +731,7 @@ bool CClientMenu::LoadFromFile( void )
 			bHasLocalization = true;
 			PrintMsg( "Loaded localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
-			delete kv_localization;
+			MemFreeInstance( kv_localization );
 			break;
 		}
 
@@ -742,7 +742,7 @@ bool CClientMenu::LoadFromFile( void )
 			if ( !menu->IsSection() || menu->Key().size() == 0 )
 				continue;
 
-			CClientMenuContext *pMenuContext = new CClientMenuContext();
+			CClientMenuContext *pMenuContext = MemAllocInstance( (CClientMenuContext *)NULL );
 
 			for ( size_t k = 0; k < menu->GetList().size(); k++ )
 			{
@@ -826,10 +826,10 @@ bool CClientMenu::LoadFromFile( void )
 
 		PrintMsg( "Loaded client menu \"%s\"\n", file->Key().c_str() );
 
-		delete kv_clientmenu;
+		MemFreeInstance( kv_clientmenu );
 	}
 
-	delete kv_filemanager;
+	MemFreeInstance( kv_filemanager );
 
 	for ( const std::pair<std::string, std::string> &pair : localizationMap )
 	{
@@ -958,7 +958,7 @@ void CClientMenu::ClearAllContexts( void )
 	for ( const std::pair<std::string, CClientMenuContext *> &pair : m_Menus )
 	{
 		const_cast<std::string *>( &pair.first )->clear();
-		delete pair.second;
+		MemFreeInstance( pair.second );
 	}
 
 	m_Menus.clear();
@@ -1031,19 +1031,31 @@ bool CClientMenu::Load( void )
 	int iDisassembledBytes = 0;
 	void *pfnDrawCharacter = cl_enginefuncs->pfnDrawCharacter;
 
+#ifdef WIN32
 	if ( *(unsigned char *)pfnDrawCharacter == 0xE9 ) // JMP
 		pfnDrawCharacter = MemoryUtils()->CalcAbsoluteAddress( pfnDrawCharacter );
 
+	bool bFoundPcThunk = true;
 	MemoryUtils()->InitDisasm( &inst, pfnDrawCharacter, 32, 48 );
-
+#else
+	bool bFoundPcThunk = false;
+	MemoryUtils()->InitDisasm( &inst, pfnDrawCharacter, 32, 72 );
+#endif
 	pCallOpcode = (unsigned char *)pfnDrawCharacter;
 
 	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
 	{
 		if ( inst.mnemonic == UD_Icall )
 		{
-			VGUI2_GetCreditsFont = (VGUI2_GetCreditsFontFn)MemoryUtils()->CalcAbsoluteAddress( pCallOpcode );
-			break;
+			if ( !bFoundPcThunk )
+			{
+				bFoundPcThunk = true;
+			}
+			else
+			{
+				VGUI2_GetCreditsFont = (VGUI2_GetCreditsFontFn)MemoryUtils()->CalcAbsoluteAddress( pCallOpcode );
+				break;
+			}
 		}
 
 		pCallOpcode += iDisassembledBytes;

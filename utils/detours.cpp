@@ -6,11 +6,16 @@
 #include <vector>
 
 #include "detours.h"
+#include "memalloc.h"
 #include "udis86/udis86.h"
 
 #ifdef WIN32
 #include <Windows.h>
 #include <tlhelp32.h>
+#endif
+
+#ifndef WIN32
+#define DETOURS_PIC_EXECUTABLE
 #endif
 
 #define FOR_EACH_DETOUR( iter ) for ( unsigned int iter = 0; iter < m_detours.size(); iter++ )
@@ -84,7 +89,7 @@ public:
 public:
 	CDetourFunction *FindDetourByFunction( void *pDetourFunction );
 
-	CDetourFunction *AddDetour( DetourHandle_t hDetour, void *pDetourFunction, void **ppTrampoline, bool bPaused );
+	CDetourFunction *AddDetour( DetourHandle_t hDetour, void *pDetourFunction, void **ppTrampoline, int iDetourPriority, bool bPaused );
 	bool			RemoveDetour( DetourHandle_t hDetour );
 
 	bool			PauseDetour( DetourHandle_t hDetour );
@@ -100,8 +105,8 @@ private:
 	void *m_pGateway;
 
 	int m_nStolenBytes;
-	unsigned char *m_pOriginalBytes;
-	unsigned char *m_pPatchedBytes;
+	uint8_t *m_pOriginalBytes;
+	uint8_t *m_pPatchedBytes;
 };
 
 //-----------------------------------------------------------------------------
@@ -115,8 +120,10 @@ CDetours::CDetours() : m_DetoursTable( 255 ), m_ContextsTable( 255 )
 	m_bGlobalAttach = false;
 	m_bSuspendThreads = true;
 
+#ifdef WIN32
 	m_dwCurrentThreadID = 0;
 	m_dwCurrentProcessID = 0;
+#endif
 }
 
 CDetours::~CDetours()
@@ -131,12 +138,23 @@ void CDetours::Init( void )
 #endif
 }
 
-DetourHandle_t CDetours::DetourFunction( void *pFunction, void *pDetourFunction, void **ppOriginalFunction, bool bPause /* = false */, int iDisasmMinBytes /* = 5 */ )
+DetourHandle_t CDetours::DetourFunction( void *pFunction,
+										 void *pDetourFunction,
+										 void **ppOriginalFunction,
+										 int iDetourPriority /* = kDetourPriorityNormal */,
+										 bool bPause /* = false */,
+										 int iDisasmMinBytes /* = 5 */ )
 {
-	return CreateDetour( kDetourFunction, pFunction, pDetourFunction, ppOriginalFunction, bPause, iDisasmMinBytes );
+	return CreateDetour( kDetourFunction, pFunction, pDetourFunction, ppOriginalFunction, iDetourPriority, bPause, iDisasmMinBytes );
 }
 
-DetourHandle_t CDetours::DetourFunctionByName( module_t hModule, const char *pszFunctionName, void *pDetourFunction, void **ppOriginalFunction, bool bPause /* = false */, int iDisasmMinBytes /* = 5 */ )
+DetourHandle_t CDetours::DetourFunctionByName( module_t hModule,
+											   const char *pszFunctionName,
+											   void *pDetourFunction,
+											   void **ppOriginalFunction,
+											   int iDetourPriority /* = kDetourPriorityNormal */,
+											   bool bPause /* = false */,
+											   int iDisasmMinBytes /* = 5 */ )
 {
 #ifdef WIN32
 	void *pFunction = GetProcAddress( (HMODULE)hModule, pszFunctionName );
@@ -147,10 +165,15 @@ DetourHandle_t CDetours::DetourFunctionByName( module_t hModule, const char *psz
 	if ( pFunction == NULL )
 		return DETOUR_INVALID_HANDLE;
 
-	return CreateDetour( kDetourFunction, pFunction, pDetourFunction, ppOriginalFunction, bPause, iDisasmMinBytes );
+	return CreateDetour( kDetourFunction, pFunction, pDetourFunction, ppOriginalFunction, iDetourPriority, bPause, iDisasmMinBytes );
 }
 
-DetourHandle_t CDetours::DetourVirtualFunction( void *pClassInstance, int nFunctionIndex, void *pDetourFunction, void **ppOriginalFunction, bool bPause /* = false */ )
+DetourHandle_t CDetours::DetourVirtualFunction( void *pClassInstance,
+												int nFunctionIndex,
+												void *pDetourFunction,
+												void **ppOriginalFunction,
+												int iDetourPriority /* = kDetourPriorityNormal */,
+												bool bPause /* = false */ )
 {
 	if ( pClassInstance == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -160,9 +183,9 @@ DetourHandle_t CDetours::DetourVirtualFunction( void *pClassInstance, int nFunct
 	if ( pVTable == NULL )
 		return DETOUR_INVALID_HANDLE;
 
-	void *pFunction = (void *)( (unsigned long *)pVTable + nFunctionIndex );
+	void *pFunction = (void *)( (uint32_t *)pVTable + nFunctionIndex );
 
-	return CreateDetour( kDetourVTableFunction, pFunction, pDetourFunction, ppOriginalFunction, bPause, 5 );
+	return CreateDetour( kDetourVTableFunction, pFunction, pDetourFunction, ppOriginalFunction, iDetourPriority, bPause, 5 );
 }
 
 bool CDetours::PauseDetour( DetourHandle_t hDetour )
@@ -205,7 +228,9 @@ bool CDetours::RemoveDetour( DetourHandle_t hDetour )
 			if ( !pContext->HasDetours() )
 			{
 				m_ContextsTable.Remove( pContext->GetDetourTarget() );
-				delete pContext;
+
+				MemFreeInstance( pContext );
+				//delete pContext;
 			}
 
 			return true;
@@ -251,7 +276,7 @@ bool CDetours::UnpauseAllDetours( void )
 	return bUnpaused;
 }
 
-DetourHandle_t CDetours::CreateDetour( int type, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, bool bPause, int iDisasmMinBytes )
+DetourHandle_t CDetours::CreateDetour( int type, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, int iDetourPriority, bool bPause, int iDisasmMinBytes )
 {
 	if ( pFunction == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -276,7 +301,7 @@ DetourHandle_t CDetours::CreateDetour( int type, void *pFunction, void *pDetourF
 			CDetourFunction *pDetour = NULL;
 			DetourHandle_t hDetour = AllocateDetourHandle();
 
-			if ( pDetour = pContext->AddDetour( hDetour, pDetourFunction, ppOriginalFunction, bPause ) )
+			if ( pDetour = pContext->AddDetour( hDetour, pDetourFunction, ppOriginalFunction, iDetourPriority, bPause ) )
 			{
 				m_DetoursTable.Insert( hDetour, pDetour );
 				return hDetour;
@@ -285,11 +310,13 @@ DetourHandle_t CDetours::CreateDetour( int type, void *pFunction, void *pDetourF
 	}
 	else
 	{
-		pContext = new CDetourContext( type, pFunction );
+		pContext = MemAllocInstance( pContext, type, pFunction );
+		//pContext = new CDetourContext( type, pFunction );
 
 		if ( !pContext->Init( iDisasmMinBytes ) )
 		{
-			delete pContext;
+			MemFreeInstance( pContext );
+			//delete pContext;
 		}
 		else
 		{
@@ -297,7 +324,7 @@ DetourHandle_t CDetours::CreateDetour( int type, void *pFunction, void *pDetourF
 			DetourHandle_t hDetour = AllocateDetourHandle();
 
 			m_ContextsTable.Insert( pFunction, pContext );
-			pDetour = pContext->AddDetour( hDetour, pDetourFunction, ppOriginalFunction, bPause );
+			pDetour = pContext->AddDetour( hDetour, pDetourFunction, ppOriginalFunction, iDetourPriority, bPause );
 
 			if ( pDetour )
 			{
@@ -476,14 +503,15 @@ CDetourContext::~CDetourContext()
 		else
 			pDetour->SetTrampoline( m_pFunction );
 
-		delete pDetour;
+		MemFree( pDetour );
+		//delete pDetour;
 	}
 
 	if ( m_type == kDetourFunction )
 	{
 		if ( m_pOriginalBytes != NULL )
 		{
-			free( (void *)m_pOriginalBytes );
+			MemFree( (void *)m_pOriginalBytes );
 			m_pOriginalBytes = m_pPatchedBytes = NULL;
 		}
 
@@ -501,15 +529,21 @@ bool CDetourContext::Init( int iDisasmMinBytes )
 {
 	if ( m_type == kDetourFunction )
 	{
-		std::vector<void *> vCalleeFunctions;
+		std::vector<void *> calleeFunctions;
 		m_nStolenBytes = 0;
 
 		ud_t instruction;
-		unsigned char *buffer = (unsigned char *)m_pFunction;
+		uint8_t *buffer = (uint8_t *)m_pFunction;
 
 		ud_init( &instruction );
 		ud_set_mode( &instruction, 32 );
 		ud_set_input_buffer( &instruction, (const uint8_t *)buffer, iDisasmMinBytes <= 15 ? 15 : iDisasmMinBytes ); // 15 - longest x86 instruction
+
+	#ifdef DETOURS_PIC_EXECUTABLE
+		uint8_t *pGetPcThunk = NULL;
+		uint8_t *pGetPcThunkRet = 0;
+		uint8_t cMovOpcode = 0;
+	#endif
 
 		// Disassemble for JMP opcode
 		do
@@ -519,10 +553,58 @@ bool CDetourContext::Init( int iDisasmMinBytes )
 			// Save callee functions, then we can calc their relative addresses in gateway
 			if ( instruction.mnemonic == UD_Icall || instruction.mnemonic == UD_Ijmp )
 			{
-				unsigned long luRelativeAddress = *(unsigned long *)( buffer + 1 );
-				void *pAbsoluteAddress = (void *)( luRelativeAddress + (unsigned long)buffer + sizeof( void * ) + 1 );
+			#ifdef DETOURS_PIC_EXECUTABLE
+				if ( pGetPcThunk == NULL )
+				{
+					uint8_t *pGetPcThunkAbs = MemoryUtils()->CalcAbsoluteAddress( buffer );
+					if ( *pGetPcThunkAbs == 0x8B &&			// mov REGISTER, [esp]
+						*( pGetPcThunkAbs + 2 ) == 0x24 &&	// <- esp
+						*( pGetPcThunkAbs + 3 ) == 0xC3 )	// ret
+					{
+						switch ( *( pGetPcThunkAbs + 1 ) )
+						{
+						case 0x04: // eax
+							cMovOpcode = 0xB8;
+							break;
 
-				vCalleeFunctions.push_back( pAbsoluteAddress );
+						case 0x1C: // ebx
+							cMovOpcode = 0xBB;
+							break;
+
+						case 0x0C: // ecx
+							cMovOpcode = 0xB9;
+							break;
+
+						case 0x14: // edx
+							cMovOpcode = 0xBa;
+							break;
+
+						case 0x34: // esi
+							cMovOpcode = 0xBE;
+							break;
+
+						case 0x3C: // edi
+							cMovOpcode = 0xBF;
+							break;
+
+						case 0x2C: // ebp
+							cMovOpcode = 0xBD;
+							break;
+						}
+					}
+
+					if ( cMovOpcode != 0 )
+					{
+						pGetPcThunk = buffer;
+						pGetPcThunkRet = buffer + disassembledBytes;
+					}
+				}
+			#endif
+
+				uint32_t luRelativeAddress = *(uint32_t *)( buffer + 1 );
+				void *pAbsoluteAddress = (void *)( luRelativeAddress + (uint32_t)buffer + sizeof( void * ) + 1 );
+
+				calleeFunctions.push_back( pAbsoluteAddress );
 			}
 
 			buffer += disassembledBytes;
@@ -533,11 +615,11 @@ bool CDetourContext::Init( int iDisasmMinBytes )
 		int nNOPs = m_nStolenBytes - 5;
 
 		// Allocate needed bytes once
-		m_pOriginalBytes = (unsigned char *)malloc( m_nStolenBytes * 2 );
+		m_pOriginalBytes = (uint8_t *)MemAlloc( m_nStolenBytes * 2 );
 
 		if ( !m_pOriginalBytes )
 		{
-			vCalleeFunctions.clear();
+			calleeFunctions.clear();
 			return false;
 		}
 
@@ -553,49 +635,59 @@ bool CDetourContext::Init( int iDisasmMinBytes )
 		// Initializaing the gateway
 
 		// Alloc size: m_nStolenBytes + 5 ( JMP [relative offset] )
-		unsigned char callBytes[ 5 ] = { 0xE9 };
+		uint8_t callBytes[ 5 ] = { 0xE9 };
 		m_pGateway = MemoryUtils()->VirtualAlloc( NULL, m_nStolenBytes + sizeof( callBytes ), MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE );
 
 		if ( !m_pGateway )
 		{
-			vCalleeFunctions.clear();
+			calleeFunctions.clear();
 			return false;
 		}
 
 		memcpy( m_pGateway, m_pOriginalBytes, m_nStolenBytes );
 
 		// Write relative addresses to CALL opcodes
-		if ( vCalleeFunctions.size() > 0 )
+		if ( calleeFunctions.size() > 0 )
 		{
 			int iter = 0;
-			int disassembledBytes = 0;
+			int disassembledBytes = 0, totalDisassembledBytes = 0;
 
-			buffer = (unsigned char *)m_pGateway;
+			buffer = (uint8_t *)m_pGateway;
 
 			ud_init( &instruction );
 			ud_set_mode( &instruction, 32 );
 			ud_set_input_buffer( &instruction, (const uint8_t *)buffer, m_nStolenBytes );
 
-			do
+			while ( disassembledBytes = ud_disassemble( &instruction ) )
 			{
+				totalDisassembledBytes += disassembledBytes;
+
 				if ( instruction.mnemonic == UD_Icall || instruction.mnemonic == UD_Ijmp )
 				{
-					*(unsigned long *)( buffer + 1 ) = ( (unsigned long)vCalleeFunctions[ iter ] - ( (unsigned long)buffer + sizeof( void * ) + 1 ) );
+					*(uint32_t *)( buffer + 1 ) = ( (uint32_t)calleeFunctions[ iter ] - ( (uint32_t)buffer + sizeof( void * ) + 1 ) );
 					++iter;
 				}
 
 				buffer += disassembledBytes;
-
-			} while ( disassembledBytes = ud_disassemble( &instruction ) );
+			}
 		}
 
+	#ifdef DETOURS_PIC_EXECUTABLE
+		if ( cMovOpcode != 0 )
+		{
+			const uint32_t ulOffsetToThunk = (uint32_t)pGetPcThunk - (uint32_t)m_pFunction;
+			*( (uint8_t *)m_pGateway + ulOffsetToThunk ) = cMovOpcode;
+			*(uint32_t *)( (uint8_t *)m_pGateway + ulOffsetToThunk + 1 ) = (uint32_t)pGetPcThunkRet;
+		}
+	#endif
+
 		// Calc relative address to jump back to original function
-		*(unsigned long *)( callBytes + 1 ) = ( (unsigned long)m_pFunction + m_nStolenBytes ) - ( ( (unsigned long)m_pGateway + m_nStolenBytes ) + sizeof( void * ) + 1 );
+		*(uint32_t *)( callBytes + 1 ) = ( (uint32_t)m_pFunction + m_nStolenBytes ) - ( ( (uint32_t)m_pGateway + m_nStolenBytes ) + sizeof( void * ) + 1 );
 
 		// And copy it
-		memcpy( (unsigned char *)m_pGateway + m_nStolenBytes, callBytes, sizeof( callBytes ) );
+		memcpy( (uint8_t *)m_pGateway + m_nStolenBytes, callBytes, sizeof( callBytes ) );
 
-		vCalleeFunctions.clear();
+		calleeFunctions.clear();
 		return true;
 	}
 	else if ( m_type == kDetourVTableFunction )
@@ -693,7 +785,7 @@ void CDetourContext::InstallDetours( void )
 	if ( m_type == kDetourFunction )
 	{
 		// Relative address
-		*(unsigned long *)( m_pPatchedBytes + 1 ) = (unsigned long)pFirstDetour->GetDetour() - ( (unsigned long)m_pFunction + sizeof( void * ) + 1 );
+		*(uint32_t*)( m_pPatchedBytes + 1 ) = (uint32_t)pFirstDetour->GetDetour() - ( (uint32_t)m_pFunction + sizeof( void * ) + 1 );
 
 		MemoryUtils()->VirtualProtect( m_pFunction, m_nStolenBytes, PAGE_EXECUTE_READWRITE, &dwProtection );
 
@@ -795,14 +887,28 @@ CDetourFunction *CDetourContext::FindDetourByFunction( void *pDetourFunction )
 	return NULL;
 }
 
-CDetourFunction *CDetourContext::AddDetour( DetourHandle_t hDetour, void *pDetourFunction, void **ppTrampoline, bool bPaused )
+CDetourFunction *CDetourContext::AddDetour( DetourHandle_t hDetour, void *pDetourFunction, void **ppTrampoline, int iDetourPriority, bool bPaused )
 {
-	CDetourFunction *pDetour = new CDetourFunction( hDetour, this, pDetourFunction, ppTrampoline );
+	CDetourFunction *pDetour = MemAllocInstance( (CDetourFunction *)NULL, hDetour, this, pDetourFunction, ppTrampoline);
+	//CDetourFunction *pDetour = new CDetourFunction( hDetour, this, pDetourFunction, ppTrampoline );
 
 	if ( pDetour == NULL )
 		return NULL;
 
-	m_detours.push_back( pDetour );
+	//m_detours.push_back( pDetour );
+
+	if ( iDetourPriority == kDetourPriorityNormal )
+	{
+		m_detours.insert( m_detours.begin() + m_detours.size() / 2, pDetour );
+	}
+	else if ( iDetourPriority == kDetourPriorityLow )
+	{
+		m_detours.push_back( pDetour );
+	}
+	else
+	{
+		m_detours.insert( m_detours.begin(), pDetour );
+	}
 
 	if ( bPaused )
 		pDetour->m_bPaused = true;
@@ -822,7 +928,9 @@ bool CDetourContext::RemoveDetour( DetourHandle_t hDetour )
 		{
 			bool bPaused = pDetour->IsPaused();
 
-			delete pDetour;
+			MemFree( pDetour );
+			//delete pDetour;
+
 			m_detours.erase( m_detours.begin() + i );
 
 			if ( !bPaused )

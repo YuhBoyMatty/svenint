@@ -41,6 +41,7 @@ public:
 
 	float *GetColor( int iPlayerIndex );
 	inline float *GetRainbowColor( void ) { return m_flRainbowColor; }
+	inline CHudBaseTextBlock *GetHudBaseTextBlock( void ) const { return m_pHudBaseTextBlock; }
 	inline void SaveHudBaseTextBlock( CHudBaseTextBlock *pHudBaseTextBlock ) { m_pHudBaseTextBlock = pHudBaseTextBlock; }
 
 private:

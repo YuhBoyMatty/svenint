@@ -11,7 +11,7 @@ using namespace Globals;
 // Declare hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC_PTR( int, __cdecl, ORIG_StudioDrawPlayer, int, entity_state_t * );
+DECLARE_FUNC_PTR( int, CALLCONV_CDECL, ORIG_StudioDrawPlayer, int, entity_state_t * );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -23,7 +23,7 @@ EXPOSE_FEATURE_SINGLETON( CDrawEntities, drawentities, "Render", "Draw Entities"
 // Studio renderer hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_StudioDrawPlayer, int flags, entity_state_t *pplayer )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_StudioDrawPlayer, int flags, entity_state_t *pplayer )
 {
 	cl_entity_t *pEntity = enginestudio->GetCurrentEntity();
 

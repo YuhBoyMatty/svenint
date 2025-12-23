@@ -5,6 +5,9 @@
 #define SINT_GOST_28147_H
 
 #include <stdint.h>
+#ifndef WIN32
+#include <stddef.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -56,14 +56,14 @@ public:
 	void DrawCircle3D( Vector &position, float points, float radius, int r, int g, int b, int a );
 	void DrawLine( int x0, int y0, int x1, int y1, int r, int g, int b, int a );
 
-	void BoxCorner( int x, int y, int w, int h, int lw, BYTE r, BYTE g, BYTE b, BYTE a );
-	void BoxCornerOutline( int x, int y, int w, int h, int lw, BYTE r, BYTE g, BYTE b, BYTE a );
+	void BoxCorner( int x, int y, int w, int h, int lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
+	void BoxCornerOutline( int x, int y, int w, int h, int lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
 
 	void DrawCoalBox( int x, int y, int w, int h, int lw, int r, int g, int b, int a );
-	void DrawOutlineCoalBox( int x, int y, int w, int h, int  lw, BYTE r, BYTE g, BYTE b, BYTE a );
+	void DrawOutlineCoalBox( int x, int y, int w, int h, int  lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
 	void DrawPlayerBox( int x, int y, int w, int h, int r, int g, int b, int a, bool outline );
 	void DrawBox( int x, int y, int w, int h, int r, int g, int b, int a );
-	void BoxOutline( float x, float y, float w, float h, float lw, BYTE r, BYTE g, BYTE b, BYTE a );
+	void BoxOutline( float x, float y, float w, float h, float lw, uint8_t r, uint8_t g, uint8_t b, uint8_t a );
 	void Box( int x, int y, int w, int h, int lw, int r, int g, int b, int a );
 
 	int DrawDigit( int digit, int x, int y, int r, int g, int b );

@@ -108,7 +108,7 @@ ConVar sc_ms_debug( "sc_ms_debug", "0", FCVAR_CLIENTDLL, "sc_ms_debug [0/1] - En
 
 CSpamTask::CSpamTask( const char *pszName )
 {
-	m_pszName = (const char *)strdup( pszName );
+	m_pszName = (const char *)MemStrdup( pszName );
 	m_bLoop = false;
 	m_iOperatorBegin = 0;
 }
@@ -116,12 +116,13 @@ CSpamTask::CSpamTask( const char *pszName )
 CSpamTask::~CSpamTask()
 {
 	if ( m_pszName )
-		free( (void *)m_pszName );
+		MemFree( (void *)m_pszName );
 
 	for ( size_t i = 0; i < m_operators.size(); ++i )
 	{
 		ISpamOperator *pOperator = m_operators[ i ];
-		delete pOperator;
+		MemFreeInstance( pOperator );
+		//delete pOperator;
 	}
 
 	m_operators.clear();
@@ -199,20 +200,20 @@ CSpamOperatorSend::CSpamOperatorSend()
 CSpamOperatorSend::~CSpamOperatorSend()
 {
 	if ( m_pszMessage )
-		free( (void *)m_pszMessage );
+		MemFree( (void *)m_pszMessage );
 }
 
 void CSpamOperatorSend::Run( CSpamInfo &spamInfo )
 {
-	static char command_buffer[ 512 ];
+	char command_buffer[ 512 ];
 
-	sprintf_s( command_buffer, sizeof( command_buffer ), "say %s", m_pszMessage );
+	snprintf( command_buffer, sizeof( command_buffer ), "say %s", m_pszMessage );
 	cl_enginefuncs->pfnClientCmd( command_buffer );
 }
 
 void CSpamOperatorSend::SetOperand( const char *pszMessage )
 {
-	m_pszMessage = (const char *)strdup( pszMessage );
+	m_pszMessage = (const char *)MemStrdup( pszMessage );
 }
 
 //-----------------------------------------------------------------------------
@@ -255,9 +256,9 @@ bool CMessageSpammer::AddTask( const char *pszTaskName )
 	if ( GetTask( pszTaskName ) )
 		return ReloadTask( pszTaskName );
 
-	static char szBuffer[ 512 ];
+	char szBuffer[ 512 ];
 
-	sprintf_s( szBuffer, sizeof( szBuffer ), SVENINT_FOLDER_NAME "/message_spammer/%s.txt", pszTaskName );
+	snprintf( szBuffer, sizeof( szBuffer ), SVENINT_FOLDER_NAME "/message_spammer/%s.txt", pszTaskName );
 
 	FILE *file = fopen( szBuffer, "r" );
 
@@ -273,7 +274,7 @@ bool CMessageSpammer::AddTask( const char *pszTaskName )
 		std::regex regex_send( "^send (.+)[\n]{0,1}$" );
 		std::regex regex_sleep( "^sleep ([0-9.]+)[\n]{0,1}$" );
 
-		CSpamTask *pTask = new CSpamTask( pszTaskName );
+		CSpamTask *pTask = MemAllocInstance( (CSpamTask *)NULL, pszTaskName );
 
 		if ( bDebug )
 			Msg( "< Parsing task: %s >\n", pszTaskName );
@@ -307,7 +308,7 @@ bool CMessageSpammer::AddTask( const char *pszTaskName )
 				if ( bDebug )
 					Msg( "[%d] Found action | send %s\n", nLine, match[ 1 ].str().c_str() );
 
-				CSpamOperatorSend *pOperator = new CSpamOperatorSend();
+				CSpamOperatorSend *pOperator = MemAllocInstance( (CSpamOperatorSend *)NULL );
 
 				pOperator->SetOperand( match[ 1 ].str().c_str() );
 				pTask->AddOperator( reinterpret_cast<ISpamOperator *>( pOperator ) );
@@ -319,7 +320,7 @@ bool CMessageSpammer::AddTask( const char *pszTaskName )
 				if ( bDebug )
 					Msg( "[%d] Found action | sleep %s\n", nLine, match[ 1 ].str().c_str() );
 
-				CSpamOperatorSleep *pOperator = new CSpamOperatorSleep();
+				CSpamOperatorSleep *pOperator = MemAllocInstance( (CSpamOperatorSleep *)NULL );
 
 				pOperator->SetOperand( strtof( match[ 1 ].str().c_str(), NULL ) );
 				pTask->AddOperator( reinterpret_cast<ISpamOperator *>( pOperator ) );
@@ -373,7 +374,9 @@ bool CMessageSpammer::RemoveTask( const char *pszTaskName )
 		if ( pszName && !strcmp( pszName, pszTaskName ) )
 		{
 			m_tasks.erase( m_tasks.begin() + i );
-			delete pTask;
+
+			MemFreeInstance( pTask );
+			//delete pTask;
 
 			Msg( "[Message Spammer] Spam task %s has been removed\n", pszTaskName );
 
@@ -412,7 +415,8 @@ EHookResult CMessageSpammer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		if ( !pTask->Run() )
 		{
 			m_tasks.erase( m_tasks.begin() + i );
-			delete pTask;
+			MemFreeInstance( pTask );
+			//delete pTask;
 			--i;
 		}
 	}

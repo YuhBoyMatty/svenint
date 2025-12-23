@@ -529,6 +529,12 @@ CAntiAFK::CAntiAFK( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	m_pStayRadius = NULL;
 	m_pStayRadiusOffsetAngle = NULL;
 	m_pRotationAngle = NULL;
+	m_pChangeNickname = NULL;
+	m_pNicknamePostfix = NULL;
+	m_pSendMessage = NULL;
+	m_pMessage = NULL;
+	m_pSendMessageNotAFK = NULL;
+	m_pMessageNotAFK = NULL;
 
 	m_bWaitingForClientdata = false;
 	m_bWaitingForRespawn = false;
@@ -548,6 +554,27 @@ void CAntiAFK::OnEnable( void )
 	m_bWaitingForClientdata = false;
 	m_bWaitingForRespawn = false;
 
+	player_info_t *pPlayerInfo = enginestudio->PlayerInfo( playermove->player_index() );
+	if ( m_pChangeNickname->GetBool() && pPlayerInfo != NULL )
+	{
+		m_sNickname = pPlayerInfo->name;
+
+		char cmd[ 256 ];
+		snprintf( cmd, Q_ARRAYSIZE( cmd ), "name \"%s %s\"", m_sNickname.c_str(), m_pNicknamePostfix->GetCString() );
+		cl_enginefuncs->pfnClientCmd( cmd );
+	}
+	else
+	{
+		m_sNickname.clear();
+	}
+
+	if ( m_pSendMessage->GetBool() )
+	{
+		char cmd[ 256 ];
+		snprintf( cmd, Q_ARRAYSIZE( cmd ), "say \"/me %s\"", m_pMessage->GetCString() );
+		cl_enginefuncs->pfnClientCmd( cmd );
+	}
+
 	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->RegisterListener( this, kHUD_UpdateClientData_HookEvent, kHookPostCall );
 	hookevents->RegisterListener( this, kSCR_EndLoadingPlaque_HookEvent );
@@ -560,6 +587,20 @@ void CAntiAFK::OnEnable( void )
 
 void CAntiAFK::OnDisable( void )
 {
+	if ( !m_sNickname.empty() )
+	{
+		char cmd[ 256 ];
+		snprintf( cmd, Q_ARRAYSIZE( cmd ), "name \"%s\"", m_sNickname.c_str() );
+		cl_enginefuncs->pfnClientCmd( cmd );
+	}
+
+	if ( m_pSendMessageNotAFK->GetBool() )
+	{
+		char cmd[ 256 ];
+		snprintf( cmd, Q_ARRAYSIZE( cmd ), "say \"/me %s\"", m_pMessageNotAFK->GetCString() );
+		cl_enginefuncs->pfnClientCmd( cmd );
+	}
+
 	hookevents->UnregisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->UnregisterListener( this, kHUD_UpdateClientData_HookEvent, kHookPostCall );
 	hookevents->UnregisterListener( this, kSCR_EndLoadingPlaque_HookEvent );
@@ -581,6 +622,17 @@ bool CAntiAFK::Load( void )
 	m_pStayRadius = Modules::menu->AddParamFloat( this, "StayRadius", NULL, 200.f, 10.f, 500.f );
 	m_pStayRadiusOffsetAngle = Modules::menu->AddParamFloat( this, "StayRadiusOffsetAngle", NULL, 30.f, 0.f, 89.f );
 	m_pRotationAngle = Modules::menu->AddParamFloat( this, "RotationAngle", NULL, -0.7f, -7.f, 7.f );
+
+	Modules::menu->AddElementSeparator( this, "Notification to Players" );
+
+	m_pChangeNickname = Modules::menu->AddParamBool( this, "ChangeNickname", NULL, false );
+	m_pNicknamePostfix = Modules::menu->AddParamText( this, "NicknamePostfix", NULL, "[AFK]" );
+
+	m_pSendMessage = Modules::menu->AddParamBool( this, "SendMessage", NULL, false );
+	m_pMessage = Modules::menu->AddParamText( this, "Message", NULL, "is AFK" );
+
+	m_pSendMessageNotAFK = Modules::menu->AddParamBool( this, "SendMessageNotAFK", NULL, false );
+	m_pMessageNotAFK = Modules::menu->AddParamText( this, "MessageNotAFK", NULL, "is not AFK anymore" );
 
 	return true;
 }

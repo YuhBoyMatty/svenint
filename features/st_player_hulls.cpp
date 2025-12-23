@@ -23,8 +23,8 @@ EXPOSE_FEATURE_SINGLETON( CPlayerHulls, playerhulls, "Speedrun Tools", "Player H
 void CPlayerHulls::CheckPlayerHulls_Server( void )
 {
 	using namespace GameData::Offsets::Server;
-	FUNC_SIGNATURE( bool, __thiscall, CBasePlayer__IsAliveFn, CBasePlayer * );
-	FUNC_SIGNATURE( bool, __thiscall, CBasePlayer__IsConnectedFn, CBasePlayer * );
+	FUNC_SIGNATURE( bool, CALLCONV_THISCALL, CBasePlayer__IsAliveFn, CBasePlayer * );
+	FUNC_SIGNATURE( bool, CALLCONV_THISCALL, CBasePlayer__IsConnectedFn, CBasePlayer * );
 
 	const float flTime = (float)*realtime;
 
@@ -71,12 +71,11 @@ void CPlayerHulls::CheckPlayerHulls_Server( void )
 
 			pPlayer = reinterpret_cast<CBasePlayer *>( pEntity->pvPrivateData );
 
-			if ( CBasePlayer__IsAlive == NULL )
+			if ( CBasePlayer__IsAlive == NULL || CBasePlayer__IsConnected == NULL )
 			{
 				CBasePlayer__IsAlive = (CBasePlayer__IsAliveFn)MemoryUtils()->GetVirtualFunction( pPlayer, vtidx_CBasePlayer_IsAlive );
 				CBasePlayer__IsConnected = (CBasePlayer__IsConnectedFn)MemoryUtils()->GetVirtualFunction( pPlayer, vtidx_CBasePlayer_IsConnected );
-
-				AssertMsg( CBasePlayer__IsAlive && CBasePlayer__IsConnected, "CBasePlayer::IsAlive && CBasePlayer::IsConnected" );
+				continue;
 			}
 
 			if ( !CBasePlayer__IsConnected( pPlayer ) || !CBasePlayer__IsAlive( pPlayer ) )

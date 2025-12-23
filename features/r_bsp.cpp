@@ -10,8 +10,6 @@
 #include <streambuf>
 #include <algorithm>
 
-#include <gl/GL.h>
-
 using namespace Globals;
 
 //-----------------------------------------------------------------------------
@@ -520,11 +518,11 @@ void CBsp::DrawTriangles( void )
 {
 	glDisable( GL_TEXTURE_2D );
 
+	cl_enginefuncs->pTriAPI->RenderMode( kRenderTransAdd );
+	cl_enginefuncs->pTriAPI->CullFace( TRI_NONE );
+
 	if ( m_pShowTriggers->GetBool() )
 	{
-		cl_enginefuncs->pTriAPI->RenderMode( kRenderTransAdd );
-		cl_enginefuncs->pTriAPI->CullFace( TRI_NONE );
-
 		for ( const CBspTriggerEntity &trigger : m_triggers )
 		{
 			float r, g, b, a;
@@ -662,6 +660,9 @@ void CBsp::DrawTriangles( void )
 
 			if ( bDraw )
 			{
+				if ( !cl_enginefuncs->pTriAPI->BoxInPVS( trigger.vecOrigin + trigger.vecMins, trigger.vecOrigin + trigger.vecMaxs ) )
+					continue;
+
 				DrawTrianglesBox( trigger.vecOrigin, trigger.vecMins, trigger.vecMaxs, r, g, b, a, 4.f, m_pWireframe->GetBool() );
 
 				if ( trigger.iType == TRIGGER_PUSH )
@@ -681,6 +682,9 @@ void CBsp::DrawTriangles( void )
 	{
 		for ( const CBspFuncWall &funcWall : m_funcWalls )
 		{
+			if ( !cl_enginefuncs->pTriAPI->BoxInPVS( funcWall.vecOrigin + funcWall.vecMins, funcWall.vecOrigin + funcWall.vecMaxs ) )
+				continue;
+
 			DrawTrianglesBox( funcWall.vecOrigin, funcWall.vecMins, funcWall.vecMaxs, 0.f, 1.f, 1.f, 32.f / 255.f, 4.f, m_pWireframe->GetBool() );
 		}
 	}
@@ -811,6 +815,9 @@ void CBsp::Draw( void )
 				if ( !UTIL_WorldToScreen( vecOrigin, vecScreen ) )
 					continue;
 
+				if ( !cl_enginefuncs->pTriAPI->BoxInPVS( trigger.vecOrigin + trigger.vecMins, trigger.vecOrigin + trigger.vecMaxs ) )
+					continue;
+
 				pmtrace_t trace;
 
 				Vector vecStart = localplayer->GetEyePosition();
@@ -902,7 +909,7 @@ void CBsp::LoadBSP( void )
 		return;
 
 	int file_len = filesystem->Size( hFile );
-	m_pBSP = new uint8_t[ file_len ];
+	m_pBSP = (uint8_t *)MemAlloc( file_len, "BSP" );
 
 	if ( !m_pBSP )
 	{
@@ -1005,7 +1012,7 @@ void CBsp::LoadBSP( void )
 		if ( trigger_type != INVALID_BSP_TRIGGER )
 		{
 			CBspTriggerEntity trigger;
-			ZeroMemory( &trigger, sizeof( CBspTriggerEntity ) );
+			memset( &trigger, 0, sizeof( CBspTriggerEntity ) );
 
 			trigger.iType = trigger_type;
 
@@ -1171,7 +1178,7 @@ void CBsp::LoadBSP( void )
 		else if ( bEntSpawn )
 		{
 			CBspMonsterSpawn monster;
-			ZeroMemory( &monster, sizeof( CBspMonsterSpawn ) );
+			memset( &monster, 0, sizeof( CBspMonsterSpawn ) );
 
 			auto found_origin = keyvalues.find( sOrigin );
 
@@ -1204,15 +1211,24 @@ void CBsp::LoadBSP( void )
 				if ( classname == "monstermaker" || classname == "squadmaker" || classname == "env_xenmaker" )
 				{
 					auto found_monstertype = keyvalues.find( sMonsterType );
-
-					if ( found_origin == keyvalues.end() )
+					if ( found_monstertype == keyvalues.end() )
 						continue;
 
+				#ifdef WIN32
 					strncpy_s( monster.szClassname, keyvalues.at( sMonsterType ).c_str(), keyvalues.at( sMonsterType ).length() );
+				#else
+					strncpy( monster.szClassname, keyvalues.at( sMonsterType ).c_str(), keyvalues.at( sMonsterType ).length() );
+					monster.szClassname[ Q_ARRAYSIZE( monster.szClassname ) - 1 ] = 0;
+				#endif
 				}
 				else
 				{
+				#ifdef WIN32
 					strncpy_s( monster.szClassname, classname.c_str(), classname.length() );
+				#else
+					strncpy( monster.szClassname, classname.c_str(), classname.length() );
+					monster.szClassname[ Q_ARRAYSIZE( monster.szClassname ) - 1 ] = 0;
+				#endif
 				}
 
 				m_monsterSpawns.push_back( monster );
@@ -1221,7 +1237,7 @@ void CBsp::LoadBSP( void )
 		else if ( bFuncWall )
 		{
 			CBspFuncWall funcWall;
-			ZeroMemory( &funcWall, sizeof( CBspFuncWall ) );
+			memset( &funcWall, 0, sizeof( CBspFuncWall ) );
 
 			auto found_model = keyvalues.find( sModel );
 			auto found_origin = keyvalues.find( sOrigin );
@@ -1436,7 +1452,7 @@ void CBsp::DeleteBspData( void )
 {
 	if ( m_pBSP != NULL )
 	{
-		delete[] m_pBSP;
+		MemFree( m_pBSP );
 		m_pBSP = NULL;
 	}
 }

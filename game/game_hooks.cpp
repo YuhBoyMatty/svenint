@@ -51,7 +51,7 @@ void CGameHooks::CallCvarChangeChain( cvar_t *pCvar, const char *pszOldValue, fl
 	}
 }
 
-bool CGameHooks::HookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHook )
+bool CGameHooks::HookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( pCvar == NULL || pfnCvarChangeHook == NULL )
 		return false;
@@ -66,7 +66,20 @@ bool CGameHooks::HookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHo
 			return false;
 		}
 		
-		pCvarChangeHooks->push_back( pfnCvarChangeHook );
+		//pCvarChangeHooks->push_back( pfnCvarChangeHook );
+
+		if ( iDetourPriority == kDetourPriorityNormal )
+		{
+			pCvarChangeHooks->insert( pCvarChangeHooks->begin() + pCvarChangeHooks->size() / 2, pfnCvarChangeHook );
+		}
+		else if ( iDetourPriority == kDetourPriorityLow )
+		{
+			pCvarChangeHooks->push_back( pfnCvarChangeHook );
+		}
+		else
+		{
+			pCvarChangeHooks->insert( pCvarChangeHooks->begin(), pfnCvarChangeHook );
+		}
 	}
 	else
 	{
@@ -84,7 +97,7 @@ bool CGameHooks::HookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHo
 	return true;
 }
 
-bool CGameHooks::UnhookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHook )
+bool CGameHooks::UnhookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChangeHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( pCvar == NULL || pfnCvarChangeHook == NULL )
 		return false;
@@ -119,7 +132,7 @@ bool CGameHooks::UnhookCvarChange( cvar_t *pCvar, CvarChangeHookFn pfnCvarChange
 // Network Message
 //-----------------------------------------------------------------------------
 
-DetourHandle_t CGameHooks::HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook )
+DetourHandle_t CGameHooks::HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( Globals::g_NetworkMessages == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -132,7 +145,7 @@ DetourHandle_t CGameHooks::HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsg
 		constexpr size_t index = offsetof( netmsg_t, function ) / sizeof( void * );
 
 		DevMsg( "<SvenInt::GameHooks> Hooked network message \"%s\" (%d) for detour at address 0x%X\n", pNetMsg->name, iType, pfnNetMsgHook );
-		return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook );
+		return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook, iDetourPriority );
 	}
 	else
 	{
@@ -142,7 +155,7 @@ DetourHandle_t CGameHooks::HookNetworkMessage( int iType, NetMsgHookFn pfnNetMsg
 	return DETOUR_INVALID_HANDLE;
 }
 
-DetourHandle_t CGameHooks::HookNetworkMessage( const char *pszName, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook )
+DetourHandle_t CGameHooks::HookNetworkMessage( const char *pszName, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( Globals::g_NetworkMessages == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -157,7 +170,7 @@ DetourHandle_t CGameHooks::HookNetworkMessage( const char *pszName, NetMsgHookFn
 			constexpr size_t index = offsetof( netmsg_t, function ) / sizeof( void * );
 
 			DevMsg( "<SvenInt::GameHooks> Hooked network message \"%s\" (%d) for detour at address 0x%X\n", pNetMsg->name, i, pfnNetMsgHook );
-			return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook );
+			return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook, iDetourPriority );
 		}
 	}
 
@@ -166,13 +179,13 @@ DetourHandle_t CGameHooks::HookNetworkMessage( const char *pszName, NetMsgHookFn
 	return DETOUR_INVALID_HANDLE;
 }
 
-DetourHandle_t CGameHooks::HookNetworkMessage( netmsg_t *pNetMsg, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook )
+DetourHandle_t CGameHooks::HookNetworkMessage( netmsg_t *pNetMsg, NetMsgHookFn pfnNetMsgHook, NetMsgHookFn *ppfnOriginalNetMsgHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	netmsg_t **ppNetMsg = &pNetMsg;
 	constexpr size_t index = offsetof( netmsg_t, function ) / sizeof( void * );
 
 	DevMsg( "<SvenInt::GameHooks> Hooked network message \"%s\" (%d) for detour at address 0x%X\n", pNetMsg->name, pNetMsg->index, pfnNetMsgHook );
-	return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook );
+	return Detours()->DetourVirtualFunction( ppNetMsg, index, pfnNetMsgHook, (void **)ppfnOriginalNetMsgHook, iDetourPriority );
 }
 
 bool CGameHooks::UnhookNetworkMessage( DetourHandle_t hNetMsgHook )
@@ -184,7 +197,7 @@ bool CGameHooks::UnhookNetworkMessage( DetourHandle_t hNetMsgHook )
 // User Message
 //-----------------------------------------------------------------------------
 
-DetourHandle_t CGameHooks::HookUserMessage( const char *pszName, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook )
+DetourHandle_t CGameHooks::HookUserMessage( const char *pszName, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( Globals::g_pClientUserMsgs == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -203,7 +216,7 @@ DetourHandle_t CGameHooks::HookUserMessage( const char *pszName, UserMsgHookFn p
 			constexpr size_t index = offsetof( usermsg_t, function ) / sizeof( void * );
 
 			DevMsg( "<SvenInt::GameHooks> Hooked user message \"%s\" (%d) for detour at address 0x%X\n", pUserMsg->name, ndx, pfnUserMsgHook );
-			return Detours()->DetourVirtualFunction( ppUserMsg, index, pfnUserMsgHook, (void **)ppfnOriginalUserMsgHook );
+			return Detours()->DetourVirtualFunction( ppUserMsg, index, pfnUserMsgHook, (void **)ppfnOriginalUserMsgHook, iDetourPriority );
 		}
 
 		pUserMsg = pUserMsg->next;
@@ -214,13 +227,13 @@ DetourHandle_t CGameHooks::HookUserMessage( const char *pszName, UserMsgHookFn p
 	return DETOUR_INVALID_HANDLE;
 }
 
-DetourHandle_t CGameHooks::HookUserMessage( usermsg_t *pUserMsg, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook )
+DetourHandle_t CGameHooks::HookUserMessage( usermsg_t *pUserMsg, UserMsgHookFn pfnUserMsgHook, UserMsgHookFn *ppfnOriginalUserMsgHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	usermsg_t **ppUserMsg = &pUserMsg;
 	constexpr size_t index = offsetof( usermsg_t, function ) / sizeof( void * );
 
 	DevMsg( "<SvenInt::GameHooks> Hooked user message \"%s\" (%d) for detour at address 0x%X\n", pUserMsg->name, pUserMsg->msgid, pfnUserMsgHook );
-	return Detours()->DetourVirtualFunction( ppUserMsg, index, pfnUserMsgHook, (void **)ppfnOriginalUserMsgHook );
+	return Detours()->DetourVirtualFunction( ppUserMsg, index, pfnUserMsgHook, (void **)ppfnOriginalUserMsgHook, iDetourPriority );
 }
 
 bool CGameHooks::UnhookUserMessage( DetourHandle_t hUserMsgHook )
@@ -232,7 +245,7 @@ bool CGameHooks::UnhookUserMessage( DetourHandle_t hUserMsgHook )
 // Event Hook
 //-----------------------------------------------------------------------------
 
-DetourHandle_t CGameHooks::HookEvent( const char *pszName, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook )
+DetourHandle_t CGameHooks::HookEvent( const char *pszName, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	if ( Globals::g_pEventHooks == NULL )
 		return DETOUR_INVALID_HANDLE;
@@ -249,7 +262,7 @@ DetourHandle_t CGameHooks::HookEvent( const char *pszName, EventHookFn pfnEventH
 				constexpr size_t index = offsetof( event_hook_t, function ) / sizeof( void * );
 
 				DevMsg( "<SvenInt::GameHooks> Hooked event hook \"%s\" for detour at address 0x%X\n", pEventHook->name, pfnEventHook );
-				return Detours()->DetourVirtualFunction( ppEventHook, index, pfnEventHook, (void **)ppfnOriginalEventHook );
+				return Detours()->DetourVirtualFunction( ppEventHook, index, pfnEventHook, (void **)ppfnOriginalEventHook, iDetourPriority );
 			}
 		}
 
@@ -261,13 +274,13 @@ DetourHandle_t CGameHooks::HookEvent( const char *pszName, EventHookFn pfnEventH
 	return DETOUR_INVALID_HANDLE;
 }
 
-DetourHandle_t CGameHooks::HookEvent( event_hook_t *pEventHook, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook )
+DetourHandle_t CGameHooks::HookEvent( event_hook_t *pEventHook, EventHookFn pfnEventHook, EventHookFn *ppfnOriginalEventHook, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	event_hook_t **ppEventHook = &pEventHook;
 	constexpr size_t index = offsetof( event_hook_t, function ) / sizeof( void * );
 
 	DevMsg( "<SvenInt::GameHooks> Hooked event hook \"%s\" for detour at address 0x%X\n", pEventHook->name, pfnEventHook );
-	return Detours()->DetourVirtualFunction( ppEventHook, index, pfnEventHook, (void **)ppfnOriginalEventHook );
+	return Detours()->DetourVirtualFunction( ppEventHook, index, pfnEventHook, (void **)ppfnOriginalEventHook, iDetourPriority );
 }
 
 bool CGameHooks::UnhookEvent( DetourHandle_t hEventHook )
@@ -279,7 +292,7 @@ bool CGameHooks::UnhookEvent( DetourHandle_t hEventHook )
 // Console Command
 //-----------------------------------------------------------------------------
 
-DetourHandle_t CGameHooks::HookConsoleCommand( const char *pszName, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback )
+DetourHandle_t CGameHooks::HookConsoleCommand( const char *pszName, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	cmd_function_t *pCmd = Globals::cvar->FindCmd( pszName );
 
@@ -290,16 +303,16 @@ DetourHandle_t CGameHooks::HookConsoleCommand( const char *pszName, CommandCallb
 	constexpr size_t index = offsetof( cmd_function_t, function ) / sizeof( void * );
 
 	DevMsg( "<SvenInt::GameHooks> Hooked console command \"%s\" for detour at address 0x%X\n", pCmd->name, pfnCommandCallback );
-	return Detours()->DetourVirtualFunction( ppCmd, index, pfnCommandCallback, (void **)ppfnOriginalCommandCallback );
+	return Detours()->DetourVirtualFunction( ppCmd, index, pfnCommandCallback, (void **)ppfnOriginalCommandCallback, iDetourPriority );
 }
 
-DetourHandle_t CGameHooks::HookConsoleCommand( cmd_function_t *pCommand, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback )
+DetourHandle_t CGameHooks::HookConsoleCommand( cmd_function_t *pCommand, CommandCallbackFn pfnCommandCallback, CommandCallbackFn *ppfnOriginalCommandCallback, int iDetourPriority /* = kDetourPriorityNormal */ )
 {
 	cmd_function_t **ppCommand = &pCommand;
 	constexpr size_t index = offsetof( cmd_function_t, function ) / sizeof( void * );
 
 	DevMsg( "<SvenInt::GameHooks> Hooked console command \"%s\" for detour at address 0x%X\n", pCommand->name, pfnCommandCallback );
-	return Detours()->DetourVirtualFunction( pCommand, index, pfnCommandCallback, (void **)ppfnOriginalCommandCallback );
+	return Detours()->DetourVirtualFunction( pCommand, index, pfnCommandCallback, (void **)ppfnOriginalCommandCallback, iDetourPriority );
 }
 
 bool CGameHooks::UnhookConsoleCommand( DetourHandle_t hCommandCallback )

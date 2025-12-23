@@ -5,6 +5,8 @@
 #include "misc_demo_capture.h"
 #include "modules/menu.h"
 
+#ifdef WIN32
+
 using namespace Globals;
 
 //-----------------------------------------------------------------------------
@@ -17,12 +19,12 @@ EXPOSE_FEATURE_SINGLETON( CDemoCapture, democapture, "Misc", "Demo Capture" );
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-ConVar sc_cap_fps( "sc_cap_fps", "60", FCVAR_EXTDLL );
-ConVar sc_cap_slowdown( "sc_cap_slowdown", "1", FCVAR_EXTDLL );
-ConVar sc_cap_sampling_min_fps( "sc_cap_sampling_min_fps", "7200", FCVAR_EXTDLL );
-ConVar sc_cap_sampling_round_fps( "sc_cap_sampling_round_fps", "1", FCVAR_EXTDLL );
+ConVar sc_demcap_fps( "sc_demcap_fps", "60", FCVAR_EXTDLL );
+ConVar sc_demcap_slowdown( "sc_demcap_slowdown", "1", FCVAR_EXTDLL );
+ConVar sc_demcap_sampling_min_fps( "sc_demcap_sampling_min_fps", "7200", FCVAR_EXTDLL );
+ConVar sc_demcap_sampling_round_fps( "sc_demcap_sampling_round_fps", "1", FCVAR_EXTDLL );
 
-CON_COMMAND( sc_cap_start, "Start capture" )
+CON_COMMAND( sc_demcap_start, "Start capture" )
 {
 	if ( args.ArgC() == 1 )
 	{
@@ -31,12 +33,12 @@ CON_COMMAND( sc_cap_start, "Start capture" )
 	}
 
 	THIS_FEATURE()->Start( args[ 1 ],
-						   static_cast<double>( sc_cap_fps.GetFloat() ),
-						   static_cast<double>( sc_cap_slowdown.GetFloat() ),
-						   static_cast<double>( sc_cap_sampling_min_fps.GetFloat() ) );
+						   static_cast<double>( sc_demcap_fps.GetFloat() ),
+						   static_cast<double>( sc_demcap_slowdown.GetFloat() ),
+						   static_cast<double>( sc_demcap_sampling_min_fps.GetFloat() ) );
 }
 
-CON_COMMAND( sc_cap_stop, "Stop capture" )
+CON_COMMAND( sc_demcap_stop, "Stop capture" )
 {
 	THIS_FEATURE()->Stop();
 }
@@ -59,7 +61,7 @@ bool CDemoCapture::Start( const char *pszFilename, double fps, double slowdown, 
 	m_captureFps = fps;
 	m_samplingFps = sampling_fps;
 	m_iFpsMultiplier = int( fpsMultiplier = ceil( sampling_fps / fps ) );
-	m_fps = sc_cap_sampling_round_fps.GetBool() ? m_captureFps * fpsMultiplier : m_samplingFps;
+	m_fps = sc_demcap_sampling_round_fps.GetBool() ? m_captureFps * fpsMultiplier : m_samplingFps;
 	m_frametime = ( 1.0 / m_captureFps ) * ( 1.0 / slowdown ); // m_fps
 
 	if ( m_fps < m_frametime )
@@ -68,7 +70,7 @@ bool CDemoCapture::Start( const char *pszFilename, double fps, double slowdown, 
 	m_iWidth = gameutils->GetScreenWidth();
 	m_iHeight = gameutils->GetScreenHeight();
 	m_nPixelsBufferSize = m_iWidth * m_iHeight * 3;
-	m_pPixelsBuffer = (char *)malloc( m_nPixelsBufferSize );
+	m_pPixelsBuffer = (char *)MemAlloc( m_nPixelsBufferSize, "Demo Capture" );
 
 	sampleFrametime = ( 1.0 / m_fps );
 
@@ -82,7 +84,7 @@ bool CDemoCapture::Start( const char *pszFilename, double fps, double slowdown, 
 
 	if ( !OpenPipe() )
 	{
-		free( (void *)m_pPixelsBuffer );
+		MemFree( (void *)m_pPixelsBuffer );
 		return false;
 	}
 
@@ -112,7 +114,7 @@ bool CDemoCapture::Stop( void )
 
 	ClosePipe();
 
-	free( (void *)m_pPixelsBuffer );
+	MemFree( (void *)m_pPixelsBuffer );
 
 	cvar->SetValue( "fps_max", 200 );
 	cvar->SetValue( "host_framerate", 0 );
@@ -322,12 +324,12 @@ void CDemoCapture::OnDisable( void )
 
 void CDemoCapture::PostLoad( void )
 {
-	FEATURE_REGISTER_CVAR( sc_cap_fps );
-	FEATURE_REGISTER_CVAR( sc_cap_slowdown );
-	FEATURE_REGISTER_CVAR( sc_cap_sampling_min_fps );
-	FEATURE_REGISTER_CVAR( sc_cap_sampling_round_fps );
-	FEATURE_REGISTER_CCMD( sc_cap_start );
-	FEATURE_REGISTER_CCMD( sc_cap_stop );
+	FEATURE_REGISTER_CVAR( sc_demcap_fps );
+	FEATURE_REGISTER_CVAR( sc_demcap_slowdown );
+	FEATURE_REGISTER_CVAR( sc_demcap_sampling_min_fps );
+	FEATURE_REGISTER_CVAR( sc_demcap_sampling_round_fps );
+	FEATURE_REGISTER_CCMD( sc_demcap_start );
+	FEATURE_REGISTER_CCMD( sc_demcap_stop );
 }
 
 //-----------------------------------------------------------------------------
@@ -341,10 +343,12 @@ void CDemoCapture::Unload( void )
 		Stop();
 	}
 
-	FEATURE_UNREGISTER_CVAR( sc_cap_fps );
-	FEATURE_UNREGISTER_CVAR( sc_cap_slowdown );
-	FEATURE_UNREGISTER_CVAR( sc_cap_sampling_min_fps );
-	FEATURE_UNREGISTER_CVAR( sc_cap_sampling_round_fps );
-	FEATURE_UNREGISTER_CCMD( sc_cap_start );
-	FEATURE_UNREGISTER_CCMD( sc_cap_stop );
+	FEATURE_UNREGISTER_CVAR( sc_demcap_fps );
+	FEATURE_UNREGISTER_CVAR( sc_demcap_slowdown );
+	FEATURE_UNREGISTER_CVAR( sc_demcap_sampling_min_fps );
+	FEATURE_UNREGISTER_CVAR( sc_demcap_sampling_round_fps );
+	FEATURE_UNREGISTER_CCMD( sc_demcap_start );
+	FEATURE_UNREGISTER_CCMD( sc_demcap_stop );
 }
+
+#endif

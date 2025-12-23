@@ -373,7 +373,12 @@ bool CVotePopup::OnVoteStart( const char *pszUserMsg, int iSize, void *pBuffer )
 
 			if ( std::regex_search( pszVoteMessage, match, regex_vote_target ) )
 			{
+			#ifdef WIN32
 				strcpy_s( m_szVoteTarget, sizeof( m_szVoteTarget ), match[ 1 ].str().c_str() );
+			#else
+				strncpy( m_szVoteTarget, match[ 1 ].str().c_str(), sizeof( m_szVoteTarget ) );
+				m_szVoteTarget[ sizeof( m_szVoteTarget ) - 1 ] = 0;
+			#endif
 
 				localize->ConvertANSIToUnicode( m_szVoteTarget, m_wszVoteTarget, sizeof( m_wszVoteTarget ) );
 				localize->ConstructString( m_wszVoteMessage, sizeof( m_wszVoteMessage ), (wchar_t *)s_wszVoteFormats[ m_iVoteType ], 1, m_wszVoteTarget );
@@ -424,11 +429,11 @@ bool CVotePopup::OnVoteStart( const char *pszUserMsg, int iSize, void *pBuffer )
 	m_wszVoteMessage[ Q_ARRAYSIZE( m_wszVoteMessage ) - 1 ] = 0;
 
 	if ( pszVoteMessage )
-		free( (void *)pszVoteMessage );
+		MemFree( (void *)pszVoteMessage );
 	if ( pszVoteYes )
-		free( (void *)pszVoteYes );
+		MemFree( (void *)pszVoteYes );
 	if ( pszVoteNo )
-		free( (void *)pszVoteNo );
+		MemFree( (void *)pszVoteNo );
 
 	m_bVoteStarted = true;
 	m_bShowPopup = true;
@@ -463,7 +468,7 @@ void CVotePopup::ValidateMessage( const char **pszMessage )
 	}
 	else
 	{
-		*pszMessage = strdup( *pszMessage );
+		*pszMessage = MemStrdup( *pszMessage );
 	}
 }
 

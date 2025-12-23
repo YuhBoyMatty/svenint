@@ -13,6 +13,11 @@
 #include "features/st_input_manager.h"
 #include "game/hook_events.h"
 #include "game/messagebuffer.h"
+#include "utils/prof.h"
+
+#ifdef IMGUI_USE_SDL
+#include <SDL.h>
+#endif
 
 #pragma warning( disable: 4390 )
 
@@ -21,6 +26,15 @@ namespace Modules { static CHooksModule hooksModule; CHooksModule *hooks = &hook
 //-----------------------------------------------------------------------------
 // Macro definitions
 //-----------------------------------------------------------------------------
+
+#define REPLACE_CL_FUNC( name ) \
+	if ( Globals::cl_funcs->name != NULL ) { \
+		ORIG_##name = (name##Fn)Globals::cl_funcs->name; \
+		Globals::cl_funcs->name = HOOKED_##name; \
+		DevMsg( "<SvenInt::Hooks> Replaced Client DLL function \"%s\" (0x%X) with detour at address 0x%X\n", #name, Globals::cl_funcs->name, HOOKED_##name ); \
+	} else { \
+		Warning2( "[SvenInt::Hooks] Replacable Client DLL function \"%s\" is NULL\n", #name ); \
+	}
 
 #define CREATE_HOOK_EVENT( type ) \
 	bool _Supercede = false; \
@@ -74,60 +88,71 @@ namespace Modules { static CHooksModule hooksModule; CHooksModule *hooks = &hook
 //-----------------------------------------------------------------------------
 
 // cldll_func hooks
-DECLARE_HOOK( int, __cdecl, HUD_VidInit );
-DECLARE_HOOK( int, __cdecl, HUD_Redraw, float time, int intermission );
-DECLARE_HOOK( int, __cdecl, HUD_UpdateClientData, client_data_t *pcldata, float flTime );
-DECLARE_HOOK( void, __cdecl, CL_CreateMove, float frametime, usercmd_t *cmd, int active );
-DECLARE_HOOK( void, __cdecl, V_CalcRefdef, ref_params_t *pparams );
-DECLARE_HOOK( int, __cdecl, HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname );
-DECLARE_HOOK( void, __cdecl, HUD_DrawTransparentTriangles );
-DECLARE_HOOK( void, __cdecl, HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity );
-DECLARE_HOOK( void, __cdecl, HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed );
-DECLARE_HOOK( void, __cdecl, Demo_ReadBuffer, int size, unsigned const char *buffer );
-DECLARE_HOOK( void, __cdecl, HUD_Frame, double time );
-DECLARE_HOOK( int, __cdecl, HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding );
-DECLARE_HOOK( void, __cdecl, HUD_OnClientDisconnect );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_VidInit );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_Redraw, float time, int intermission );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_UpdateClientData, client_data_t *pcldata, float flTime );
+DECLARE_HOOK( void, CALLCONV_CDECL, CL_CreateMove, float frametime, usercmd_t *cmd, int active );
+DECLARE_HOOK( void, CALLCONV_CDECL, V_CalcRefdef, ref_params_t *pparams );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_DrawTransparentTriangles );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed );
+DECLARE_HOOK( void, CALLCONV_CDECL, Demo_ReadBuffer, int size, unsigned const char *buffer );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_Frame, double time );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_OnClientDisconnect );
 
-DECLARE_HOOK( void, __cdecl, IN_Move, float frametime, usercmd_t *cmd );
-DECLARE_HOOK( void, __cdecl, Key_Event, int key, int down );
+DECLARE_HOOK( void, CALLCONV_CDECL, IN_Move, float frametime, usercmd_t *cmd );
+DECLARE_HOOK( void, CALLCONV_CDECL, Key_Event, int key, int down );
 
+#ifdef WIN32
 DECLARE_HOOK( BOOL, WINAPI, SetCursorPos, int x, int y );
 DECLARE_HOOK( BOOL, APIENTRY, wglSwapBuffers, HDC );
+#endif
+
+#ifdef IMGUI_USE_SDL
+DECLARE_HOOK( void, CALLCONV_CDECL, SDL_WarpMouseInWindow, SDL_Window *window, int x, int y );
+DECLARE_HOOK( int, CALLCONV_CDECL, SDL_PollEvent, SDL_Event *event );
+DECLARE_HOOK( int, CALLCONV_CDECL, SDL_GL_SwapWindow, SDL_Window *window );
+#endif
+
 DECLARE_CLASS_HOOK( void, Panel__PaintTraverse, vgui::IPanel *thisptr, vgui::VPANEL vguiPanel, bool forceRepaint, bool allowForce );
 
-DECLARE_HOOK( qboolean, __cdecl, Host_FilterTime, float time );
-DECLARE_HOOK( void, __cdecl, Cvar_DirectSet, cvar_t *pCvar, const char *pszValue );
+DECLARE_HOOK( qboolean, CALLCONV_CDECL, Host_FilterTime, float time );
+DECLARE_HOOK( void, CALLCONV_CDECL, Cvar_DirectSet, cvar_t *pCvar, const char *pszValue );
 
-DECLARE_HOOK( void, __cdecl, SCR_UpdateScreen );
-DECLARE_HOOK( void, __cdecl, SCR_BeginLoadingPlaque, int );
-DECLARE_HOOK( void, __cdecl, SCR_EndLoadingPlaque );
+DECLARE_HOOK( void, CALLCONV_CDECL, SCR_UpdateScreen );
+DECLARE_HOOK( void, CALLCONV_CDECL, SCR_BeginLoadingPlaque, int );
+DECLARE_HOOK( void, CALLCONV_CDECL, SCR_EndLoadingPlaque );
 
+#ifdef WIN32
 DECLARE_HOOK( BOOL, WINAPI, fQueryPerformanceCounter, LARGE_INTEGER * );
-DECLARE_HOOK( void, __cdecl, Netchan_Transmit, netchan_t *, int, unsigned char * );
+#endif
+DECLARE_HOOK( void, CALLCONV_CDECL, Netchan_Transmit, netchan_t *, int, unsigned char * );
 
-DECLARE_HOOK( void, __cdecl, MSG_WriteUsercmd, sizebuf_t *, usercmd_t *, usercmd_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, MSG_WriteUsercmd, sizebuf_t *, usercmd_t *, usercmd_t * );
 
 DECLARE_CLASS_HOOK( void, StudioSetupBones, CStudioModelRenderer *thisptr );
 DECLARE_CLASS_HOOK( void, StudioRenderModel, CStudioModelRenderer *thisptr );
 
 // Server-side hooks
-DECLARE_HOOK( void, __cdecl, Use, edict_t *, edict_t * );
-DECLARE_HOOK( void, __cdecl, Touch, edict_t *, edict_t * );
-DECLARE_HOOK( void, __cdecl, PlayerSpawns, edict_t *, edict_t * );
-DECLARE_HOOK( bool, __cdecl, FixPlayerStuck, edict_t * );
-DECLARE_HOOK( void, __cdecl, ClientKill, edict_t * );
-DECLARE_HOOK( void, __cdecl, ClientPutInServer, edict_t * );
-DECLARE_HOOK( void, __cdecl, ClientCommand, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, Use, edict_t *, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, Touch, edict_t *, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, PlayerSpawns, edict_t *, edict_t * );
+DECLARE_HOOK( bool, CALLCONV_CDECL, FixPlayerStuck, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, ClientKill, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, ClientPutInServer, edict_t * );
+DECLARE_HOOK( void, CALLCONV_CDECL, ClientCommand, edict_t * );
 
 DECLARE_CLASS_HOOK( void, CBasePlayer__SpecialSpawn, void * );
 DECLARE_CLASS_HOOK( void, CBasePlayer__BeginRevive, void *, float );
 DECLARE_CLASS_HOOK( void, CBasePlayer__EndRevive, void *, float );
 
 DECLARE_CLASS_HOOK( void, CBaseEntity__FireBullets, void *thisptr, unsigned int, Vector, Vector, Vector, float, int, int, int, entvars_t *, int );
-DECLARE_HOOK( void, __cdecl, UTIL_GetCircularGaussianSpread, float *, float * );
+DECLARE_HOOK( void, CALLCONV_CDECL, UTIL_GetCircularGaussianSpread, float *, float * );
 
 DECLARE_CLASS_HOOK( entvars_t *, CopyPEntityVars, entvars_t *pev_dst, entvars_t *pev_src );
-DECLARE_HOOK( void, __cdecl, FireTargets, const char *, void *, void *, int, float, float );
+DECLARE_HOOK( void, CALLCONV_CDECL, FireTargets, const char *, void *, void *, int, float, float );
 
 //-----------------------------------------------------------------------------
 // First client data receive related
@@ -140,7 +165,7 @@ void CheckClientData( client_data_t *pcldata, float flTime );
 // cldll_func hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( int, __cdecl, HOOKED_HUD_VidInit )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_VidInit )
 {
 	Modules::menu->OnVidInit();
 
@@ -152,16 +177,19 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_VidInit )
 	CREATE_HOOK_EVENT( kHUD_VidInit_HookEvent );
 	HOOK_EVENT_SET_RETURN( result );
 	HOOK_EVENT_CALL_CHAIN( result )
-
-	result = ORIG_HUD_VidInit();
+	{
+		result = ORIG_HUD_VidInit();
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
 	return result;
 }
 
-DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Redraw, float time, int intermission )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_Redraw, float time, int intermission )
 {
+	PROF( "HUD_Redraw" );
+
 	int result = 0;
 
 	CREATE_HOOK_EVENT( kHUD_Redraw_HookEvent );
@@ -169,8 +197,9 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Redraw, float time, int intermission )
 	HOOK_EVENT_PUSH_ARG( intermission );
 	HOOK_EVENT_SET_RETURN( result );
 	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( Globals::localplayer->DrawDebugInfo(), result )
-	
-	result = ORIG_HUD_Redraw( time, intermission );
+	{
+		result = ORIG_HUD_Redraw( time, intermission );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
@@ -179,7 +208,7 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Redraw, float time, int intermission )
 	return result;
 }
 
-DECLARE_FUNC( int, __cdecl, HOOKED_HUD_UpdateClientData, client_data_t *pcldata, float flTime )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_UpdateClientData, client_data_t *pcldata, float flTime )
 {
 	int changed = 0;
 
@@ -188,8 +217,9 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_UpdateClientData, client_data_t *pcldata,
 	HOOK_EVENT_PUSH_ARG( flTime );
 	HOOK_EVENT_SET_RETURN( changed );
 	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( CheckClientData( pcldata, flTime ), changed )
-	
-	changed = ORIG_HUD_UpdateClientData( pcldata, flTime );
+	{
+		changed = ORIG_HUD_UpdateClientData( pcldata, flTime );
+	}
 
 	CheckClientData( pcldata, flTime );
 
@@ -198,8 +228,10 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_UpdateClientData, client_data_t *pcldata,
 	return changed;
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_CL_CreateMove, float frametime, usercmd_t *cmd, int active )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_CL_CreateMove, float frametime, usercmd_t *cmd, int active )
 {
+	PROF( "CL_CreateMove" );
+
 	if ( Modules::menu->IsOpen() )
 		cmd->viewangles = Modules::menu->GetFrozenCameraAngles();
 
@@ -215,8 +247,9 @@ DECLARE_FUNC( void, __cdecl, HOOKED_CL_CreateMove, float frametime, usercmd_t *c
 			Globals::clientweapon->SetForceReload( false );
 			cmd->buttons |= IN_RELOAD;
 		}, HOOK_EVENT_NO_RETURN() )
-
-	ORIG_CL_CreateMove( frametime, cmd, active );
+	{
+		ORIG_CL_CreateMove( frametime, cmd, active );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
@@ -231,13 +264,16 @@ DECLARE_FUNC( void, __cdecl, HOOKED_CL_CreateMove, float frametime, usercmd_t *c
 	}
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_V_CalcRefdef, ref_params_t *pparams )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_V_CalcRefdef, ref_params_t *pparams )
 {
+	PROF( "V_CalcRefdef" );
+
 	CREATE_HOOK_EVENT( kV_CalcRefdef_HookEvent );
 	HOOK_EVENT_PUSH_ARG( pparams );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_V_CalcRefdef( pparams );
+	{
+		ORIG_V_CalcRefdef( pparams );
+	}
 
 	Features::silentangles->FixPlayerModelLean();
 
@@ -255,7 +291,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_V_CalcRefdef, ref_params_t *pparams )
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
 
-DECLARE_FUNC( int, __cdecl, HOOKED_HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname )
 {
 	int visible = 0;
 
@@ -265,38 +301,45 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_AddEntity, int type, cl_entity_t *ent, co
 	HOOK_EVENT_PUSH_ARG( modelname );
 	HOOK_EVENT_SET_RETURN( visible );
 	HOOK_EVENT_CALL_CHAIN( visible )
-
-	visible = ORIG_HUD_AddEntity( type, ent, modelname );
+	{
+		visible = ORIG_HUD_AddEntity( type, ent, modelname );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
 	return visible;
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_HUD_DrawTransparentTriangles )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_DrawTransparentTriangles )
 {
+	PROF( "HUD_DrawTransparentTriangles" );
+
 	CREATE_HOOK_EVENT( kHUD_DrawTransparentTriangles_HookEvent );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_HUD_DrawTransparentTriangles();
+	{
+		ORIG_HUD_DrawTransparentTriangles();
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity )
 {
 	CREATE_HOOK_EVENT( kHUD_StudioEvent_HookEvent );
 	HOOK_EVENT_PUSH_ARG( studio_event );
 	HOOK_EVENT_PUSH_ARG( entity );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_HUD_StudioEvent( studio_event, entity );
+	{
+		ORIG_HUD_StudioEvent( studio_event, entity );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed )
 {
+	PROF( "HUD_PostRunCmd" );
+
 	CREATE_HOOK_EVENT( kHUD_PostRunCmd_HookEvent );
 	HOOK_EVENT_PUSH_ARG( from );
 	HOOK_EVENT_PUSH_ARG( to );
@@ -305,8 +348,9 @@ DECLARE_FUNC( void, __cdecl, HOOKED_HUD_PostRunCmd, local_state_t *from, local_s
 	HOOK_EVENT_PUSH_ARG( time );
 	HOOK_EVENT_PUSH_ARG( random_seed );
 	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( Globals::localplayer->Update( from, to, cmd, time, random_seed ), HOOK_EVENT_NO_RETURN() )
-	
-	ORIG_HUD_PostRunCmd( from, to, cmd, runfuncs, time, random_seed );
+	{
+		ORIG_HUD_PostRunCmd( from, to, cmd, runfuncs, time, random_seed );
+	}
 
 	Globals::localplayer->Update( from, to, cmd, time, random_seed );
 	Modules::scripts->Callbacks()->OnGameFrame( Globals::cls->state, *Globals::host_frametime, true );
@@ -316,30 +360,32 @@ DECLARE_FUNC( void, __cdecl, HOOKED_HUD_PostRunCmd, local_state_t *from, local_s
 	Features::inputmanager->GameFrame( true );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Demo_ReadBuffer, int size, unsigned const char *buffer )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Demo_ReadBuffer, int size, unsigned const char *buffer )
 {
 	CREATE_HOOK_EVENT( kDemo_ReadBuffer_HookEvent );
 	HOOK_EVENT_PUSH_ARG( size );
 	HOOK_EVENT_PUSH_ARG( buffer );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_Demo_ReadBuffer( size, buffer );
+	{
+		ORIG_Demo_ReadBuffer( size, buffer );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_HUD_Frame, double time )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_Frame, double time )
 {
 	CREATE_HOOK_EVENT( kHUD_Frame_HookEvent );
 	HOOK_EVENT_PUSH_ARG( time );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_HUD_Frame( time );
+	{
+		ORIG_HUD_Frame( time );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
 
-DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding )
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding )
 {
 	if ( Modules::menu->IsOpen() && down )
 		return 0;
@@ -352,15 +398,16 @@ DECLARE_FUNC( int, __cdecl, HOOKED_HUD_Key_Event, int down, int keynum, const ch
 	HOOK_EVENT_PUSH_ARG( pszCurrentBinding );
 	HOOK_EVENT_SET_RETURN( process_key );
 	HOOK_EVENT_CALL_CHAIN( process_key )
-
-	process_key = ORIG_HUD_Key_Event( down, keynum, pszCurrentBinding );
+	{
+		process_key = ORIG_HUD_Key_Event( down, keynum, pszCurrentBinding );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 
 	return process_key;
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_HUD_OnClientDisconnect )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_OnClientDisconnect )
 {
 	s_bLoading = false;
 
@@ -405,7 +452,7 @@ static int UserMsgHook_CurWeapon( const char *pszName, int iSize, void *pBuffer 
 	int iId;
 	int iState = buffer.ReadByte();
 	// MAX_WEAPONS = 256 since SC 5.22
-	if ( Globals::gameversion >= 522 )
+	if ( SVEN_VERSION() >= SVEN_VERSION_CHECK( 5, 22, 0 ) )
 		iId = buffer.ReadShort();
 	else
 		iId = buffer.ReadChar();
@@ -429,7 +476,7 @@ static int UserMsgHook_CurWeapon( const char *pszName, int iSize, void *pBuffer 
 // IN_Move hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_IN_Move, float frametime, usercmd_t *cmd )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_IN_Move, float frametime, usercmd_t *cmd )
 {
 	if ( Modules::menu->IsOpen() )
 		return;
@@ -438,8 +485,9 @@ DECLARE_FUNC( void, __cdecl, HOOKED_IN_Move, float frametime, usercmd_t *cmd )
 	HOOK_EVENT_PUSH_ARG( frametime );
 	HOOK_EVENT_PUSH_ARG( cmd );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_IN_Move( frametime, cmd );
+	{
+		ORIG_IN_Move( frametime, cmd );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -448,7 +496,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_IN_Move, float frametime, usercmd_t *cmd )
 // Key_Event hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Key_Event, int key, int down )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Key_Event, int key, int down )
 {
 	if ( Modules::menu->IsOpen() && down )
 		return;
@@ -457,8 +505,9 @@ DECLARE_FUNC( void, __cdecl, HOOKED_Key_Event, int key, int down )
 	HOOK_EVENT_PUSH_ARG( key );
 	HOOK_EVENT_PUSH_ARG( down );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_Key_Event( key, down );
+	{
+		ORIG_Key_Event( key, down );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -467,6 +516,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_Key_Event, int key, int down )
 // SetCursorPos hook
 //-----------------------------------------------------------------------------
 
+#if WIN32
 DECLARE_FUNC( BOOL, WINAPI, HOOKED_SetCursorPos, int X, int Y )
 {
 	if ( Modules::menu->IsOpen() )
@@ -474,21 +524,79 @@ DECLARE_FUNC( BOOL, WINAPI, HOOKED_SetCursorPos, int X, int Y )
 
 	return ORIG_SetCursorPos( X, Y );
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // wglSwapBuffers hook
 //-----------------------------------------------------------------------------
 
+#ifdef WIN32
+#ifndef IMGUI_USE_SDL
 DECLARE_FUNC( BOOL, APIENTRY, HOOKED_wglSwapBuffers, HDC hdc )
 {
+	PROF_SCOPE_BEGIN( "glSwapBuffers" );
+
 	CREATE_HOOK_EVENT( kwglSwapBuffers_HookEvent );
 	HOOK_EVENT_PUSH_ARG( hdc );
 	HOOK_EVENT_CALL_CHAIN_NO_SUPERCEDE();
 
 	Modules::menu->wglSwapBuffers( hdc );
 
+	PROF_SCOPE_END();
+
 	return ORIG_wglSwapBuffers( hdc );
 }
+#endif
+#endif
+
+//-----------------------------------------------------------------------------
+// SDL_WarpMouseInWindow
+//-----------------------------------------------------------------------------
+
+#ifdef IMGUI_USE_SDL
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_SDL_WarpMouseInWindow, SDL_Window *window, int x, int y )
+{
+	if ( Modules::menu->IsOpen() )
+		return;
+
+	ORIG_SDL_WarpMouseInWindow( window, x, y );
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// SDL_PollEvent
+//-----------------------------------------------------------------------------
+
+#ifdef IMGUI_USE_SDL
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_SDL_PollEvent, SDL_Event *event )
+{
+	if ( Modules::menu->SDL_PollEvent( event ) )
+		return 0;
+
+	return ORIG_SDL_PollEvent( event );
+}
+#endif
+
+//-----------------------------------------------------------------------------
+// SDL_GL_SwapWindow
+//-----------------------------------------------------------------------------
+
+#ifdef IMGUI_USE_SDL
+DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_SDL_GL_SwapWindow, SDL_Window *window )
+{
+	PROF_SCOPE_BEGIN( "glSwapBuffers" );
+
+	CREATE_HOOK_EVENT( kwglSwapBuffers_HookEvent );
+	HOOK_EVENT_PUSH_ARG( window );
+	HOOK_EVENT_CALL_CHAIN_NO_SUPERCEDE();
+
+	Modules::menu->SDL_GL_SwapWindow( window );
+
+	PROF_SCOPE_END();
+
+	return ORIG_SDL_GL_SwapWindow( window );
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // vgui2::Panel::PaintTraverse hook
@@ -504,12 +612,21 @@ DECLARE_CLASS_FUNC( void, HOOKED_Panel__PaintTraverse, vgui::IPanel *thisptr, vg
 			hClientPanel = vguiPanel;
 	}
 
-	ORIG_Panel__PaintTraverse( thisptr, vguiPanel, forceRepaint, allowForce );
+	ORIG_Panel__PaintTraverse( ARG_THISPTR( thisptr ), vguiPanel, forceRepaint, allowForce );
 
 	if ( hClientPanel == vguiPanel && Globals::cl_enginefuncs->GetLocalPlayer() != NULL )
 	{
+	#ifdef LINUX
+		if ( Globals::gameUI->IsGameUIActive() )
+			return;
+	#endif
+
+		PROF_SCOPE_BEGIN( "VGuiClientPanelPaint" );
+
 		CREATE_HOOK_EVENT( kVGuiClientPanelPaint_HookEvent );
 		HOOK_EVENT_CALL_CHAIN_NO_SUPERCEDE();
+
+		PROF_SCOPE_END();
 	}
 }
 
@@ -517,7 +634,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_Panel__PaintTraverse, vgui::IPanel *thisptr, vg
 // Game frame simulation start
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( qboolean, __cdecl, HOOKED_Host_FilterTime, float time )
+DECLARE_FUNC( qboolean, CALLCONV_CDECL, HOOKED_Host_FilterTime, float time )
 {
 	static bool bInitOnce = true;
 	if ( bInitOnce )
@@ -549,8 +666,9 @@ DECLARE_FUNC( qboolean, __cdecl, HOOKED_Host_FilterTime, float time )
 	HOOK_EVENT_CALL_CHAIN_STOP_ACTION( if ( simulate ) {
 		Modules::scripts->Callbacks()->OnGameFrame( Globals::cls->state, *Globals::host_frametime, false );
 	}, simulate )
-
-	simulate = ORIG_Host_FilterTime( time );
+	{
+		simulate = ORIG_Host_FilterTime( time );
+	}
 
 	if ( simulate )
 	{
@@ -570,7 +688,7 @@ DECLARE_FUNC( qboolean, __cdecl, HOOKED_Host_FilterTime, float time )
 // Cvar change hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Cvar_DirectSet, cvar_t *pCvar, const char *pszValue )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Cvar_DirectSet, cvar_t *pCvar, const char *pszValue )
 {
 	static bool processing_hooks = false;
 
@@ -596,12 +714,13 @@ DECLARE_FUNC( void, __cdecl, HOOKED_Cvar_DirectSet, cvar_t *pCvar, const char *p
 // SCR_UpdateScreen
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_SCR_UpdateScreen )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_SCR_UpdateScreen )
 {
 	CREATE_HOOK_EVENT( kSCR_UpdateScreen_HookEvent );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_SCR_UpdateScreen();
+	{
+		ORIG_SCR_UpdateScreen();
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -610,7 +729,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_SCR_UpdateScreen )
 // SCR_BeginLoadingPlaque
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_SCR_BeginLoadingPlaque, int unk )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_SCR_BeginLoadingPlaque, int unk )
 {
 	s_bLoading = false;
 
@@ -626,7 +745,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_SCR_BeginLoadingPlaque, int unk )
 // SCR_EndLoadingPlaque
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_SCR_EndLoadingPlaque )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_SCR_EndLoadingPlaque )
 {
 	s_bLoading = true;
 
@@ -642,15 +761,16 @@ DECLARE_FUNC( void, __cdecl, HOOKED_SCR_EndLoadingPlaque )
 // Netchan_Transmit hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Netchan_Transmit, netchan_t *chan, int lengthInBytes, unsigned char *data )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Netchan_Transmit, netchan_t *chan, int lengthInBytes, unsigned char *data )
 {
 	CREATE_HOOK_EVENT( kNetchan_Transmit_HookEvent );
 	HOOK_EVENT_PUSH_ARG( chan );
 	HOOK_EVENT_PUSH_ARG( lengthInBytes );
 	HOOK_EVENT_PUSH_ARG( data );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_Netchan_Transmit( chan, lengthInBytes, data );
+	{
+		ORIG_Netchan_Transmit( chan, lengthInBytes, data );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -659,15 +779,16 @@ DECLARE_FUNC( void, __cdecl, HOOKED_Netchan_Transmit, netchan_t *chan, int lengt
 // MSG_WriteUsercmd hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_MSG_WriteUsercmd, sizebuf_t *buf, usercmd_t *to, usercmd_t *from )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_MSG_WriteUsercmd, sizebuf_t *buf, usercmd_t *to, usercmd_t *from )
 {
 	CREATE_HOOK_EVENT( kMSG_WriteUsercmd_HookEvent );
 	HOOK_EVENT_PUSH_ARG( buf );
 	HOOK_EVENT_PUSH_ARG( to );
 	HOOK_EVENT_PUSH_ARG( from );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_MSG_WriteUsercmd( buf, to, from );
+	{
+		ORIG_MSG_WriteUsercmd( buf, to, from );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -678,11 +799,14 @@ DECLARE_FUNC( void, __cdecl, HOOKED_MSG_WriteUsercmd, sizebuf_t *buf, usercmd_t 
 
 DECLARE_CLASS_FUNC( void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr )
 {
+	PROF( "StudioSetupBones" );
+
 	// not pushing thisptr since we have the access to Globals::studiorenderer
 	CREATE_HOOK_EVENT( kStudioSetupBones_HookEvent );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_StudioSetupBones( thisptr );
+	{
+		ORIG_StudioSetupBones( ARG_THISPTR( thisptr ) );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -693,11 +817,14 @@ DECLARE_CLASS_FUNC( void, HOOKED_StudioSetupBones, CStudioModelRenderer *thisptr
 
 DECLARE_CLASS_FUNC( void, HOOKED_StudioRenderModel, CStudioModelRenderer *thisptr )
 {
+	PROF( "StudioRenderModel" );
+
 	// not pushing thisptr since we have the access to Globals::studiorenderer
 	CREATE_HOOK_EVENT( kStudioRenderModel_HookEvent );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
-
-	ORIG_StudioRenderModel( thisptr );
+	{
+		ORIG_StudioRenderModel( ARG_THISPTR( thisptr ) );
+	}
 
 	HOOK_EVENT_POST_CALL_CHAIN();
 }
@@ -787,7 +914,7 @@ static void HOOKED_NetMsgHook_TempEntity( void )
 		if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)171 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) ) &&
 			 *reinterpret_cast<int *>( color2 ) == ( ( (byte)207 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) | ( (byte)0xFF << 24 ) ) )
 		{
-			constexpr size_t playerStrLength = ( sizeof( "Player:  " ) / sizeof( char ) ) - 1;
+			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( "Player:  " ) / sizeof( char ) ) - 1;
 
 			// Starts with
 			if ( !strncmp( "Player:  ", szMessage, playerStrLength ) )
@@ -831,7 +958,7 @@ static void HOOKED_NetMsgHook_TempEntity( void )
 		else if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)7 ) | ( (byte)171 << 8 ) | ( (byte)95 << 16 ) ) &&
 				  *reinterpret_cast<int *>( color2 ) == ( ( (byte)7 ) | ( (byte)207 << 8 ) | ( (byte)95 << 16 ) | ( (byte)0xFF << 24 ) ) )
 		{
-			constexpr size_t playerStrLength = ( sizeof( "Player:  " ) / sizeof( char ) ) - 1;
+			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( "Player:  " ) / sizeof( char ) ) - 1;
 
 			// Starts with
 			if ( !strncmp( "Player:  ", szMessage, playerStrLength ) )
@@ -902,21 +1029,21 @@ static void HOOKED_NetMsgHook_TempEntity( void )
 // Server hooks
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Use, edict_t *pUseEntity, edict_t *pOther )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Use, edict_t *pUseEntity, edict_t *pOther )
 {
 	ORIG_Use( pUseEntity, pOther );
 
 	Modules::scripts->Callbacks()->OnEntityUse( pUseEntity, pOther );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_Touch, edict_t *pTouchEntity, edict_t *pOther )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Touch, edict_t *pTouchEntity, edict_t *pOther )
 {
 	ORIG_Touch( pTouchEntity, pOther );
 
 	Modules::scripts->Callbacks()->OnEntityTouch( pTouchEntity, pOther );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_PlayerSpawns, edict_t *pSpawnSpot, edict_t *pPlayer )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_PlayerSpawns, edict_t *pSpawnSpot, edict_t *pPlayer )
 {
 	ORIG_PlayerSpawns( pSpawnSpot, pPlayer );
 
@@ -926,8 +1053,13 @@ DECLARE_FUNC( void, __cdecl, HOOKED_PlayerSpawns, edict_t *pSpawnSpot, edict_t *
 static bool bRevivePreUnstuck = false;
 static Vector vecRevivePreUnstuckOrigin;
 
-DECLARE_FUNC( bool, __cdecl, HOOKED_FixPlayerStuck, edict_t *pPlayer )
+DECLARE_FUNC( bool, CALLCONV_CDECL, HOOKED_FixPlayerStuck, edict_t *pPlayer )
 {
+#ifndef WIN32
+	bRevivePreUnstuck = true;
+	vecRevivePreUnstuckOrigin = GET_ENTVARS( pPlayer )->origin;
+#endif
+
 	bool bUnstuck = ORIG_FixPlayerStuck( pPlayer );
 
 	if ( bUnstuck )
@@ -950,14 +1082,14 @@ DECLARE_FUNC( bool, __cdecl, HOOKED_FixPlayerStuck, edict_t *pPlayer )
 	return bUnstuck;
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_ClientKill, edict_t *pPlayer )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_ClientKill, edict_t *pPlayer )
 {
 	ORIG_ClientKill( pPlayer );
 
 	Modules::scripts->Callbacks()->OnClientKill( pPlayer );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_ClientPutInServer, edict_t *pPlayer )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_ClientPutInServer, edict_t *pPlayer )
 {
 	ORIG_ClientPutInServer( pPlayer );
 
@@ -965,7 +1097,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_ClientPutInServer, edict_t *pPlayer )
 	Modules::scripts->Callbacks()->OnClientPutInServer( pPlayer );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_ClientCommand, edict_t *pPlayer )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_ClientCommand, edict_t *pPlayer )
 {
 	if ( !pPlayer->pvPrivateData )
 		return;
@@ -978,10 +1110,10 @@ DECLARE_FUNC( void, __cdecl, HOOKED_ClientCommand, edict_t *pPlayer )
 
 DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__SpecialSpawn, void *thisptr )
 {
-	ORIG_CBasePlayer__SpecialSpawn( thisptr );
+	ORIG_CBasePlayer__SpecialSpawn( ARG_THISPTR( thisptr ) );
 
-	// Skip vtable and then get player's entvars
-	entvars_t *entvars = *(entvars_t **)( (unsigned long *)thisptr + 1 );
+	// Skip vtable then get player's entvars
+	entvars_t *entvars = GET_ENTVARS( thisptr );
 	edict_t *pPlayer = Globals::sv_enginefuncs->pfnFindEntityByVars( entvars );
 
 	if ( pPlayer != NULL )
@@ -1009,9 +1141,9 @@ DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__SpecialSpawn, void *thisptr )
 
 DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__BeginRevive, void *thisptr, float flNextThink )
 {
-	ORIG_CBasePlayer__BeginRevive( thisptr, flNextThink );
+	ORIG_CBasePlayer__BeginRevive( ARG_THISPTR( thisptr ), flNextThink );
 
-	entvars_t *entvars = *(entvars_t **)( (unsigned long *)thisptr + 1 );
+	entvars_t *entvars = GET_ENTVARS( thisptr );
 	edict_t *pPlayer = Globals::sv_enginefuncs->pfnFindEntityByVars( entvars );
 
 	if ( pPlayer != NULL )
@@ -1020,9 +1152,9 @@ DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__BeginRevive, void *thisptr, float 
 
 DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__EndRevive, void *thisptr, float flNextThink )
 {
-	ORIG_CBasePlayer__EndRevive( thisptr, flNextThink );
+	ORIG_CBasePlayer__EndRevive( ARG_THISPTR( thisptr ), flNextThink );
 
-	entvars_t *entvars = *(entvars_t **)( (unsigned long *)thisptr + 1 );
+	entvars_t *entvars = GET_ENTVARS( thisptr );
 	edict_t *pPlayer = Globals::sv_enginefuncs->pfnFindEntityByVars( entvars );
 
 	if ( pPlayer != NULL )
@@ -1043,12 +1175,12 @@ DECLARE_CLASS_FUNC( void, HOOKED_CBaseEntity__FireBullets, void *thisptr, unsign
 		vecSpread.Zero();
 	}
 
-	ORIG_CBaseEntity__FireBullets( thisptr, cShots, vecSrc, vecDirShooting, vecSpread, flDistance, iBulletType, iTracerFeq, iDamage, pAttacker, fDraw );
+	ORIG_CBaseEntity__FireBullets( ARG_THISPTR( thisptr ), cShots, vecSrc, vecDirShooting, vecSpread, flDistance, iBulletType, iTracerFeq, iDamage, pAttacker, fDraw );
 
 	inside_CBaseEntity__FireBullets = false;
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_UTIL_GetCircularGaussianSpread, float *x, float *y )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_UTIL_GetCircularGaussianSpread, float *x, float *y )
 {
 	ORIG_UTIL_GetCircularGaussianSpread( x, y );
 
@@ -1059,7 +1191,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_UTIL_GetCircularGaussianSpread, float *x, fl
 			*x = *y = 0.f;
 		}
 
-		entvars_t *pev = *(entvars_t **)( (unsigned long *)inside_CBaseEntity__FireBullets_thisptr + 1 );
+		entvars_t *pev = *(entvars_t **)( (uint32_t *)inside_CBaseEntity__FireBullets_thisptr + 1 );
 		edict_t *pEntity = Globals::sv_enginefuncs->pfnFindEntityByVars( pev );
 
 		Modules::scripts->Callbacks()->OnFireBulletsSpread( pEntity, x, y );
@@ -1068,13 +1200,15 @@ DECLARE_FUNC( void, __cdecl, HOOKED_UTIL_GetCircularGaussianSpread, float *x, fl
 
 DECLARE_CLASS_FUNC( entvars_t *, HOOKED_CopyPEntityVars, entvars_t *pev_dst, entvars_t *pev_src )
 {
+#ifdef WIN32
 	bRevivePreUnstuck = true;
 	vecRevivePreUnstuckOrigin = pev_src->origin;
+#endif
 
-	return ORIG_CopyPEntityVars( pev_dst, pev_src );
+	return ORIG_CopyPEntityVars( ARG_THISPTR( pev_dst ), pev_src );
 }
 
-DECLARE_FUNC( void, __cdecl, HOOKED_FireTargets, const char *pszTargetName, void *pActivator, void *pCaller, int useType, float flValue, float flDelay )
+DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_FireTargets, const char *pszTargetName, void *pActivator, void *pCaller, int useType, float flValue, float flDelay )
 {
 	ORIG_FireTargets( pszTargetName, pActivator, pCaller, useType, flValue, flDelay );
 
@@ -1082,7 +1216,7 @@ DECLARE_FUNC( void, __cdecl, HOOKED_FireTargets, const char *pszTargetName, void
 }
 
 static CommandCallbackFn ORIG_restart = NULL;
-static DECLARE_FUNC( void, __cdecl, HOOKED_restart )
+static DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_restart )
 {
 	if ( !Modules::server->Host_IsServerActive() )
 		return;
@@ -1120,7 +1254,7 @@ void CHooksModule::AttachDetours( void )
 
 	AttachDetour( "Host_FilterTime", Pointers::Engine::Host_FilterTime, HOOKED_Host_FilterTime, GET_FUNC_PTR( ORIG_Host_FilterTime ) );
 	AttachDetour( "Cvar_DirectSet", Pointers::Engine::Cvar_DirectSet, HOOKED_Cvar_DirectSet, GET_FUNC_PTR( ORIG_Cvar_DirectSet ) );
-	
+
 	AttachDetour( "SCR_UpdateScreen", Pointers::Engine::SCR_UpdateScreen, HOOKED_SCR_UpdateScreen, GET_FUNC_PTR( ORIG_SCR_UpdateScreen ) );
 	AttachDetour( "SCR_BeginLoadingPlaque", Pointers::Engine::SCR_BeginLoadingPlaque, HOOKED_SCR_BeginLoadingPlaque, GET_FUNC_PTR( ORIG_SCR_BeginLoadingPlaque ) );
 	AttachDetour( "SCR_EndLoadingPlaque", Pointers::Engine::SCR_EndLoadingPlaque, HOOKED_SCR_EndLoadingPlaque, GET_FUNC_PTR( ORIG_SCR_EndLoadingPlaque ) );
@@ -1128,18 +1262,90 @@ void CHooksModule::AttachDetours( void )
 	AttachDetour( "Netchan_Transmit", Pointers::Engine::Netchan_Transmit, HOOKED_Netchan_Transmit, GET_FUNC_PTR( ORIG_Netchan_Transmit ) );
 	AttachDetour( "MSG_WriteUsercmd", Pointers::Engine::MSG_WriteUsercmd, HOOKED_MSG_WriteUsercmd, GET_FUNC_PTR( ORIG_MSG_WriteUsercmd ) );
 
+#ifdef WIN32
 	HMODULE hUser32 = GetModuleHandle( "user32.dll" );
-	if ( hUser32 != NULL ) {
+	if ( hUser32 != NULL )
+	{
 		void *pfnSetCursorPos = GetProcAddress( hUser32, "SetCursorPos" );
 		if ( *(uint8_t *)pfnSetCursorPos == 0xE9 )
-			pfnSetCursorPos = MemoryUtils()->CalcAbsoluteAddress(pfnSetCursorPos);
+			pfnSetCursorPos = MemoryUtils()->CalcAbsoluteAddress( pfnSetCursorPos );
 		AttachDetour( "SetCursorPos", pfnSetCursorPos, HOOKED_SetCursorPos, GET_FUNC_PTR( ORIG_SetCursorPos ) );
 	}
-	
+
+#ifndef IMGUI_USE_SDL
 	void *pfnwglSwapBuffers = GetProcAddress( (HMODULE)GameData::Modules::OpenGL, "wglSwapBuffers" );
 	if ( *(uint8_t *)pfnwglSwapBuffers == 0xE9 )
 		pfnwglSwapBuffers = MemoryUtils()->CalcAbsoluteAddress( pfnwglSwapBuffers );
 	AttachDetour( "wglSwapBuffers", pfnwglSwapBuffers, HOOKED_wglSwapBuffers, GET_FUNC_PTR( ORIG_wglSwapBuffers ) );
+#endif
+#endif
+
+#ifdef IMGUI_USE_SDL
+	void *pfnSDL_WarpMouseInWindow = MemoryUtils()->GetProcAddress( GameData::Modules::SDL2, "SDL_WarpMouseInWindow" );
+	void *pfnSDL_PollEvent = MemoryUtils()->GetProcAddress( GameData::Modules::SDL2, "SDL_PollEvent" );
+	void *pfnSDL_GL_SwapWindow = MemoryUtils()->GetProcAddress( GameData::Modules::SDL2, "SDL_GL_SwapWindow" );
+
+	if ( pfnSDL_PollEvent != NULL && pfnSDL_GL_SwapWindow != NULL && pfnSDL_WarpMouseInWindow != NULL )
+	{
+	#ifdef WIN32
+	#define _brain_damage
+	#ifdef _brain_damage
+		if ( *(uint8_t *)pfnSDL_PollEvent == 0xE9 ||
+			 ( *( (uint8_t *)pfnSDL_PollEvent + 4 ) == 0xFF && *( (uint8_t *)pfnSDL_PollEvent + 5 ) == 0x25 ) )
+	#else
+		if ( *(uint8_t *)pfnSDL_PollEvent == 0xE9 ||
+			 ( *(uint8_t *)pfnSDL_PollEvent == 0xFF && *( (uint8_t *)pfnSDL_PollEvent + 1 ) == 0x25 ) )
+	#endif
+		{
+			if ( *(uint8_t *)pfnSDL_PollEvent == 0xE9 )
+				pfnSDL_PollEvent = MemoryUtils()->CalcAbsoluteAddress( pfnSDL_PollEvent );
+			else
+		#ifdef _brain_damage
+				pfnSDL_PollEvent = (void *)( **(uint32_t **)( (uint8_t *)pfnSDL_PollEvent + 6 ) );
+		#else
+				pfnSDL_PollEvent = (void *)( **(uint32_t **)( (uint8_t *)pfnSDL_PollEvent + 2 ) );
+		#endif
+		}
+
+		// Check for JMP opcode
+		if ( *(uint8_t *)pfnSDL_GL_SwapWindow == 0xE9 ||
+			 ( *(uint8_t *)pfnSDL_GL_SwapWindow == 0xFF && *( (uint8_t *)pfnSDL_GL_SwapWindow + 1 ) == 0x25 ) )
+		{
+			if ( *(uint8_t *)pfnSDL_GL_SwapWindow == 0xE9 )
+				pfnSDL_GL_SwapWindow = MemoryUtils()->CalcAbsoluteAddress( pfnSDL_GL_SwapWindow );
+			else
+		#ifdef _brain_damage
+			{
+				pfnSDL_GL_SwapWindow = (void *)( **(uint32_t **)( (uint8_t *)pfnSDL_GL_SwapWindow + 2 ) );
+				pfnSDL_GL_SwapWindow = MemoryUtils()->CalcAbsoluteAddress( pfnSDL_GL_SwapWindow );
+			}
+		#else
+				pfnSDL_GL_SwapWindow = (void *)( **(uint32_t **)( (uint8_t *)pfnSDL_GL_SwapWindow + 2 ) );
+		#endif
+		}
+
+		// Check for JMP opcode
+		if ( *(uint8_t *)pfnSDL_WarpMouseInWindow == 0xE9 ||
+			 ( *(uint8_t *)pfnSDL_WarpMouseInWindow == 0xFF && *( (uint8_t *)pfnSDL_WarpMouseInWindow + 1 ) == 0x25 ) )
+		{
+			if ( *(uint8_t *)pfnSDL_WarpMouseInWindow == 0xE9 )
+				pfnSDL_WarpMouseInWindow = MemoryUtils()->CalcAbsoluteAddress( pfnSDL_WarpMouseInWindow );
+			else
+				pfnSDL_WarpMouseInWindow = (void *)( **(uint32_t **)( (uint8_t *)pfnSDL_WarpMouseInWindow + 2 ) );
+		}
+	#endif
+	}
+	else
+	{
+		pfnSDL_WarpMouseInWindow = NULL;
+		pfnSDL_PollEvent = NULL;
+		pfnSDL_GL_SwapWindow = NULL;
+	}
+
+	AttachDetour( "SDL_WarpMouseInWindow", pfnSDL_WarpMouseInWindow, HOOKED_SDL_WarpMouseInWindow, GET_FUNC_PTR( ORIG_SDL_WarpMouseInWindow ) );
+	AttachDetour( "SDL_PollEvent", pfnSDL_PollEvent, HOOKED_SDL_PollEvent, GET_FUNC_PTR( ORIG_SDL_PollEvent ) );
+	AttachDetour( "SDL_GL_SwapWindow", pfnSDL_GL_SwapWindow, HOOKED_SDL_GL_SwapWindow, GET_FUNC_PTR( ORIG_SDL_GL_SwapWindow ) );
+#endif
 
 	AttachDetour( "VPanelWrapper::PaintTraverse",
 				  Globals::panel,
@@ -1152,7 +1358,7 @@ void CHooksModule::AttachDetours( void )
 				  GameData::Offsets::Client::vtidx_CStudioModelRenderer__StudioSetupBones,
 				  HOOKED_StudioSetupBones,
 				  GET_FUNC_PTR( ORIG_StudioSetupBones ) );
-	
+
 	AttachDetour( "CStudioModelRenderer::StudioRenderModel",
 				  Globals::studiorenderer,
 				  GameData::Offsets::Client::vtidx_CStudioModelRenderer__StudioRenderModel,
@@ -1166,7 +1372,7 @@ void CHooksModule::AttachDetours( void )
 	hDetour = Globals::gamehooks->HookNetworkMessage( SVC_SERVERINFO, HOOKED_NetMsgHook_ServerInfo, &ORIG_NetMsgHook_ServerInfo );
 	if ( hDetour != DETOUR_INVALID_HANDLE )
 		m_hDetours.insert( m_hDetours.begin(), hDetour );
-	
+
 	hDetour = Globals::gamehooks->HookNetworkMessage( SVC_TEMPENTITY, HOOKED_NetMsgHook_TempEntity, &ORIG_NetMsgHook_TempEntity );
 	if ( hDetour != DETOUR_INVALID_HANDLE )
 		m_hDetours.insert( m_hDetours.begin(), hDetour );
@@ -1175,6 +1381,7 @@ void CHooksModule::AttachDetours( void )
 	if ( hDetour != DETOUR_INVALID_HANDLE )
 		m_hDetours.insert( m_hDetours.begin(), hDetour );
 
+#ifdef WIN32
 	// Server hooks
 	AttachDetour( "DLL_FUNCTIONS::Use", Globals::dllFuncs->pfnUse, HOOKED_Use, GET_FUNC_PTR( ORIG_Use ) );
 	AttachDetour( "DLL_FUNCTIONS::Touch", Globals::dllFuncs->pfnTouch, HOOKED_Touch, GET_FUNC_PTR( ORIG_Touch ) );
@@ -1186,26 +1393,32 @@ void CHooksModule::AttachDetours( void )
 	AttachDetour( "CBaseEntity::FireBullets", Pointers::Server::CBaseEntity__FireBullets, HOOKED_CBaseEntity__FireBullets, GET_FUNC_PTR( ORIG_CBaseEntity__FireBullets ) );
 	AttachDetour( "UTIL_GetCircularGaussianSpread", Pointers::Server::UTIL_GetCircularGaussianSpread, HOOKED_UTIL_GetCircularGaussianSpread, GET_FUNC_PTR( ORIG_UTIL_GetCircularGaussianSpread ) );
 	AttachDetour( "FireTargets", Pointers::Server::FireTargets, HOOKED_FireTargets, GET_FUNC_PTR( ORIG_FireTargets ) );
+#ifdef WIN32
 	AttachDetour( "CopyPEntityVars", Pointers::Server::CopyPEntityVars, HOOKED_CopyPEntityVars, GET_FUNC_PTR( ORIG_CopyPEntityVars ) );
+#endif
 
-	void *dummyBasePlayer = Pointers::Server::vmt_CBasePlayer;
-	AttachDetour( "CBasePlayer::SpecialSpawn",
-				  &dummyBasePlayer,
-				  GameData::Offsets::Server::vtidx_CBasePlayer_SpecialSpawn,
-				  HOOKED_CBasePlayer__SpecialSpawn,
-				  GET_FUNC_PTR( ORIG_CBasePlayer__SpecialSpawn ) );
-	
-	AttachDetour( "CBasePlayer::BeginRevive",
-				  &dummyBasePlayer,
-				  GameData::Offsets::Server::vtidx_CBasePlayer_BeginRevive,
-				  HOOKED_CBasePlayer__BeginRevive,
-				  GET_FUNC_PTR( ORIG_CBasePlayer__BeginRevive ) );
-	
-	AttachDetour( "CBasePlayer::EndRevive",
-				  &dummyBasePlayer,
-				  GameData::Offsets::Server::vtidx_CBasePlayer_EndRevive,
-				  HOOKED_CBasePlayer__EndRevive,
-				  GET_FUNC_PTR( ORIG_CBasePlayer__EndRevive ) );
+	if ( Pointers::Server::vmt_CBasePlayer != NULL )
+	{
+		void *dummyBasePlayer = Pointers::Server::vmt_CBasePlayer;
+		AttachDetour( "CBasePlayer::SpecialSpawn",
+					  &dummyBasePlayer,
+					  GameData::Offsets::Server::vtidx_CBasePlayer_SpecialSpawn,
+					  HOOKED_CBasePlayer__SpecialSpawn,
+					  GET_FUNC_PTR( ORIG_CBasePlayer__SpecialSpawn ) );
+
+		AttachDetour( "CBasePlayer::BeginRevive",
+					  &dummyBasePlayer,
+					  GameData::Offsets::Server::vtidx_CBasePlayer_BeginRevive,
+					  HOOKED_CBasePlayer__BeginRevive,
+					  GET_FUNC_PTR( ORIG_CBasePlayer__BeginRevive ) );
+
+		AttachDetour( "CBasePlayer::EndRevive",
+					  &dummyBasePlayer,
+					  GameData::Offsets::Server::vtidx_CBasePlayer_EndRevive,
+					  HOOKED_CBasePlayer__EndRevive,
+					  GET_FUNC_PTR( ORIG_CBasePlayer__EndRevive ) );
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1226,7 +1439,7 @@ void CHooksModule::DeattachDetours( void )
 // Attach a detour
 //-----------------------------------------------------------------------------
 
-bool CHooksModule::AttachDetour( const char *pszFunctionName, void *pFunction, void *pDetourFunction, void **ppOriginalFunction )
+bool CHooksModule::AttachDetour( const char *pszFunctionName, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, int iDisasmMinBytes /* = 5 */ )
 {
 	if ( pFunction == NULL )
 	{
@@ -1234,7 +1447,7 @@ bool CHooksModule::AttachDetour( const char *pszFunctionName, void *pFunction, v
 		return false;
 	}
 
-	DetourHandle_t hDetour = Detours()->DetourFunction( pFunction, pDetourFunction, ppOriginalFunction );
+	DetourHandle_t hDetour = Detours()->DetourFunction( pFunction, pDetourFunction, ppOriginalFunction, kDetourPriorityNormal, false, iDisasmMinBytes );
 	if ( hDetour == DETOUR_INVALID_HANDLE )
 	{
 		Warning2( "[SvenInt::Hooks] Failed to attach detour to function \"%s\"\n", pszFunctionName );
@@ -1309,39 +1522,39 @@ void CHooksModule::Shutdown( void )
 
 /*
 
-DECLARE_HOOK( int, __cdecl, HUD_VidInit, void );
-DECLARE_HOOK( int, __cdecl, HUD_Redraw, float time, int intermission );
-DECLARE_HOOK( int, __cdecl, HUD_UpdateClientData, client_data_t *pcldata, float flTime );
-//DECLARE_HOOK( void, __cdecl, HUD_PlayerMove, playermove_t *ppmove, int server );
-//DECLARE_HOOK( void, __cdecl, IN_ActivateMouse, void );
-//DECLARE_HOOK( void, __cdecl, IN_DeactivateMouse, void );
-//DECLARE_HOOK( void, __cdecl, IN_MouseEvent, int mstate );
-//DECLARE_HOOK( void, __cdecl, IN_ClearStates, void );
-//DECLARE_HOOK( void, __cdecl, IN_Accumulate, void );
-DECLARE_HOOK( void, __cdecl, CL_CreateMove, float frametime, usercmd_t *cmd, int active );
-//DECLARE_HOOK( int, __cdecl, CL_IsThirdPerson );
-//DECLARE_HOOK( kbutton_t *, __cdecl, KB_Find, const char *name );
-//DECLARE_HOOK( void, __cdecl, CAM_Think, void );
-DECLARE_HOOK( void, __cdecl, V_CalcRefdef, ref_params_t *pparams );
-DECLARE_HOOK( int, __cdecl, HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname );
-//DECLARE_HOOK( void, __cdecl, HUD_CreateEntities, void );
-//DECLARE_HOOK( void, __cdecl, HUD_DrawNormalTriangles, void );
-DECLARE_HOOK( void, __cdecl, HUD_DrawTransparentTriangles, void );
-DECLARE_HOOK( void, __cdecl, HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity );
-DECLARE_HOOK( void, __cdecl, HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed );
-//DECLARE_HOOK( void, __cdecl, HUD_TxferLocalOverrides, entity_state_t *state, const clientdata_t *client );
-//DECLARE_HOOK( void, __cdecl, HUD_ProcessPlayerState, entity_state_t *dst, const entity_state_t *src );
-//DECLARE_HOOK( void, __cdecl, HUD_TxferPredictionData, entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd );
-DECLARE_HOOK( void, __cdecl, Demo_ReadBuffer, int size, unsigned const char *buffer );
-//DECLARE_HOOK( int, __cdecl, HUD_ConnectionlessPacket, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size );
-//DECLARE_HOOK( int, __cdecl, HUD_GetHullBounds, int hullnumber, float *mins, float *maxs );
-DECLARE_HOOK( void, __cdecl, HUD_Frame, double time );
-DECLARE_HOOK( int, __cdecl, HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding );
-//DECLARE_HOOK( void, __cdecl, HUD_TempEntUpdate, double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ), void ( *Callback_TempEntPlaySound )( TEMPENTITY *pTemp, float damp ) );
-//DECLARE_HOOK( cl_entity_t *, __cdecl, HUD_GetUserEntity, int index );
-//DECLARE_HOOK( void, __cdecl, HUD_VoiceStatus, int entindex, qboolean bTalking );
-//DECLARE_HOOK( void, __cdecl, HUD_DirectorMessage, unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags );
-//DECLARE_HOOK( void, __cdecl, HUD_ChatInputPosition, int *x, int *y );
-DECLARE_HOOK( void, __cdecl, HUD_OnClientDisconnect );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_VidInit, void );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_Redraw, float time, int intermission );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_UpdateClientData, client_data_t *pcldata, float flTime );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_PlayerMove, playermove_t *ppmove, int server );
+//DECLARE_HOOK( void, CALLCONV_CDECL, IN_ActivateMouse, void );
+//DECLARE_HOOK( void, CALLCONV_CDECL, IN_DeactivateMouse, void );
+//DECLARE_HOOK( void, CALLCONV_CDECL, IN_MouseEvent, int mstate );
+//DECLARE_HOOK( void, CALLCONV_CDECL, IN_ClearStates, void );
+//DECLARE_HOOK( void, CALLCONV_CDECL, IN_Accumulate, void );
+DECLARE_HOOK( void, CALLCONV_CDECL, CL_CreateMove, float frametime, usercmd_t *cmd, int active );
+//DECLARE_HOOK( int, CALLCONV_CDECL, CL_IsThirdPerson );
+//DECLARE_HOOK( kbutton_t *, CALLCONV_CDECL, KB_Find, const char *name );
+//DECLARE_HOOK( void, CALLCONV_CDECL, CAM_Think, void );
+DECLARE_HOOK( void, CALLCONV_CDECL, V_CalcRefdef, ref_params_t *pparams );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_CreateEntities, void );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_DrawNormalTriangles, void );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_DrawTransparentTriangles, void );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_StudioEvent, const mstudioevent_t *studio_event, const cl_entity_t *entity );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_PostRunCmd, local_state_t *from, local_state_t *to, usercmd_t *cmd, int runfuncs, double time, unsigned int random_seed );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_TxferLocalOverrides, entity_state_t *state, const clientdata_t *client );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_ProcessPlayerState, entity_state_t *dst, const entity_state_t *src );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_TxferPredictionData, entity_state_t *ps, const entity_state_t *pps, clientdata_t *pcd, const clientdata_t *ppcd, weapon_data_t *wd, const weapon_data_t *pwd );
+DECLARE_HOOK( void, CALLCONV_CDECL, Demo_ReadBuffer, int size, unsigned const char *buffer );
+//DECLARE_HOOK( int, CALLCONV_CDECL, HUD_ConnectionlessPacket, netadr_t *net_from, const char *args, const char *response_buffer, int *response_buffer_size );
+//DECLARE_HOOK( int, CALLCONV_CDECL, HUD_GetHullBounds, int hullnumber, float *mins, float *maxs );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_Frame, double time );
+DECLARE_HOOK( int, CALLCONV_CDECL, HUD_Key_Event, int down, int keynum, const char *pszCurrentBinding );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_TempEntUpdate, double frametime, double client_time, double cl_gravity, TEMPENTITY **ppTempEntFree, TEMPENTITY **ppTempEntActive, int ( *Callback_AddVisibleEntity )( cl_entity_t *pEntity ), void ( *Callback_TempEntPlaySound )( TEMPENTITY *pTemp, float damp ) );
+//DECLARE_HOOK( cl_entity_t *, CALLCONV_CDECL, HUD_GetUserEntity, int index );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_VoiceStatus, int entindex, qboolean bTalking );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_DirectorMessage, unsigned char command, unsigned int firstObject, unsigned int secondObject, unsigned int flags );
+//DECLARE_HOOK( void, CALLCONV_CDECL, HUD_ChatInputPosition, int *x, int *y );
+DECLARE_HOOK( void, CALLCONV_CDECL, HUD_OnClientDisconnect );
 
 */

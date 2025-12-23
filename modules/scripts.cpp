@@ -35,7 +35,7 @@ static const Color clr_print( 80, 186, 255, 255 );
 //-----------------------------------------------------------------------------
 
 ConVar sc_enable_scripts( "sc_enable_scripts",
-					  #ifdef _DEBUG // FIXME: game crash at VM startup
+					  #if defined(_DEBUG) || !defined(WIN32) // FIXME: game crash at VM startup
 						  "0",
 					  #else
 						  "1",
@@ -100,7 +100,11 @@ CON_COMMAND( sc_script_execute, "Execute a script file" )
 
 		std::string sFilePath = UTIL_GetLongPathName();
 
-		sFilePath += "\\" SVENINT_FOLDER_NAME "\\scripts\\";
+	#ifdef WIN32
+		sFilePath += "/" SVENINT_FOLDER_NAME "/scripts/";
+	#else
+		sFilePath += "/" SVENINT_FOLDER_NAME "/scripts/";
+	#endif
 		sFilePath += pszFilename;
 
 		if ( !ends_with( pszFilename, ".lua" ) )

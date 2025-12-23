@@ -4,6 +4,13 @@
 #include "stdafx.h"
 #include "misc_soundcache.h"
 
+#ifndef WIN32
+#include <sys/stat.h>
+#include <errno.h>
+#include <limits.h>
+#include <dirent.h>
+#endif
+
 using namespace Globals;
 
 //-----------------------------------------------------------------------------
@@ -70,7 +77,7 @@ DECLARE_CLASS_FUNC( bool, HOOKED_CClient_SoundEngine__LoadSoundList, void *thisp
 	if ( THIS_FEATURE_IS_ENABLED() )
 		THIS_FEATURE()->SoundEngineLoadSoundList();
 
-	return ORIG_CClient_SoundEngine__LoadSoundList( thisptr );
+	return ORIG_CClient_SoundEngine__LoadSoundList( ARG_THISPTR( thisptr ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -82,8 +89,45 @@ DECLARE_CLASS_FUNC( void, HOOKED_CClient_SoundEngine__FlushCache, void *thisptr,
 	if ( THIS_FEATURE_IS_ENABLED() && THIS_FEATURE()->SoundEngineFlushCache() )
 		return;
 
-	return ORIG_CClient_SoundEngine__FlushCache( thisptr, host );
+	return ORIG_CClient_SoundEngine__FlushCache( ARG_THISPTR( thisptr ), host );
 }
+
+//-----------------------------------------------------------------------------
+// Copy file (Linux)
+//-----------------------------------------------------------------------------
+
+#ifndef WIN32
+static int CopyFile( const char *src, const char *dest )
+{
+    FILE *fsrc = fopen( src, "rb" );
+    if ( fsrc == NULL )
+		return -1;
+
+    FILE *fdest = fopen( dest, "wb" );
+    if ( fdest == NULL )
+	{
+        fclose( fsrc );
+        return -1;
+    }
+
+    char buffer[ 4096 ];
+    size_t bytes;
+    while ( ( bytes = fread( buffer, 1, Q_ARRAYSIZE( buffer ), fsrc ) ) > 0 )
+	{
+        if ( fwrite( buffer, 1, bytes, fdest) != bytes )
+		{
+            fclose( fsrc );
+            fclose( fdest );
+            return -1;
+        }
+    }
+
+    fclose( fsrc );
+    fclose( fdest );
+
+    return 0;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Netmsg ResourceList event
@@ -102,7 +146,7 @@ void CSoundcache::NetMsgHookResourceList( void )
 	int port;
 
 #if 0
-	g_pEngineClient->GetServerAddress( &addr );
+	engineclient->GetServerAddress( &addr );
 #else
 	static net_status_t status;
 	cl_enginefuncs->pNetAPI->Status( &status );
@@ -148,9 +192,15 @@ void CSoundcache::NetMsgHookResourceList( void )
 
 	strncpy( szMapName, pszMapName, MAX_PATH );
 
+#ifdef WIN32
 	snprintf( szSoundcacheDir, MAX_PATH, "maps\\soundcache\\%s.txt", szMapName );
 	snprintf( szServerSoundcacheDir, MAX_PATH, "maps\\soundcache\\%hhu.%hhu.%hhu.%hhu %hu\\%s.txt", addr.ip[ 0 ], addr.ip[ 1 ], addr.ip[ 2 ], addr.ip[ 3 ], port, szMapName );
 	snprintf( szServerSoundcacheFolder, MAX_PATH, "maps\\soundcache\\%hhu.%hhu.%hhu.%hhu %hu", addr.ip[ 0 ], addr.ip[ 1 ], addr.ip[ 2 ], addr.ip[ 3 ], port );
+#else
+	snprintf( szSoundcacheDir, MAX_PATH, "maps/soundcache/%s.txt", szMapName );
+	snprintf( szServerSoundcacheDir, MAX_PATH, "maps/soundcache/%hhu.%hhu.%hhu.%hhu %hu/%s.txt", addr.ip[ 0 ], addr.ip[ 1 ], addr.ip[ 2 ], addr.ip[ 3 ], port, szMapName );
+	snprintf( szServerSoundcacheFolder, MAX_PATH, "maps/soundcache/%hhu.%hhu.%hhu.%hhu %hu", addr.ip[ 0 ], addr.ip[ 1 ], addr.ip[ 2 ], addr.ip[ 3 ], port );
+#endif
 
 	// Skip download of soundcache
 	if ( m_pIgnore->GetBool() )
@@ -180,7 +230,11 @@ void CSoundcache::NetMsgHookResourceList( void )
 	{
 		std::string sDirectory = UTIL_GetLongPathName();
 
+	#ifdef WIN32
 		SetFileAttributes( ( sDirectory + "\\svencoop_downloads\\" + szSoundcacheDir ).c_str(), FILE_ATTRIBUTE_NORMAL ); // WinAPI
+	#else
+		chmod( ( sDirectory + "/svencoop_downloads/" + szSoundcacheDir ).c_str(), 0644 );
+	#endif
 		//DeleteFileA(szFullSoundcacheDir);
 		filesystem->RemoveFile( szSoundcacheDir, "GAMEDOWNLOAD" );
 	}
@@ -217,12 +271,22 @@ void CSoundcache::SoundEngineLoadSoundList( void )
 	if ( filesystem->FileExists( szSoundcacheDir ) )
 	{
 		std::string sDirectory = UTIL_GetLongPathName();
+
+	#ifdef WIN32
 		std::string sSoundcacheDir = sDirectory + "\\svencoop_downloads\\" + szSoundcacheDir;
 		std::string sServerSoundcacheDir = sDirectory + "\\svencoop_downloads\\" + szServerSoundcacheDir;
 
 		SetFileAttributes( sSoundcacheDir.c_str(), FILE_ATTRIBUTE_NORMAL );
 
 		if ( !CreateDirectory( ( sDirectory + "\\svencoop_downloads\\" + szServerSoundcacheFolder ).c_str(), NULL ) && GetLastError() != ERROR_ALREADY_EXISTS )
+	#else
+		std::string sSoundcacheDir = sDirectory + "/svencoop_downloads/" + szSoundcacheDir;
+		std::string sServerSoundcacheDir = sDirectory + "/svencoop_downloads/" + szServerSoundcacheDir;
+
+		chmod( sSoundcacheDir.c_str(), 0644 );
+
+		if ( mkdir( ( sDirectory + "/svencoop_downloads/" + szServerSoundcacheFolder ).c_str(), 0777 ) == -1 && errno != EEXIST )
+	#endif
 		{
 			PrintWarning( "Failed to create directory \"..\\%s\"\n", szServerSoundcacheFolder );
 			return;
@@ -232,7 +296,11 @@ void CSoundcache::SoundEngineLoadSoundList( void )
 		{
 			filesystem->RemoveFile( szSoundcacheDir, "GAMEDOWNLOAD" );
 
+		#ifdef WIN32
 			if ( CopyFile( sServerSoundcacheDir.c_str(), sSoundcacheDir.c_str(), true ) )
+		#else
+			if ( CopyFile( sServerSoundcacheDir.c_str(), sSoundcacheDir.c_str() ) == 0 )
+		#endif
 			{
 				PrintMsg( "Used saved soundcache for the current map \"%s\"\n", szMapName );
 			}
@@ -243,7 +311,11 @@ void CSoundcache::SoundEngineLoadSoundList( void )
 		}
 		else
 		{
+		#ifdef WIN32
 			if ( CopyFile( sSoundcacheDir.c_str(), sServerSoundcacheDir.c_str(), true ) )
+		#else
+			if ( CopyFile( sSoundcacheDir.c_str(), sServerSoundcacheDir.c_str() ) == 0 )
+		#endif
 			{
 				PrintMsg( "Saved soundcache for the current map \"%s\"\n", szMapName );
 			}
@@ -285,15 +357,24 @@ EHookResult CSoundcache::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		return kHookContinue;
 
 	static int sleep_frames = 0;
+#ifdef WIN32
 	static char szSoundcacheDirectory[ MAX_PATH ] = { 0 };
+#else
+	static char szSoundcacheDirectory[ PATH_MAX ] = { 0 };
+#endif
 
 	if ( !*szSoundcacheDirectory )
+	#ifdef WIN32
 		snprintf( szSoundcacheDirectory, MAX_PATH, "%s\\svencoop_downloads\\maps\\soundcache\\", UTIL_GetLongPathName() );
+	#else
+		snprintf( szSoundcacheDirectory, PATH_MAX, "%s/svencoop_downloads/maps/soundcache", UTIL_GetLongPathName() );
+	#endif
 
 	sleep_frames++;
 
 	if ( sleep_frames >= 75 )
 	{
+	#ifdef WIN32
 		HANDLE hFile;
 		WIN32_FIND_DATAA FileInformation;
 
@@ -328,6 +409,32 @@ EHookResult CSoundcache::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 			FindClose( hFile );
 		}
+	#else
+		DIR *dir = opendir( szSoundcacheDirectory );
+		if ( dir != NULL )
+		{
+			struct dirent *entry;
+			while ( ( entry = readdir( dir ) ) != NULL )
+			{
+				if ( stricmp( entry->d_name, ".")  == 0 || stricmp( entry->d_name, ".." ) == 0 )
+					continue;
+
+				char szFullPath[ PATH_MAX ];
+				snprintf( szFullPath, Q_ARRAYSIZE( szFullPath ), "%s/%s", szSoundcacheDirectory, entry->d_name );
+
+				struct stat st;
+				if ( stat( szFullPath, &st ) == 0 && S_ISDIR( st.st_mode ) )
+					continue;
+
+				if ( stat( szFullPath, &st ) != -1 && S_ISREG( st.st_mode ) && st.st_size == 0 )
+					continue;
+
+				chmod( szFullPath, 0444 );
+			}
+
+			closedir(dir);
+		}
+	#endif
 
 		sleep_frames = 0;
 	}
@@ -386,18 +493,40 @@ bool CSoundcache::Load( void )
 	m_pDontFlush = Modules::menu->AddParamBool( this, "DontFlush", NULL, false );
 	m_pIgnore = Modules::menu->AddParamBool( this, "Ignore", NULL, false );
 
-	m_pfnCClient_SoundEngine__LoadSoundList = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__LoadSoundList );
-	FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCClient_SoundEngine__LoadSoundList, "CClient_SoundEngine::LoadSoundList" );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		MAKE_ASYNC( fm_pfnCClient_SoundEngine__LoadSoundList, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CClient_SoundEngine::LoadSoundList" ); } );
+		MAKE_ASYNC( fm_pfnCClient_SoundEngine__FlushCache, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CClient_SoundEngine::FlushCache" ); } );
 
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__FlushCache );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache, fCClient_SoundEngine__FlushCache );
-	m_pfnCClient_SoundEngine__FlushCache = MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__FlushCache, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCClient_SoundEngine__FlushCache,
-								   "CClient_SoundEngine::FlushCache",
-								   FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache,
-								   patternIndex );
+		m_pfnCClient_SoundEngine__LoadSoundList = fm_pfnCClient_SoundEngine__LoadSoundList.get();
+		m_pfnCClient_SoundEngine__FlushCache = fm_pfnCClient_SoundEngine__FlushCache.get();
 
+		if ( m_pfnCClient_SoundEngine__LoadSoundList == NULL )
+			return false;
+		if ( m_pfnCClient_SoundEngine__FlushCache == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		m_pfnCClient_SoundEngine__LoadSoundList = MemoryUtils()->FindPattern( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__LoadSoundList );
+		FEATURE_CHECK_SYMBOL_PATTERN( m_pfnCClient_SoundEngine__LoadSoundList, "CClient_SoundEngine::LoadSoundList" );
+
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fCClient_SoundEngine__FlushCache );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache, fCClient_SoundEngine__FlushCache );
+		m_pfnCClient_SoundEngine__FlushCache = MemoryUtils()->GetPatternFutureValue( fCClient_SoundEngine__FlushCache, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCClient_SoundEngine__FlushCache,
+									   "CClient_SoundEngine::FlushCache",
+									   FeaturesGameData::Patterns::Client::CClient_SoundEngine__FlushCache,
+									   patternIndex );
+	#else
+		return false;
+	#endif
+	}
+
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCClient_SoundEngine__LoadSoundList", m_pfnCClient_SoundEngine__LoadSoundList, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCClient_SoundEngine__FlushCache", m_pfnCClient_SoundEngine__FlushCache, GameData::Modules::Client );
 	return true;
 }
 

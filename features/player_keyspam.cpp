@@ -3,6 +3,9 @@
 
 #include "stdafx.h"
 #include "player_keyspam.h"
+#ifndef WIN32
+#include <SDL.h>
+#endif
 
 using namespace Globals;
 
@@ -27,7 +30,11 @@ EHookResult CKeySpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	{
 		static bool key_down = true;
 
+	#ifdef WIN32
 		if ( bSpam || GetAsyncKeyState( 0x45 ) ) // E
+	#else
+		if ( bSpam || Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_E ) ) // E
+	#endif
 		{
 			if ( key_down )
 				cl_enginefuncs->pfnClientCmd( "-use" );
@@ -47,7 +54,11 @@ EHookResult CKeySpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	{
 		static bool key_down = true;
 
+	#ifdef WIN32
 		if ( bSpam || GetAsyncKeyState( 0x57 ) ) // W
+	#else
+		if ( bSpam || Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_W ) ) // W
+	#endif
 		{
 			if ( key_down )
 				cl_enginefuncs->pfnClientCmd( "-forward" );
@@ -67,7 +78,11 @@ EHookResult CKeySpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	{
 		static bool key_down = true;
 
+	#ifdef WIN32
 		if ( bSpam || GetAsyncKeyState( 0x53 ) ) // S
+	#else
+		if ( bSpam || Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_S ) ) // S
+	#endif
 		{
 			if ( key_down )
 				cl_enginefuncs->pfnClientCmd( "-back" );
@@ -87,7 +102,11 @@ EHookResult CKeySpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	{
 		static bool key_down = true;
 
+	#ifdef WIN32
 		if ( bSpam || GetAsyncKeyState( VK_LCONTROL ) ) // CTRL
+	#else
+		if ( bSpam || Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_LCTRL ) ) // CTRL
+	#endif
 		{
 			if ( key_down )
 				cl_enginefuncs->pfnClientCmd( "-duck" );
@@ -103,7 +122,11 @@ EHookResult CKeySpam::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		}
 	}
 
+#ifdef WIN32
 	if ( m_pSpamQ->GetBool() && ( bSpam || GetAsyncKeyState( 0x51 ) ) ) // Q
+#else
+	if ( m_pSpamQ->GetBool() && ( bSpam || Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_Q ) ) ) // Q
+#endif
 	{
 		cl_enginefuncs->pfnClientCmd( "lastinv" );
 	}
@@ -169,6 +192,7 @@ bool CKeySpam::Load( void )
 	if ( messagemode == NULL )
 		return false;
 
+#ifdef WIN32
 	MemoryUtils()->InitDisasm( &inst, messagemode->function, 32, 16 );
 	if ( MemoryUtils()->Disassemble( &inst ) )
 	{
@@ -180,6 +204,35 @@ bool CKeySpam::Load( void )
 			key_dest = reinterpret_cast<int *>( inst.operand[ 0 ].lval.udword );
 		}
 	}
+#else
+	uint8_t *p = (uint8_t *)messagemode->function;
+	uint32_t ulRelocOffset = 0;
+	int iDisassembledBytes = 0;
+
+	MemoryUtils()->InitDisasm( &inst, messagemode->function, 32, 32 );
+	while ( iDisassembledBytes = MemoryUtils()->Disassemble( &inst ) )
+	{
+		if ( inst.mnemonic == UD_Icall && ulRelocOffset == 0 )
+		{
+			ulRelocOffset = (uint32_t)( p + iDisassembledBytes );
+		}
+		else if ( inst.mnemonic == UD_Iadd && inst.operand[ 0 ].type == UD_OP_REG &&
+				  inst.operand[ 0 ].base == UD_R_EBX && inst.operand[ 1 ].type == UD_OP_IMM )
+		{
+			ulRelocOffset += (uint32_t)inst.operand[ 1 ].lval.udword;
+		}
+		else if ( ulRelocOffset != 0 && inst.mnemonic == UD_Ilea &&
+				  inst.operand[ 0 ].type == UD_OP_REG && inst.operand[ 0 ].base == UD_R_EAX &&
+				  inst.operand[ 1 ].type == UD_OP_MEM && inst.operand[ 1 ].base == UD_R_EBX )
+		{
+			ulRelocOffset += (uint32_t)inst.operand[ 1 ].lval.udword;
+			key_dest = reinterpret_cast<int *>( ulRelocOffset );
+			break;
+		}
+
+		p += iDisassembledBytes;
+	}
+#endif
 
 	FEATURE_CHECK_SYMBOL( key_dest, "key_dest" );
 	return true;

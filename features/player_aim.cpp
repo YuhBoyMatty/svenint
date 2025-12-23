@@ -476,34 +476,34 @@ bool CAim::IsFiring( int iWeaponID, usercmd_t *cmd )
 
 		break;
 
-		/*
-			case WEAPON_GAUSS:
-				if ( clientweapon->GetWeaponData()->fuser4 > 0.f )
-				{
-					if ( localplayer->ButtonLast() & IN_ATTACK2 )
-					{
-						if ( !(cmd->buttons & IN_ATTACK2) )
-							return true;
-					}
-					else if ( localplayer->ButtonLast() & IN_ALT1 )
-					{
-						if ( !(cmd->buttons & IN_ALT1) )
-							return true;
-					}
-					else if ( clientweapon->GetWeaponData()->fuser4 == 1.f )
-					{
-						return true;
-					}
+	/*
+	case WEAPON_GAUSS:
+		if ( clientweapon->GetWeaponData()->fuser4 > 0.f )
+		{
+			if ( localplayer->ButtonLast() & IN_ATTACK2 )
+			{
+				if ( !(cmd->buttons & IN_ATTACK2) )
+					return true;
+			}
+			else if ( localplayer->ButtonLast() & IN_ALT1 )
+			{
+				if ( !(cmd->buttons & IN_ALT1) )
+					return true;
+			}
+			else if ( clientweapon->GetWeaponData()->fuser4 == 1.f )
+			{
+				return true;
+			}
 
-					return false;
-				}
-				else if ( cmd->buttons & IN_ATTACK2 )
-				{
-					return false;
-				}
+			return false;
+		}
+		else if ( cmd->buttons & IN_ATTACK2 )
+		{
+			return false;
+		}
 
-				break;
-		*/
+		break;
+	*/
 	}
 
 	if ( cmd->buttons & ( IN_ATTACK | IN_ATTACK2 ) )
@@ -864,44 +864,60 @@ bool CAim::Load( void )
 	m_pNoRecoilVisual = Modules::menu->AddParamBool( this, "NoRecoilVisual", NULL, false );
 
 	bool bOK = true;
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fV_PunchAxis );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client,
-									 FeaturesGameData::Patterns::Client::V_PunchAxis,
-									 fV_PunchAxis );
 
-	void *pfnV_PunchAxis = MemoryUtils()->GetPatternFutureValue( fV_PunchAxis, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( pfnV_PunchAxis,
-										  "V_PunchAxis",
-										  FeaturesGameData::Patterns::Client::V_PunchAxis,
-										  patternIndex );
-
-	if ( bOK )
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
 	{
-		ud_t inst;
-		MemoryUtils()->InitDisasm( &inst, pfnV_PunchAxis, 32, 24 );
+		ev_punchangle = (Vector *)gamedata->FindRVA( GameData::Modules::Client, "Client", "ev_punchangle" );;
+		
+		if ( ev_punchangle == NULL )
+			bOK = false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fV_PunchAxis );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client,
+										 FeaturesGameData::Patterns::Client::V_PunchAxis,
+										 fV_PunchAxis );
 
-		while ( MemoryUtils()->Disassemble( &inst ) )
+		void *pfnV_PunchAxis = MemoryUtils()->GetPatternFutureValue( fV_PunchAxis, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( pfnV_PunchAxis,
+											  "V_PunchAxis",
+											  FeaturesGameData::Patterns::Client::V_PunchAxis,
+											  patternIndex );
+
+		if ( bOK )
 		{
-			if ( ( inst.mnemonic == UD_Imovss && inst.operand[ 0 ].type == UD_OP_MEM &&
-				 inst.operand[ 0 ].index == UD_R_EAX && inst.operand[ 0 ].scale == 4 &&
-				 inst.operand[ 0 ].offset == 32 && inst.operand[ 1 ].type == UD_OP_REG &&
-				 inst.operand[ 1 ].base == UD_R_XMM0 ) ||
-				 ( inst.mnemonic == UD_Ifstp && inst.operand[ 0 ].type == UD_OP_MEM && // 5.11
-				 inst.operand[ 0 ].index == UD_R_EAX && inst.operand[ 0 ].scale == 4 &&
-				 inst.operand[ 0 ].offset == 32 ) )
-			{
-				ev_punchangle = reinterpret_cast<Vector *>( inst.operand[ 0 ].lval.udword );
-				break;
-			}
-		}
+			ud_t inst;
+			MemoryUtils()->InitDisasm( &inst, pfnV_PunchAxis, 32, 24 );
 
-		FEATURE_CHECK_SYMBOL_STATUS( ev_punchangle, "ev_punchangle" );
+			while ( MemoryUtils()->Disassemble( &inst ) )
+			{
+				if ( ( inst.mnemonic == UD_Imovss && inst.operand[ 0 ].type == UD_OP_MEM &&
+					 inst.operand[ 0 ].index == UD_R_EAX && inst.operand[ 0 ].scale == 4 &&
+					 inst.operand[ 0 ].offset == 32 && inst.operand[ 1 ].type == UD_OP_REG &&
+					 inst.operand[ 1 ].base == UD_R_XMM0 ) ||
+					 ( inst.mnemonic == UD_Ifstp && inst.operand[ 0 ].type == UD_OP_MEM && // 5.11
+					 inst.operand[ 0 ].index == UD_R_EAX && inst.operand[ 0 ].scale == 4 &&
+					 inst.operand[ 0 ].offset == 32 ) )
+				{
+					ev_punchangle = reinterpret_cast<Vector *>( inst.operand[ 0 ].lval.udword );
+					break;
+				}
+			}
+
+			FEATURE_CHECK_SYMBOL_STATUS( ev_punchangle, "ev_punchangle" );
+		}
+	#else
+		bool bOK = false;
+	#endif
 	}
 
 	if ( !bOK )
 		PrintWarning2( "No recoil is not available\n" );
 
+	GAMEDATA_DUMP_FILE_OFFSET( "ev_punchangle", ev_punchangle, GameData::Modules::Client );
 	return true;
 }
 

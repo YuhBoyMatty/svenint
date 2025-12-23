@@ -25,9 +25,9 @@
 // Signatures
 //-----------------------------------------------------------------------------
 
-typedef void ( __cdecl *Z_FreeFn )( void * );
-typedef void ( __cdecl *Mem_FreeFn )( void * );
-typedef void ( __cdecl *Cvar_DirectSetFn )( cvar_t *, const char * );
+typedef void ( CALLCONV_CDECL *Z_FreeFn )( void * );
+typedef void ( CALLCONV_CDECL *Mem_FreeFn )( void * );
+typedef void ( CALLCONV_CDECL *Cvar_DirectSetFn )( cvar_t *, const char * );
 
 //-----------------------------------------------------------------------------
 // Export

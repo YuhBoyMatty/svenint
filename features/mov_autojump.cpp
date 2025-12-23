@@ -4,6 +4,9 @@
 #include "stdafx.h"
 #include "mov_autojump.h"
 #include "st_input_manager.h"
+#ifndef WIN32
+#include <SDL.h>
+#endif
 
 using namespace Globals;
 
@@ -92,7 +95,11 @@ EHookResult CAutoJump::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		if ( cmd->buttons & IN_JUMP )
 		{
+		#ifdef WIN32
 			if ( s_bAllowJump && GetAsyncKeyState( VK_SPACE ) )
+		#else
+			if ( s_bAllowJump && Modules::menu->SDL_IsKeyPressed( SDL_SCANCODE_SPACE ) )
+		#endif
 			{
 				cmd->buttons &= ~IN_JUMP;
 				s_bAllowJump = false;

@@ -32,7 +32,7 @@ namespace FeaturesGameData
 //-----------------------------------------------------------------------------
 
 DECLARE_CLASS_HOOK( void, CHudBaseTextBlock__Print, CHudBaseTextBlock *, const char *, int, int );
-DECLARE_HOOK( float *, __cdecl, GetClientColor, int playerIndex );
+DECLARE_HOOK( float *, CALLCONV_CDECL, GetClientColor, int playerIndex );
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -48,14 +48,14 @@ DECLARE_CLASS_FUNC( void, HOOKED_CHudBaseTextBlock__Print, CHudBaseTextBlock *th
 {
 	THIS_FEATURE()->SaveHudBaseTextBlock( thisptr );
 
-	ORIG_CHudBaseTextBlock__Print( thisptr, pszBuf, iBufSize, clientIndex );
+	ORIG_CHudBaseTextBlock__Print( ARG_THISPTR( thisptr ), pszBuf, iBufSize, clientIndex );
 }
 
 //-----------------------------------------------------------------------------
 // GetClientColor hook
 //-----------------------------------------------------------------------------
 
-DECLARE_FUNC( float *, __cdecl, HOOKED_GetClientColor, int playerIndex )
+DECLARE_FUNC( float *, CALLCONV_CDECL, HOOKED_GetClientColor, int playerIndex )
 {
 	if ( THIS_FEATURE_IS_ENABLED() && playerIndex > 0 )
 	{
@@ -287,16 +287,30 @@ bool CChatColors::Load( void )
 	m_pRainbowSaturation = Modules::menu->AddParamFloat( this, "RainbowSaturation", NULL, 0.8f, 0.f, 1.f );
 	m_pRainbowLightness = Modules::menu->AddParamFloat( this, "RainbowLightness", NULL, 0.5f, 0.f, 1.f );
 
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fCHudBaseTextBlock__Print );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CHudBaseTextBlock__Print, fCHudBaseTextBlock__Print );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pfnCHudBaseTextBlock__Print = gamedata->FindRVA( GameData::Modules::Client, "Client", "CHudBaseTextBlock::Print" );
+		if ( m_pfnCHudBaseTextBlock__Print == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		DEFINE_PATTERNS_FUTURE( fCHudBaseTextBlock__Print );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CHudBaseTextBlock__Print, fCHudBaseTextBlock__Print );
 
-	m_pfnCHudBaseTextBlock__Print = MemoryUtils()->GetPatternFutureValue( fCHudBaseTextBlock__Print, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCHudBaseTextBlock__Print,
-								   "CHudBaseTextBlock::Print",
-								   FeaturesGameData::Patterns::Client::CHudBaseTextBlock__Print,
-								   patternIndex );
+		m_pfnCHudBaseTextBlock__Print = MemoryUtils()->GetPatternFutureValue( fCHudBaseTextBlock__Print, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCHudBaseTextBlock__Print,
+									   "CHudBaseTextBlock::Print",
+									   FeaturesGameData::Patterns::Client::CHudBaseTextBlock__Print,
+									   patternIndex );
+	#else
+		return false;
+	#endif
+	}
 
+	GAMEDATA_DUMP_FILE_OFFSET( "CHudBaseTextBlock::Print", m_pfnCHudBaseTextBlock__Print, GameData::Modules::Client );
 	return true;
 }
 

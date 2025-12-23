@@ -490,6 +490,33 @@ void CEntityList::AddClasses( void )
 	AddClassInfo( "w_m14.mdl", CLASS_ITEM_M14, FL_CLASS_ITEM );
 	AddClassInfo( "w_tesla.mdl", CLASS_ITEM_TESLA_GUN, FL_CLASS_ITEM );
 
+	AddClassInfo( "w_glock18.mdl", CLASS_ITEM_CS_GLOCK, FL_CLASS_ITEM );
+	AddClassInfo( "w_usp.mdl", CLASS_ITEM_CS_USP45, FL_CLASS_ITEM );
+	AddClassInfo( "w_p228.mdl", CLASS_ITEM_CS_P228, FL_CLASS_ITEM );
+	AddClassInfo( "w_57.mdl", CLASS_ITEM_CS_FN57, FL_CLASS_ITEM );
+	AddClassInfo( "w_elite.mdl", CLASS_ITEM_CS_DUAL_BERETTAS, FL_CLASS_ITEM );
+	AddClassInfo( "w_eagle.mdl", CLASS_ITEM_CS_DEAGLE, FL_CLASS_ITEM );
+	AddClassInfo( "w_xm1014.mdl", CLASS_ITEM_CS_XM1014, FL_CLASS_ITEM );
+	AddClassInfo( "w_m3.mdl", CLASS_ITEM_CS_M3, FL_CLASS_ITEM );
+	AddClassInfo( "w_mac10.mdl", CLASS_ITEM_CS_MAC10, FL_CLASS_ITEM );
+	AddClassInfo( "w_tmp.mdl", CLASS_ITEM_CS_TMP, FL_CLASS_ITEM );
+	AddClassInfo( "w_mp5.mdl", CLASS_ITEM_CS_MP5, FL_CLASS_ITEM );
+	AddClassInfo( "w_ump45.mdl", CLASS_ITEM_CS_UMP45, FL_CLASS_ITEM );
+	AddClassInfo( "w_p90.mdl", CLASS_ITEM_CS_P90, FL_CLASS_ITEM );
+	AddClassInfo( "w_famas.mdl", CLASS_ITEM_CS_FAMAS, FL_CLASS_ITEM );
+	AddClassInfo( "w_galil.mdl", CLASS_ITEM_CS_GALIL, FL_CLASS_ITEM );
+	AddClassInfo( "w_ak47.mdl", CLASS_ITEM_CS_AK47, FL_CLASS_ITEM );
+	AddClassInfo( "w_m4a1.mdl", CLASS_ITEM_CS_M4A1, FL_CLASS_ITEM );
+	AddClassInfo( "w_aug.mdl", CLASS_ITEM_CS_AUG, FL_CLASS_ITEM );
+	AddClassInfo( "w_sg552.mdl", CLASS_ITEM_CS_SG552, FL_CLASS_ITEM );
+	AddClassInfo( "w_scout.mdl", CLASS_ITEM_CS_SCOUT, FL_CLASS_ITEM );
+	AddClassInfo( "w_awp.mdl", CLASS_ITEM_CS_AWP, FL_CLASS_ITEM );
+	AddClassInfo( "w_sg550.mdl", CLASS_ITEM_CS_SG550, FL_CLASS_ITEM );
+	AddClassInfo( "w_g3sg1.mdl", CLASS_ITEM_CS_G3SG1, FL_CLASS_ITEM );
+	AddClassInfo( "w_m249.mdl", CLASS_ITEM_CS_M249, FL_CLASS_ITEM );
+	AddClassInfo( "w_he.mdl", CLASS_ITEM_CS_HEGRENADE, FL_CLASS_ITEM );
+	AddClassInfo( "w_c4.mdl", CLASS_ITEM_CS_C4, FL_CLASS_ITEM );
+
 	AddClassInfo( "spooky_gifts.mdl", CLASS_ITEM_SPOOKY_GIFTS, FL_CLASS_ITEM );
 
 	// World entites that have at least one hitbox
@@ -777,6 +804,33 @@ void CEntityList::AddExtraClassInfos( void )
 	AddExtraClassInfo( CLASS_ITEM_M14, "M14" );
 	AddExtraClassInfo( CLASS_ITEM_TESLA_GUN, "Tesla Gun" );
 
+	AddExtraClassInfo( CLASS_ITEM_CS_GLOCK, "Glock 18" );
+	AddExtraClassInfo( CLASS_ITEM_CS_USP45, "USP45" );
+	AddExtraClassInfo( CLASS_ITEM_CS_P228, "P228" );
+	AddExtraClassInfo( CLASS_ITEM_CS_FN57, "FN 57" );
+	AddExtraClassInfo( CLASS_ITEM_CS_DUAL_BERETTAS, "Dual Berettas" );
+	AddExtraClassInfo( CLASS_ITEM_CS_DEAGLE, "Desert Eagle" );
+	AddExtraClassInfo( CLASS_ITEM_CS_XM1014, "XM1014" );
+	AddExtraClassInfo( CLASS_ITEM_CS_M3, "M3" );
+	AddExtraClassInfo( CLASS_ITEM_CS_MAC10, "MAC-10" );
+	AddExtraClassInfo( CLASS_ITEM_CS_TMP, "TMP" );
+	AddExtraClassInfo( CLASS_ITEM_CS_MP5, "MP5" );
+	AddExtraClassInfo( CLASS_ITEM_CS_UMP45, "UMP45" );
+	AddExtraClassInfo( CLASS_ITEM_CS_P90, "FN P90" );
+	AddExtraClassInfo( CLASS_ITEM_CS_FAMAS, "Famas" );
+	AddExtraClassInfo( CLASS_ITEM_CS_GALIL, "Galil" );
+	AddExtraClassInfo( CLASS_ITEM_CS_AK47, "AK47" );
+	AddExtraClassInfo( CLASS_ITEM_CS_M4A1, "M4A1" );
+	AddExtraClassInfo( CLASS_ITEM_CS_AUG, "AUG" );
+	AddExtraClassInfo( CLASS_ITEM_CS_SG552, "SG552" );
+	AddExtraClassInfo( CLASS_ITEM_CS_SCOUT, "Scout" );
+	AddExtraClassInfo( CLASS_ITEM_CS_AWP, "AWP" );
+	AddExtraClassInfo( CLASS_ITEM_CS_SG550, "SG550" );
+	AddExtraClassInfo( CLASS_ITEM_CS_G3SG1, "G3SG1" );
+	AddExtraClassInfo( CLASS_ITEM_CS_M249, "M249" );
+	AddExtraClassInfo( CLASS_ITEM_CS_HEGRENADE, "HE" );
+	AddExtraClassInfo( CLASS_ITEM_CS_C4, "C4" );
+
 	AddExtraClassInfo( CLASS_ITEM_SPOOKY_GIFTS, "Spooky Gifts" );
 }
 
@@ -837,8 +891,6 @@ CEntityList::CEntityList( const char *pszCategoryName, const char *pszName ) : C
 																				m_modelsTable( 1023 )
 {
 	memset( m_ents, 0, Q_ARRAYSIZE( m_ents ) );
-	for ( int i = 0; i <= MY_MAXENTS; i++ )
-		m_ents[ i ].m_rgHitboxes = (Vector *)calloc( MAXSTUDIOBONES, sizeof( Vector ) );
 
 	m_pBoneTransform = NULL;
 
@@ -854,6 +906,9 @@ CEntityList::CEntityList( const char *pszCategoryName, const char *pszName ) : C
 
 bool CEntityList::Load( void )
 {
+	for ( int i = 0; i <= MY_MAXENTS; i++ )
+		m_ents[ i ].m_rgHitboxes = (Vector *)MemCalloc( MAXSTUDIOBONES, sizeof( Vector ), "m_rgHitboxes" );
+
 	m_pBoneTransform = (bone_matrix3x4_t *)enginestudio->StudioGetLightTransform();
 
 	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent, kHookCall, kHookPriorityHigh );
@@ -872,6 +927,6 @@ void CEntityList::Unload( void )
 	for ( int i = 0; i <= MY_MAXENTS; i++ )
 	{
 		if ( m_ents[ i ].m_rgHitboxes != NULL )
-			free( m_ents[ i ].m_rgHitboxes );
+			MemFree( m_ents[ i ].m_rgHitboxes );
 	}
 }

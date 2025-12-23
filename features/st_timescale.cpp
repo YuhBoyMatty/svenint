@@ -247,14 +247,27 @@ bool CTimescale::Load( void )
 {
 	Modules::menu->BindFeature( this, false );
 
-	m_pJumpOpCode = (uint16_t *)MemoryUtils()->FindPatternWithin( GameData::Modules::Engine,
-																  FeaturesGameData::Patterns::Engine::host_framerate_patch,
-																  GameData::Pointers::Engine::Host_FilterTime,
-																  (uint8_t *)GameData::Pointers::Engine::Host_FilterTime + 128 );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		m_pJumpOpCode = (uint16_t *)gamedata->FindRVA( GameData::Modules::Engine, "Engine", "host_framerate (Patch)" );
+		if ( m_pJumpOpCode == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		m_pJumpOpCode = (uint16_t *)MemoryUtils()->FindPatternWithin( GameData::Modules::Engine,
+																	  FeaturesGameData::Patterns::Engine::host_framerate_patch,
+																	  GameData::Pointers::Engine::Host_FilterTime,
+																	  (uint8_t *)GameData::Pointers::Engine::Host_FilterTime + 128 );
+	#endif
 
-	FEATURE_CHECK_SYMBOL_PATTERN( m_pJumpOpCode, "host_framerate (patch)" );
+		FEATURE_CHECK_SYMBOL_PATTERN( m_pJumpOpCode, "host_framerate (Patch)" );
 
-	m_PatchedJumpOpCode = *m_pJumpOpCode;
+		m_PatchedJumpOpCode = *m_pJumpOpCode;
+	}
+
+	GAMEDATA_DUMP_FILE_OFFSET( "host_framerate (Patch)", m_pJumpOpCode, GameData::Modules::Engine );
 	return true;
 }
 

@@ -15,6 +15,8 @@
 #include "udis86/udis86.h"
 
 #ifndef WIN32
+#include "utils/hash.h"
+
 #include <sys/mman.h>
 
 #ifndef PAGE_SIZE
@@ -26,6 +28,7 @@
 // not actual flags as in Windows
 #define MEM_RESERVE				MAP_PRIVATE
 #define MEM_COMMIT				MAP_ANONYMOUS
+#define MEM_RELEASE				0
 
 #define PAGE_NOACCESS			0
 #define PAGE_READONLY			PROT_READ
@@ -40,6 +43,14 @@
 #define MEMUTILS_DUPE_SYMBOLS_NAME 0
 #endif
 
+#ifdef WIN32
+#define MAKE_ASYNC( varName, func, ... ) auto varName = std::async( func, __VA_ARGS__ )
+#else
+#define MAKE_ASYNC( varName, func, ... ) auto varName = std::async( func, ##__VA_ARGS__ )
+#endif
+#define MAKE_ASYNC_NOVAR( func, ... ) std::async( func, ##__VA_ARGS__ )
+#define GET_ASYNC( varName ) varName.get()
+
 //-----------------------------------------------------------------------------
 // Types
 //-----------------------------------------------------------------------------
@@ -50,7 +61,7 @@ typedef struct moduleinfo_s
 {
 	module_t hModule;
 	void *pBaseOfDll;
-	unsigned int SizeOfImage;
+	uint32_t SizeOfImage;
 } moduleinfo_t;
 
 //-----------------------------------------------------------------------------
@@ -104,7 +115,7 @@ public:
 	// Patch memory address with given length
 	//-----------------------------------------------------------------------------
 
-	void PatchMemory( void *pAddress, unsigned char *pPatchBytes, int length );
+	void PatchMemory( void *pAddress, uint8_t *pPatchBytes, int length );
 
 	//-----------------------------------------------------------------------------
 	// NOP memory address with given length
@@ -139,16 +150,28 @@ public:
 	void *GetVirtualFunction( void *pClassInstance, int nFunctionIndex );
 
 	//-----------------------------------------------------------------------------
+	// Gets module handle
+	//-----------------------------------------------------------------------------
+
+	module_t GetModule( const char *pszModuleName );
+
+	//-----------------------------------------------------------------------------
 	// Get module info
 	//-----------------------------------------------------------------------------
 
 	bool RetrieveModuleInfo( module_t hModule );
-	
+
 	//-----------------------------------------------------------------------------
 	// Get module info
 	//-----------------------------------------------------------------------------
 
 	bool RetrieveModuleInfo( module_t hModule, moduleinfo_t *pModInfo );
+
+	//-----------------------------------------------------------------------------
+	// Lookup for a function in IAT
+	//-----------------------------------------------------------------------------
+
+	void *GetProcAddress( module_t hModule, const char *pszProcName );
 
 	//-----------------------------------------------------------------------------
 	// Lookup for a symbol in Symbol Table
@@ -161,7 +184,7 @@ public:
 	// Find signature from pattern_s structure
 	//-----------------------------------------------------------------------------
 
-	void *FindPattern( module_t hModule, pattern_t *pPattern, unsigned int offset = 0 );
+	void *FindPattern( module_t hModule, pattern_t *pPattern, uint32_t offset = 0 );
 	void *FindPatternWithin( module_t hModule, pattern_t *pPattern, void *pSearchStart, void *pSearchEnd );
 
 	//-----------------------------------------------------------------------------
@@ -169,7 +192,7 @@ public:
 	// If signature: "\xD9\x1D\x2A\x2A\x2A\x2A\x75\x0A\xA1", then mask: "xx????xxx"
 	//-----------------------------------------------------------------------------
 
-	void *FindPattern( module_t hModule, const char *pszPattern, char *pszMask, unsigned int offset = 0 );
+	void *FindPattern( module_t hModule, const char *pszPattern, char *pszMask, uint32_t offset = 0 );
 	void *FindPatternWithin( module_t hModule, const char *pszPattern, char *pszMask, void *pSearchStart, void *pSearchEnd );
 
 	//-----------------------------------------------------------------------------
@@ -177,29 +200,29 @@ public:
 	// If signature: "\xD9\x1D\x2A\x2A\x2A\x2A\x75\x0A\xA1", then ignore byte can be: '0x2A'
 	//-----------------------------------------------------------------------------
 
-	void *FindPattern( module_t hModule, const char *pszPattern, unsigned int length, unsigned int offset = 0, char ignoreByte = '\x2A' );
-	void *FindPatternWithin( module_t hModule, const char *pszPattern, unsigned int length, void *pSearchStart, void *pSearchEnd, char ignoreByte = '\x2A' );
+	void *FindPattern( module_t hModule, const char *pszPattern, uint32_t length, uint32_t offset = 0, char ignoreByte = '\x2A' );
+	void *FindPatternWithin( module_t hModule, const char *pszPattern, uint32_t length, void *pSearchStart, void *pSearchEnd, char ignoreByte = '\x2A' );
 
 	//-----------------------------------------------------------------------------
 	// Find signature from range of bytes with a specific byte to ignore
-	// For example: unsigned char sig[] = { 0xD9, 0x1D, 0x2A, 0x2A, 0x2A, 0x2A, 0x75, 0x0A, 0xA1 };
+	// For example: uint8_t sig[] = { 0xD9, 0x1D, 0x2A, 0x2A, 0x2A, 0x2A, 0x75, 0x0A, 0xA1 };
 	//-----------------------------------------------------------------------------
 
-	void *FindPattern( module_t hModule, unsigned char *pPattern, unsigned int length, unsigned int offset = 0, unsigned char ignoreByte = 0x2A );
-	void *FindPatternWithin( module_t hModule, unsigned char *pPattern, unsigned int length, void *pSearchStart, void *pSearchEnd, unsigned char ignoreByte = 0x2A );
+	void *FindPattern( module_t hModule, uint8_t *pPattern, uint32_t length, uint32_t offset = 0, uint8_t ignoreByte = 0x2A );
+	void *FindPatternWithin( module_t hModule, uint8_t *pPattern, uint32_t length, void *pSearchStart, void *pSearchEnd, uint8_t ignoreByte = 0x2A );
 
 	//-----------------------------------------------------------------------------
 	// Lookup for a string
 	//-----------------------------------------------------------------------------
 
-	void *FindString( module_t hModule, const char *pszString, unsigned int offset = 0 );
+	void *FindString( module_t hModule, const char *pszString, uint32_t offset = 0 );
 	void *FindStringWithin( module_t hModule, const char *pszString, void *pSearchStart, void *pSearchEnd );
 
 	//-----------------------------------------------------------------------------
 	// Lookup for an address
 	//-----------------------------------------------------------------------------
 
-	void *FindAddress( module_t hModule, void *pAddress, unsigned int offset = 0 );
+	void *FindAddress( module_t hModule, void *pAddress, uint32_t offset = 0 );
 	void *FindAddressWithin( module_t hModule, void *pAddress, void *pSearchStart, void *pSearchEnd );
 	
 	//-----------------------------------------------------------------------------
@@ -231,10 +254,10 @@ public:
 		return NULL;
 	}
 
-	inline std::future<void *> FindPatternAsync( module_t hModule, pattern_t *pPattern, unsigned int offset = 0 )
+	inline std::future<void *> FindPatternAsync( module_t hModule, pattern_t *pPattern, uint32_t offset = 0 )
 	{
 		CMemoryUtils *pMemoryUtils = this;
-		return std::async( [pMemoryUtils, hModule, pPattern, offset] { return pMemoryUtils->FindPattern( hModule, pPattern, offset ); } );
+		return std::async( [ pMemoryUtils, hModule, pPattern, offset ] { return pMemoryUtils->FindPattern( hModule, pPattern, offset ); } );
 	}
 
 	inline void FindPatternAsync( module_t hModule, pattern_reg_t *patterns, std::vector<std::future<void *>> &futures )
@@ -247,7 +270,7 @@ public:
 		for ( int i = 0; patterns[ i ].name != NULL; i++ )
 		{
 			pattern_t *pattern = patterns[ i ].pattern;
-			futures.push_back( std::async( [pMemoryUtils, hModule, pattern] { return pMemoryUtils->FindPattern( hModule, pattern ); } ) );
+			futures.push_back( std::async( [ pMemoryUtils, hModule, pattern ] { return pMemoryUtils->FindPattern( hModule, pattern ); } ) );
 		}
 	}
 
@@ -292,9 +315,9 @@ private:
 		}
 
 		// Get hash
-		unsigned int operator()( const symbol_t &sym ) const
+		uint32_t operator()( const symbol_t &sym ) const
 		{
-			return HashKey( (unsigned char *)sym.name, sym.length );
+			return HashKey( (uint8_t *)sym.name, sym.length );
 		}
 	};
 
@@ -328,6 +351,11 @@ private:
 		#endif
 		}
 
+		void Purge( void )
+		{
+			m_SymbolsTable.Purge();
+		}
+
 		void ResizeTable( int tableSize )
 		{
 			m_SymbolsTable.Resize( tableSize );
@@ -335,7 +363,7 @@ private:
 
 		symbol_t *FindSymbol( const char *pszSymbol, int length )
 		{
-			symbol_t symbol_find =
+			const symbol_t symbol_find =
 			{
 				pszSymbol,
 				(size_t)length,
@@ -356,7 +384,7 @@ private:
 			pszSymbol = strdup( pszSymbol );
 		#endif
 
-			symbol_t symbol =
+			const symbol_t symbol =
 			{
 				pszSymbol,
 				(size_t)length,
@@ -394,6 +422,11 @@ private:
 			last_pos = 0;
 		}
 
+		~CModuleSymbolTable()
+		{
+			table.Purge();
+		}
+
 	public:
 		CSymbolTable table;
 		module_t handle;
@@ -418,14 +451,14 @@ private:
 
 inline void *GetVTableFunction( void *pBaseClass, int nIndex )
 {
-	const unsigned long *pVTable = *static_cast<unsigned long **>( pBaseClass );
+	const uint32_t *pVTable = *static_cast<uint32_t **>( pBaseClass );
 	return (void *)( pVTable[ nIndex ] );
 }
 
 template <typename T>
 inline T GetVTableFunction( void *pBaseClass, int nIndex )
 {
-	const unsigned long *pVTable = *static_cast<unsigned long **>( pBaseClass );
+	const uint32_t *pVTable = *static_cast<uint32_t **>( pBaseClass );
 	return reinterpret_cast<T>( pVTable[ nIndex ] );
 }
 
@@ -453,9 +486,9 @@ inline T view_as( void *pPointer )
 // Offset an address
 //-----------------------------------------------------------------------------
 
-inline void *GetOffset( void *ptr, unsigned long offset )
+inline void *GetOffset( void *ptr, uint32_t offset )
 {
-	return (void *)( (unsigned char *)ptr + offset );
+	return (void *)( (uint8_t *)ptr + offset );
 }
 
 //-----------------------------------------------------------------------------

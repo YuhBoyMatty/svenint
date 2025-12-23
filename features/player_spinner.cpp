@@ -73,8 +73,8 @@ EHookResult CSpinner::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		cl_enginefuncs->GetViewAngles( cmd->viewangles );
 	}
 
-	constexpr auto max_yaw = (float)MAXSHORT * 360.0f;
-	constexpr auto max_pitch = (float)MAXSHORT * 180.0f;
+	constexpr auto max_yaw = (float)32767 * 360.0f;
+	constexpr auto max_pitch = (float)32767 * 180.0f;
 
 	// Credits @guwi <3
 	// Pitch

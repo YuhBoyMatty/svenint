@@ -19,8 +19,8 @@
 #define IM_FILE_HEADER		( 0x4D49 ) // IM
 #define IM_FILE_VERSION		( 3 )
 #define IM_FILE_PATH		( SVENINT_FOLDER_NAME "/input_manager/" )
-#define IM_FRAME_INFO_SIZE	( sizeof im_frame_info_t )
-#define IM_FRAME_INPUTS_SIZE ( sizeof im_frame_inputs_t )
+#define IM_FRAME_INFO_SIZE	( sizeof( im_frame_info_t ) )
+#define IM_FRAME_INPUTS_SIZE ( sizeof( im_frame_inputs_t ) )
 
 //-----------------------------------------------------------------------------
 // Type declarations

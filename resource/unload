@@ -1,0 +1,27 @@
+#!/usr/bin/bash
+#Took the script from here https://github.com/ef3d0c3e/SvenHax/tree/master thank you dude
+
+sven_pid=$(pidof svencoop_linux)
+filename="libsvenint.so"
+
+if grep -q "$filename" /proc/"$sven_pid"/maps; then
+	echo "unloading $filename"
+	gdb -n -q -batch-silent \
+		-ex "set logging on" \
+		-ex "set logging file /dev/null" \
+		-ex "set logging redirect on" \
+		-ex "attach $sven_pid" \
+		-ex "b SDL_GL_SwapWindow" \
+  		-ex "c" \
+		-ex "set \$dlopen = (void*(*)(char*, int)) dlopen" \
+		-ex "set \$dlclose = (int(*)(void*)) dlclose" \
+		-ex "set \$library = \$dlopen(\"$filename\", 6)" \
+		-ex "call \$dlclose(\$library)" \
+		-ex "call \$dlclose(\$library)" \
+		-ex "detach" \
+		-ex "quit"
+	echo "Unloaded."
+else
+	echo "Not loaded."
+fi
+

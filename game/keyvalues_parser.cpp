@@ -4,6 +4,9 @@
 #pragma warning(disable : 26812)
 
 #include "keyvalues_parser.h"
+#include "utils/detours.h"
+#include "utils/memalloc.h"
+#include <cstring>
 
 namespace KeyValuesParser
 {
@@ -157,7 +160,7 @@ namespace KeyValuesParser
 		return result;
 	}
 
-	inline bool __fastcall IsPair( char *buffer, const char **ppszKey, const char **ppszValue, bool *bSection, bool *bHasEscapeSeq, char **ppEnd )
+	inline bool CALLCONV_FASTCALL IsPair( char *buffer, const char **ppszKey, const char **ppszValue, bool *bSection, bool *bHasEscapeSeq, char **ppEnd )
 	{
 		const char *pszKey = NULL;
 		const char *pszValue = NULL;
@@ -427,7 +430,7 @@ namespace KeyValuesParser
 					if ( bSection )
 					{
 						seek_state = SEEK_SECTION_BEGIN;
-						keyvalues_head = keyvalues = new KeyValues( pszKey );
+						keyvalues_head = keyvalues = MemAllocInstance( (KeyValues *)NULL, pszKey );
 					}
 				}
 				else if ( seek_state == SEEK_SECTION_BEGIN )
@@ -543,7 +546,7 @@ namespace KeyValuesParser
 						KeyValues *prev = keyvalues;
 
 						sectionsStack.push_back( keyvalues );
-						keyvalues = new KeyValues( pszKey );
+						keyvalues = MemAllocInstance( (KeyValues *)NULL, pszKey );
 
 						prev->AddItem( keyvalues );
 
@@ -558,7 +561,7 @@ namespace KeyValuesParser
 							char *value_buffer = (char *)pszValue;
 							char *prev_char = NULL;
 
-							char *value = (char *)malloc( pValueEnd - pszValue );
+							char *value = (char *)MemAlloc( pValueEnd - pszValue );
 
 							while ( *value_buffer )
 							{
@@ -608,13 +611,13 @@ namespace KeyValuesParser
 
 							value[ i ] = 0;
 
-							keyvalues->AddItem( new KeyValues( pszKey, value ) );
+							keyvalues->AddItem( MemAllocInstance( (KeyValues *)NULL, pszKey, value ) );
 
-							free( value );
+							MemFree( value );
 						}
 						else
 						{
-							keyvalues->AddItem( new KeyValues( pszKey, pszValue ) );
+							keyvalues->AddItem( MemAllocInstance( (KeyValues *)NULL, pszKey, pszValue ) );
 						}
 					}
 				}
@@ -626,7 +629,7 @@ namespace KeyValuesParser
 			if ( parse_result == PARSE_FAILED )
 			{
 				if ( keyvalues_head != NULL )
-					delete keyvalues_head;
+					MemFreeInstance( keyvalues_head );
 
 				*result_code = PARSE_FAILED;
 				return NULL;
@@ -641,6 +644,17 @@ namespace KeyValuesParser
 		}
 
 		return NULL;
+	}
+
+	void KeyValues::Clear()
+	{
+		if ( !bSection )
+			return;
+		
+		for ( size_t i = 0; i < keyvalues.size(); i++ )
+		{
+			MemFreeInstance( keyvalues[ i ] );
+		}
 	}
 
 	const char *GetLastErrorMessage()

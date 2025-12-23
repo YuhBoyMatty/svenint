@@ -17,13 +17,35 @@
 // Macro definitions
 //-----------------------------------------------------------------------------
 
+#ifdef _WIN32
+#define DECLARE_CALLCONV( callConv ) callConv
+#else
+#define DECLARE_CALLCONV( callConv ) __attribute__((callConv))
+#endif
+
+#ifdef _WIN32
+#define CALLCONV_CDECL __cdecl
+#define CALLCONV_STDCALL __stdcall
+#define CALLCONV_FASTCALL __fastcall
+#define CALLCONV_THISCALL __thiscall
+#else
+#define CALLCONV_CDECL __attribute__((cdecl))
+#define CALLCONV_STDCALL __attribute__((__stdcall))
+#define CALLCONV_FASTCALL __attribute__((__fastcall))
+#define CALLCONV_THISCALL __attribute__((__thiscall))
+#endif
+
 #define FUNC_SIGNATURE( retType, callConv, typeName, ... ) typedef retType ( callConv *typeName )( __VA_ARGS__ )
 
-#define DECLARE_FUNC_PTR( retType, callConv, funcName, ... ) typedef retType ( callConv *(funcName##Fn) )( __VA_ARGS__ ); funcName##Fn funcName = 0
-#define DECLARE_FUNC_PTR_STATIC( retType, callConv, funcName, ... ) typedef retType ( callConv *(funcName##Fn) )( __VA_ARGS__ ); static funcName##Fn funcName = 0
+#define DECLARE_FUNC_PTR( retType, callConv, funcName, ... ) typedef retType ( callConv *funcName##Fn )( __VA_ARGS__ ); funcName##Fn funcName = 0
+#define DECLARE_FUNC_PTR_STATIC( retType, callConv, funcName, ... ) typedef retType ( callConv *funcName##Fn )( __VA_ARGS__ ); static funcName##Fn funcName = 0
 #define DECLARE_FUNC( retType, callConv, funcName, ... ) retType callConv funcName( __VA_ARGS__ )
 
-#define DECLARE_CLASS_FUNC( retType, funcName, thisPtr, ... ) static retType __fastcall funcName( thisPtr, void *edx, __VA_ARGS__ )
+#ifdef _WIN32
+#define DECLARE_CLASS_FUNC( retType, funcName, thisPtr, ... ) static retType CALLCONV_FASTCALL funcName( thisPtr, void *edx, __VA_ARGS__ )
+#else
+#define DECLARE_CLASS_FUNC( retType, funcName, thisPtr, ... ) static retType CALLCONV_FASTCALL funcName( thisPtr, void *edx, ##__VA_ARGS__ )
+#endif
 
 #define GET_FUNC_PTR( funcName ) (void **)&funcName
 
@@ -32,10 +54,23 @@
 	static retType callConv HOOKED_##funcName( __VA_ARGS__ ); \
 	funcName##Fn ORIG_##funcName = 0
 
+#ifdef _WIN32
 #define DECLARE_CLASS_HOOK( retType, funcName, thisPtr, ... ) \
-	typedef retType ( __thiscall *funcName##Fn )( thisPtr, __VA_ARGS__ ); \
-	static retType __fastcall HOOKED_##funcName( thisPtr, void *edx, __VA_ARGS__ ); \
+	typedef retType ( CALLCONV_THISCALL *funcName##Fn )( thisPtr, __VA_ARGS__ ); \
+	static retType CALLCONV_FASTCALL HOOKED_##funcName( thisPtr, void *edx, __VA_ARGS__ ); \
 	funcName##Fn ORIG_##funcName = 0
+#else
+#define DECLARE_CLASS_HOOK( retType, funcName, thisPtr, ... ) \
+	typedef retType ( CALLCONV_FASTCALL *funcName##Fn )( thisPtr, void *edx, ##__VA_ARGS__ ); \
+	static retType CALLCONV_FASTCALL HOOKED_##funcName( thisPtr, void *edx, ##__VA_ARGS__ ); \
+	funcName##Fn ORIG_##funcName = 0
+#endif
+
+#ifdef WIN32
+#define ARG_THISPTR( thisptr ) thisptr // thiscall
+#else
+#define ARG_THISPTR( thisptr ) thisptr, edx // fastcall
+#endif
 
 //-----------------------------------------------------------------------------
 // Forward declarations
@@ -50,6 +85,17 @@ class CDetourContext;
 
 typedef int DetourHandle_t;
 #define DETOUR_INVALID_HANDLE (DetourHandle_t)(-1)
+
+//-----------------------------------------------------------------------------
+// Detour priorities
+//-----------------------------------------------------------------------------
+
+typedef enum
+{
+	kDetourPriorityNormal = 0,	// place hook in the middle of the call chain ( default priority )
+	kDetourPriorityLow,			// place hook at the bottom of the call chain ( will be one of the last to be called )
+	kDetourPriorityHigh			// place hook at the top of the call chain ( will be one of the first to be called )
+} EDetourPriority;
 
 //-----------------------------------------------------------------------------
 // CDetours interface
@@ -74,19 +120,35 @@ public:
 	// ToDo: fix it..
 	//-----------------------------------------------------------------------------
 
-	DetourHandle_t DetourFunction( void *pFunction, void *pDetourFunction, void **ppOriginalFunction, bool bPause = false, int iDisasmMinBytes = 5 );
+	DetourHandle_t DetourFunction( void *pFunction,
+								   void *pDetourFunction,
+								   void **ppOriginalFunction,
+								   int iDetourPriority = kDetourPriorityNormal,
+								   bool bPause = false,
+								   int iDisasmMinBytes = 5 );
 
 	//-----------------------------------------------------------------------------
 	// Find function from import address table (using Sys_GetProcAddress) and hook it
 	//-----------------------------------------------------------------------------
 
-	DetourHandle_t DetourFunctionByName( module_t hModule, const char *pszFunctionName, void *pDetourFunction, void **ppOriginalFunction, bool bPause = false, int iDisasmMinBytes = 5 );
+	DetourHandle_t DetourFunctionByName( module_t hModule,
+										 const char *pszFunctionName,
+										 void *pDetourFunction,
+										 void **ppOriginalFunction,
+										 int iDetourPriority = kDetourPriorityNormal,
+										 bool bPause = false,
+										 int iDisasmMinBytes = 5 );
 
 	//-----------------------------------------------------------------------------
 	// Hook function from virtual methods table
 	//-----------------------------------------------------------------------------
 
-	DetourHandle_t DetourVirtualFunction( void *pClassInstance, int nFunctionIndex, void *pDetourFunction, void **ppOriginalFunction, bool bPause = false );
+	DetourHandle_t DetourVirtualFunction( void *pClassInstance,
+										  int nFunctionIndex,
+										  void *pDetourFunction,
+										  void **ppOriginalFunction,
+										  int iDetourPriority = kDetourPriorityNormal,
+										  bool bPause = false );
 
 	//-----------------------------------------------------------------------------
 	// Pause function. Returns true if success
@@ -136,7 +198,7 @@ public:
 	inline bool IsSuspendThreadsEnabled( void ) const { return m_bSuspendThreads; }
 
 private:
-	DetourHandle_t CreateDetour( int type, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, bool bPause, int iDisasmMinBytes );
+	DetourHandle_t CreateDetour( int type, void *pFunction, void *pDetourFunction, void **ppOriginalFunction, int iDetourPriority, bool bPause, int iDisasmMinBytes );
 	DetourHandle_t AllocateDetourHandle( void );
 
 	void SuspendThreads( void );

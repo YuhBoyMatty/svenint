@@ -18,7 +18,7 @@ DECLARE_CLASS_HOOK( bool, CVoiceStatus__IsPlayerBlocked, void *, int );
 DECLARE_CLASS_HOOK( void, CVoiceStatus__SetPlayerBlockedState, void *, int, bool );
 DECLARE_CLASS_HOOK( void, CVoiceStatus__UpdateServerState, void *, bool );
 
-DECLARE_HOOK( bool, __cdecl, HACK_GetPlayerUniqueID, int, char * );
+DECLARE_HOOK( bool, CALLCONV_CDECL, HACK_GetPlayerUniqueID, int, char * );
 
 //-----------------------------------------------------------------------------
 // Feature gamedata
@@ -89,7 +89,7 @@ namespace FeaturesGameData
 // Vars
 //-----------------------------------------------------------------------------
 
-EXPOSE_FEATURE_SINGLETON( CMuteManager, soundcache, "Misc", "Mute Manager" );
+EXPOSE_FEATURE_SINGLETON( CMuteManager, mutemanager, "Misc", "Mute Manager" );
 
 static UserMsgHookFn ORIG_UserMsgHook_SayText = NULL;
 
@@ -342,7 +342,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CVoiceBanMgr__SetPlayerBan, void *thisptr, char
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
 	{
-		ORIG_CVoiceBanMgr__SetPlayerBan( thisptr, pszPlayerUniqueID, bMute );
+		ORIG_CVoiceBanMgr__SetPlayerBan( ARG_THISPTR( thisptr ), pszPlayerUniqueID, bMute );
 		return;
 	}
 
@@ -363,7 +363,7 @@ DECLARE_CLASS_FUNC( void *, HOOKED_CVoiceBanMgr__InternalFindPlayerSquelch, void
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
 	{
-		return ORIG_CVoiceBanMgr__InternalFindPlayerSquelch( thisptr, pszPlayerUniqueID );
+		return ORIG_CVoiceBanMgr__InternalFindPlayerSquelch( ARG_THISPTR( thisptr ), pszPlayerUniqueID );
 	}
 
 	uint64 steamid = gameutils->GetSteamID( THIS_FEATURE()->GetLastIndexedPlayer() );
@@ -383,7 +383,7 @@ DECLARE_CLASS_FUNC( bool, HOOKED_CVoiceStatus__IsPlayerBlocked, void *thisptr, i
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
 	{
-		return ORIG_CVoiceStatus__IsPlayerBlocked( thisptr, nPlayerIndex );
+		return ORIG_CVoiceStatus__IsPlayerBlocked( ARG_THISPTR( thisptr ), nPlayerIndex );
 	}
 
 	uint64 steamid = gameutils->GetSteamID( nPlayerIndex );
@@ -418,7 +418,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CVoiceStatus__SetPlayerBlockedState, void *this
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
 	{
-		ORIG_CVoiceStatus__SetPlayerBlockedState( thisptr, nPlayerIndex, bMute );
+		ORIG_CVoiceStatus__SetPlayerBlockedState( ARG_THISPTR( thisptr ), nPlayerIndex, bMute );
 		return;
 	}
 
@@ -439,14 +439,14 @@ DECLARE_CLASS_FUNC( void, HOOKED_CVoiceStatus__UpdateServerState, void *thisptr,
 {
 	if ( !THIS_FEATURE_IS_ENABLED() )
 	{
-		ORIG_CVoiceStatus__UpdateServerState( thisptr, bForce );
+		ORIG_CVoiceStatus__UpdateServerState( ARG_THISPTR( thisptr ), bForce );
 		return;
 	}
 
 	THIS_FEATURE()->UpdateServerState( thisptr, bForce );
 }
 
-DECLARE_FUNC( bool, __cdecl, HOOKED_HACK_GetPlayerUniqueID, int nPlayerIndex, char *pszPlayerUniqueID )
+DECLARE_FUNC( bool, CALLCONV_CDECL, HOOKED_HACK_GetPlayerUniqueID, int nPlayerIndex, char *pszPlayerUniqueID )
 {
 	THIS_FEATURE()->SetLastIndexedPlayer( nPlayerIndex );
 	return ORIG_HACK_GetPlayerUniqueID( nPlayerIndex, pszPlayerUniqueID );
@@ -628,7 +628,7 @@ void CMuteManager::LoadMutedPlayers( void )
 	}
 	else
 	{
-		PrintWarning( "Missing file \"./" SVENINT_FOLDER_NAME "/muted_players.bin\"\n" );
+		// PrintWarning2( "Missing file \"./" SVENINT_FOLDER_NAME "/muted_players.bin\"\n" );
 	}
 }
 
@@ -721,14 +721,6 @@ void CMuteManager::OnEnable( void )
 }
 
 //-----------------------------------------------------------------------------
-// Disable feature: revert OnEnable routine
-//-----------------------------------------------------------------------------
-
-void CMuteManager::OnDisable( void )
-{
-}
-
-//-----------------------------------------------------------------------------
 // Load feature: create menu (config) parameters, scan for signatures etc...
 //-----------------------------------------------------------------------------
 
@@ -746,68 +738,112 @@ bool CMuteManager::Load( void )
 	voice_modenable = cvar->FindCvar( "voice_modenable" );
 	FEATURE_CHECK_SYMBOL( voice_modenable, "voice_modenable" );
 
-	int patternIndex;
-	bool bOK = true;
 
-	DEFINE_PATTERNS_FUTURE( fCVoiceBanMgr__SetPlayerBan );
-	DEFINE_PATTERNS_FUTURE( fCVoiceBanMgr__InternalFindPlayerSquelch );
-	DEFINE_PATTERNS_FUTURE( fCVoiceStatus__IsPlayerBlocked );
-	DEFINE_PATTERNS_FUTURE( fCVoiceStatus__SetPlayerBlockedState );
-	DEFINE_PATTERNS_FUTURE( fCVoiceStatus__UpdateServerState );
-	DEFINE_PATTERNS_FUTURE( fHACK_GetPlayerUniqueID );
+	if ( gamedata->Initialized() && gamedata->PreferRVA() )
+	{
+		MAKE_ASYNC( fm_pfnCVoiceBanMgr__SetPlayerBan, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CVoiceBanMgr::SetPlayerBan" ); } );
+		MAKE_ASYNC( fm_pfnCVoiceBanMgr__InternalFindPlayerSquelch, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CVoiceBanMgr::InternalFindPlayerSquelch" ); } );
+		MAKE_ASYNC( fm_pfnCVoiceStatus__IsPlayerBlocked, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CVoiceStatus::IsPlayerBlocked" ); } );
+		MAKE_ASYNC( fm_pfnCVoiceStatus__SetPlayerBlockedState, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CVoiceStatus::SetPlayerBlockedState" ); } );
+		MAKE_ASYNC( fm_pfnCVoiceStatus__UpdateServerState, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "CVoiceStatus::UpdateServerState" ); } );
+		MAKE_ASYNC( fm_pfnHACK_GetPlayerUniqueID, [] { return gamedata->FindRVA( GameData::Modules::Client, "Client", "HACK_GetPlayerUniqueID" ); } );
 
-	// Find signatures
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceBanMgr__SetPlayerBan, fCVoiceBanMgr__SetPlayerBan );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceBanMgr__InternalFindPlayerSquelch, fCVoiceBanMgr__InternalFindPlayerSquelch );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__IsPlayerBlocked, fCVoiceStatus__IsPlayerBlocked );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__SetPlayerBlockedState, fCVoiceStatus__SetPlayerBlockedState );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__UpdateServerState, fCVoiceStatus__UpdateServerState );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::HACK_GetPlayerUniqueID, fHACK_GetPlayerUniqueID );
+		m_pfnCVoiceBanMgr__SetPlayerBan = fm_pfnCVoiceBanMgr__SetPlayerBan.get();
+		m_pfnCVoiceBanMgr__InternalFindPlayerSquelch = fm_pfnCVoiceBanMgr__InternalFindPlayerSquelch.get();
+		m_pfnCVoiceStatus__IsPlayerBlocked = fm_pfnCVoiceStatus__IsPlayerBlocked.get();
+		m_pfnCVoiceStatus__SetPlayerBlockedState = fm_pfnCVoiceStatus__SetPlayerBlockedState.get();
+		m_pfnCVoiceStatus__UpdateServerState = fm_pfnCVoiceStatus__UpdateServerState.get();
+		m_pfnHACK_GetPlayerUniqueID = fm_pfnHACK_GetPlayerUniqueID.get();
 
-	// CVoiceBanMgr::SetPlayerBan
-	m_pfnCVoiceBanMgr__SetPlayerBan = MemoryUtils()->GetPatternFutureValue( fCVoiceBanMgr__SetPlayerBan, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceBanMgr__SetPlayerBan,
-										  "CVoiceBanMgr::SetPlayerBan",
-										  FeaturesGameData::Patterns::Client::CVoiceBanMgr__SetPlayerBan,
-										  patternIndex );
+		if ( m_pfnCVoiceBanMgr__SetPlayerBan == NULL )
+			return false;
+		if ( m_pfnCVoiceBanMgr__InternalFindPlayerSquelch == NULL )
+			return false;
+		if ( m_pfnCVoiceStatus__IsPlayerBlocked == NULL )
+			return false;
+		if ( m_pfnCVoiceStatus__SetPlayerBlockedState == NULL )
+			return false;
+		if ( m_pfnCVoiceStatus__UpdateServerState == NULL )
+			return false;
+		if ( m_pfnHACK_GetPlayerUniqueID == NULL )
+			return false;
+	}
+	else
+	{
+	#ifdef WIN32
+		int patternIndex;
+		bool bOK = true;
 
-	// CVoiceBanMgr::InternalFindPlayerSquelch
-	m_pfnCVoiceBanMgr__InternalFindPlayerSquelch = MemoryUtils()->GetPatternFutureValue( fCVoiceBanMgr__InternalFindPlayerSquelch, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceBanMgr__InternalFindPlayerSquelch,
-										  "CVoiceBanMgr::InternalFindPlayerSquelch",
-										  FeaturesGameData::Patterns::Client::CVoiceBanMgr__InternalFindPlayerSquelch,
-										  patternIndex );
+		DEFINE_PATTERNS_FUTURE( fCVoiceBanMgr__SetPlayerBan );
+		DEFINE_PATTERNS_FUTURE( fCVoiceBanMgr__InternalFindPlayerSquelch );
+		DEFINE_PATTERNS_FUTURE( fCVoiceStatus__IsPlayerBlocked );
+		DEFINE_PATTERNS_FUTURE( fCVoiceStatus__SetPlayerBlockedState );
+		DEFINE_PATTERNS_FUTURE( fCVoiceStatus__UpdateServerState );
+		DEFINE_PATTERNS_FUTURE( fHACK_GetPlayerUniqueID );
 
-	// CVoiceStatus::IsPlayerBlocked
-	m_pfnCVoiceStatus__IsPlayerBlocked = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__IsPlayerBlocked, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__IsPlayerBlocked,
-										  "CVoiceStatus::IsPlayerBlocked",
-										  FeaturesGameData::Patterns::Client::CVoiceStatus__IsPlayerBlocked,
-										  patternIndex );
+		// Find signatures
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceBanMgr__SetPlayerBan, fCVoiceBanMgr__SetPlayerBan );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceBanMgr__InternalFindPlayerSquelch, fCVoiceBanMgr__InternalFindPlayerSquelch );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__IsPlayerBlocked, fCVoiceStatus__IsPlayerBlocked );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__SetPlayerBlockedState, fCVoiceStatus__SetPlayerBlockedState );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::CVoiceStatus__UpdateServerState, fCVoiceStatus__UpdateServerState );
+		MemoryUtils()->FindPatternAsync( GameData::Modules::Client, FeaturesGameData::Patterns::Client::HACK_GetPlayerUniqueID, fHACK_GetPlayerUniqueID );
 
-	// CVoiceStatus::SetPlayerBlockedState
-	m_pfnCVoiceStatus__SetPlayerBlockedState = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__SetPlayerBlockedState, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__SetPlayerBlockedState,
-										  "CVoiceStatus::SetPlayerBlockedState",
-										  FeaturesGameData::Patterns::Client::CVoiceStatus__SetPlayerBlockedState,
-										  patternIndex );
+		// CVoiceBanMgr::SetPlayerBan
+		m_pfnCVoiceBanMgr__SetPlayerBan = MemoryUtils()->GetPatternFutureValue( fCVoiceBanMgr__SetPlayerBan, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceBanMgr__SetPlayerBan,
+											  "CVoiceBanMgr::SetPlayerBan",
+											  FeaturesGameData::Patterns::Client::CVoiceBanMgr__SetPlayerBan,
+											  patternIndex );
 
-	// CVoiceStatus::UpdateServerState
-	m_pfnCVoiceStatus__UpdateServerState = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__UpdateServerState, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__UpdateServerState,
-										  "CVoiceStatus::UpdateServerState",
-										  FeaturesGameData::Patterns::Client::CVoiceStatus__UpdateServerState,
-										  patternIndex );
+		// CVoiceBanMgr::InternalFindPlayerSquelch
+		m_pfnCVoiceBanMgr__InternalFindPlayerSquelch = MemoryUtils()->GetPatternFutureValue( fCVoiceBanMgr__InternalFindPlayerSquelch, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceBanMgr__InternalFindPlayerSquelch,
+											  "CVoiceBanMgr::InternalFindPlayerSquelch",
+											  FeaturesGameData::Patterns::Client::CVoiceBanMgr__InternalFindPlayerSquelch,
+											  patternIndex );
 
-	// HACK_GetPlayerUniqueID
-	m_pfnHACK_GetPlayerUniqueID = MemoryUtils()->GetPatternFutureValue( fHACK_GetPlayerUniqueID, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnHACK_GetPlayerUniqueID,
-										  "HACK_GetPlayerUniqueID",
-										  FeaturesGameData::Patterns::Client::HACK_GetPlayerUniqueID,
-										  patternIndex );
+		// CVoiceStatus::IsPlayerBlocked
+		m_pfnCVoiceStatus__IsPlayerBlocked = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__IsPlayerBlocked, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__IsPlayerBlocked,
+											  "CVoiceStatus::IsPlayerBlocked",
+											  FeaturesGameData::Patterns::Client::CVoiceStatus__IsPlayerBlocked,
+											  patternIndex );
 
-	if ( !bOK )
+		// CVoiceStatus::SetPlayerBlockedState
+		m_pfnCVoiceStatus__SetPlayerBlockedState = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__SetPlayerBlockedState, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__SetPlayerBlockedState,
+											  "CVoiceStatus::SetPlayerBlockedState",
+											  FeaturesGameData::Patterns::Client::CVoiceStatus__SetPlayerBlockedState,
+											  patternIndex );
+
+		// CVoiceStatus::UpdateServerState
+		m_pfnCVoiceStatus__UpdateServerState = MemoryUtils()->GetPatternFutureValue( fCVoiceStatus__UpdateServerState, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnCVoiceStatus__UpdateServerState,
+											  "CVoiceStatus::UpdateServerState",
+											  FeaturesGameData::Patterns::Client::CVoiceStatus__UpdateServerState,
+											  patternIndex );
+
+		// HACK_GetPlayerUniqueID
+		m_pfnHACK_GetPlayerUniqueID = MemoryUtils()->GetPatternFutureValue( fHACK_GetPlayerUniqueID, &patternIndex );
+		FEATURE_CHECK_SYMBOL_PATTERNS_STATUS( m_pfnHACK_GetPlayerUniqueID,
+											  "HACK_GetPlayerUniqueID",
+											  FeaturesGameData::Patterns::Client::HACK_GetPlayerUniqueID,
+											  patternIndex );
+
+		if ( !bOK )
+			return false;
+	#else
 		return false;
+	#endif
+	}
+
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCVoiceBanMgr__SetPlayerBan", m_pfnCVoiceBanMgr__SetPlayerBan, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCVoiceBanMgr__InternalFindPlayerSquelch", m_pfnCVoiceBanMgr__InternalFindPlayerSquelch, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCVoiceStatus__IsPlayerBlocked", m_pfnCVoiceStatus__IsPlayerBlocked, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCVoiceStatus__SetPlayerBlockedState", m_pfnCVoiceStatus__SetPlayerBlockedState, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "m_pfnCVoiceStatus__UpdateServerState", m_pfnCVoiceStatus__UpdateServerState, GameData::Modules::Client );
+	GAMEDATA_DUMP_FILE_OFFSET( "HACK_GetPlayerUniqueID", m_pfnHACK_GetPlayerUniqueID, GameData::Modules::Client );
 
 	return true;
 }

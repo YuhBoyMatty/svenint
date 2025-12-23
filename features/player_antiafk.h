@@ -47,6 +47,12 @@ private:
 	CMenuValueFloat *m_pStayRadius;
 	CMenuValueFloat *m_pStayRadiusOffsetAngle;
 	CMenuValueFloat *m_pRotationAngle;
+	CMenuValueBool *m_pChangeNickname;
+	CMenuValueText *m_pNicknamePostfix;
+	CMenuValueBool *m_pSendMessage;
+	CMenuValueText *m_pMessage;
+	CMenuValueBool *m_pSendMessageNotAFK;
+	CMenuValueText *m_pMessageNotAFK;
 
 	bool m_bDead;
 	bool m_bComingBackToAFKPoint;
@@ -57,6 +63,8 @@ private:
 	Vector2D m_vecAFKPoint; // 2D point only
 	float m_flComingBackStartTime;
 	float m_flClientDataLastUpdate;
+
+	std::string m_sNickname;
 
 	DetourHandle_t m_hUserMsgHook_Health;
 };

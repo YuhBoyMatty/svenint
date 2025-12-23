@@ -37,7 +37,13 @@ typedef enum
 #define ConfigDeduceFieldType(T) (int)ConfigFieldTypeDeducer<T>::CONFIG_FIELD_TYPE
 
 template <typename T> struct ConfigFieldTypeDeducer {};
-template <typename T> FORCEINLINE constexpr int ConfigDeduceValueFieldType( T value ) { return ConfigFieldTypeDeducer<T>::CONFIG_FIELD_TYPE; }
+template <typename T>
+#ifdef _WIN32
+FORCEINLINE
+#else
+__attribute__((always_inline))
+#endif
+constexpr int ConfigDeduceValueFieldType( T value ) { return ConfigFieldTypeDeducer<T>::CONFIG_FIELD_TYPE; }
 
 CONFIG_DECLARE_DEDUCE_FIELDTYPE( kCfgPropertyInteger, int );
 CONFIG_DECLARE_DEDUCE_FIELDTYPE( kCfgPropertyUInteger, unsigned int );

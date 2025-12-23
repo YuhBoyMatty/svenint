@@ -173,11 +173,11 @@ void CCamHack::ClampViewAngles( Vector &va )
 	if ( va[ 0 ] < -89.0f )
 		va[ 0 ] = -89.0f;
 
-	if ( va[ 2 ] > 89.0f )
-		va[ 2 ] = 89.0f;
+	if ( va[ 2 ] > 180.0f )
+		va[ 2 ] = 180.0f;
 
-	if ( va[ 2 ] < -89.0f )
-		va[ 2 ] = -89.0f;
+	if ( va[ 2 ] < -180.0f )
+		va[ 2 ] = -180.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -247,7 +247,7 @@ EHookResult CCamHack::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		m_dummyCmd.upmove = 0.f;
 
 		if ( keydown_shift )
-			flMaxSpeed /= 2;
+			flMaxSpeed /= 3;
 
 		if ( keydown_w )
 			m_dummyCmd.forwardmove += flMaxSpeed;
@@ -277,7 +277,7 @@ EHookResult CCamHack::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		Vector va_delta = m_vecNewViewangles - m_vecOldViewangles;
 
-		// ToDo: for better rotation, use quaternions when the camera is tilted
+		// TODO: for better rotation, use quaternions when the camera is tilted
 		m_vecCameraAngles += va_delta;
 
 		NormalizeAngles( m_vecCameraAngles );
@@ -347,7 +347,7 @@ EHookResult CCamHack::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		vecAngles.x = -atan2f( tmp.z, tmp.Length2D() ) * (float)( 180.0 / M_PI );
 		vecAngles.y = atan2f( tmp.y, tmp.x ) * (float)( 180.0 / M_PI );
-		vecAngles.z = 0.f;
+		vecAngles.z = m_vecCameraAngles.z; // TODO: use quaternions
 
 		*reinterpret_cast<Vector *>( pparams->vieworg ) = vecOrigin;
 		*reinterpret_cast<Vector *>( pparams->viewangles ) = vecAngles;
@@ -384,7 +384,16 @@ void CCamHack::OnButtonPressed( CMenuElementButton *pButton )
 	else if ( pButton == m_pButtonResetOrientation )
 	{
 		m_vecCameraAngles = m_vecViewAngles;
-		m_vecCameraOrigin = localplayer->GetEyePosition();
+		if ( m_iAttachTarget != 0 )
+		{
+			cl_entity_t *pEntity = cl_enginefuncs->GetEntityByIndex( m_iAttachTarget );
+			if ( pEntity != NULL )
+				m_vecCameraOrigin = pEntity->origin;
+		}
+		else
+		{
+			m_vecCameraOrigin = localplayer->GetEyePosition();
+		}
 	}
 }
 
