@@ -5,6 +5,10 @@
 #include "config.h"
 #include "svenint.h"
 
+#ifndef WIN32
+#include <algorithm>
+#endif
+
 namespace Modules { static CConfigModule configModule; CConfigModule *config = &configModule; }
 
 //-----------------------------------------------------------------------------
@@ -255,7 +259,7 @@ CConfigProperty::CConfigProperty( const char *pszPropName, int iPropType, void *
 
 	if ( m_iPropType == kCfgPropertyCString )
 	{
-		m_value.m_cstring = (char *)calloc( CFG_PROPERTY_CSTRING_SIZE, sizeof( char ) );
+		m_value.m_cstring = (char *)MemCalloc( sizeof( char ), CFG_PROPERTY_CSTRING_SIZE );
 		if ( m_value.m_cstring == NULL )
 		{
 			Assert( m_value.m_cstring != NULL );
@@ -313,7 +317,7 @@ CConfigProperty::~CConfigProperty()
 {
 	if ( m_iPropType == kCfgPropertyCString && m_value.m_cstring != NULL )
 	{
-		free( m_value.m_cstring );
+		MemFree( m_value.m_cstring );
 		m_value.m_cstring = NULL;
 	}
 }
@@ -498,7 +502,8 @@ CConfigProperty *CConfigModule::AddProperty( const char *pszSectionName, const c
 		props = m_Config.Insert( pszSectionName, std::vector<CConfigProperty *>() );
 	}
 
-	CConfigProperty *prop = new CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
+	CConfigProperty *prop = new( MemAlloc( sizeof( CConfigProperty ) ) ) CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
+	//CConfigProperty *prop = new CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
 	props->push_back( prop );
 
 	return prop;
@@ -516,7 +521,8 @@ CConfigProperty *CConfigModule::AddShadersProperty( const char *pszShaderName, c
 		props = m_ShadersConfig.Insert( pszShaderName, std::vector<CConfigProperty *>() );
 	}
 
-	CConfigProperty *prop = new CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
+	CConfigProperty *prop = new( MemAlloc( sizeof( CConfigProperty ) ) ) CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
+	//CConfigProperty *prop = new CConfigProperty( pszPropertyName, iPropType, pDefaultValue );
 	props->push_back( prop );
 
 	return prop;
@@ -653,7 +659,7 @@ bool CConfigModule::LoadEx( CHashDict<std::vector<CConfigProperty *>> &cfg, cons
 
 						if ( buffer[ 0 ] != '\0' )
 							prop->CopyStringFrom( buffer );
-						free( (void *)buffer );
+						MemFree( (void *)buffer );
 					}
 					break;
 
@@ -933,7 +939,11 @@ void CConfigModule::Clear( void )
 		{
 			std::vector<CConfigProperty *> &props = m_Config.ValueAt( i, it );
 			for ( size_t i = 0; i < props.size(); i++ )
-				delete props[ i ];
+			{
+				props[ i ]->~CConfigProperty();
+				MemFree( props[ i ] );
+				//delete props[ i ];
+			}
 			props.clear();
 
 			it = m_Config.Next( i, it );
@@ -950,7 +960,11 @@ void CConfigModule::Clear( void )
 		{
 			std::vector<CConfigProperty *> &props = m_ShadersConfig.ValueAt( i, it );
 			for ( size_t i = 0; i < props.size(); i++ )
-				delete props[ i ];
+			{
+				props[ i ]->~CConfigProperty();
+				MemFree( props[ i ] );
+				//delete props[ i ];
+			}
 			props.clear();
 
 			it = m_ShadersConfig.Next( i, it );
@@ -1090,7 +1104,7 @@ bool CConfigModule::ImportParam( const char *pszPropertyName, const char **value
 
 		if ( pszValue )
 		{
-			*value = strdup( pszValue );
+			*value = MemStrdup( pszValue );
 			return true;
 		}
 	}
@@ -1761,7 +1775,7 @@ void CConfigModule::ClearConfigTable()
 		#pragma warning(push)
 		#pragma warning(disable : 6001)
 
-			free( (void *)pair.property );
+			MemFree( (void *)pair.property );
 
 		#pragma warning(pop)
 
@@ -1786,7 +1800,7 @@ void CConfigModule::ClearSectionsTable()
 				{
 					auto section = m_SectionsTable.At( i, it );
 
-					free( (void *)section );
+					MemFree( (void *)section );
 
 					it = m_SectionsTable.Next( i, it );
 				}
@@ -1826,11 +1840,11 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 		int line = 0;
 		bool bParsingSection = true;
 
-		static int s_iBufferSize = INI_BUFFER_LENGTH;
-		static char *s_pszFileBuffer = NULL;
+		int iBufferSize = INI_BUFFER_LENGTH;
+		char *pszFileBuffer = NULL;
 
-		if ( !s_pszFileBuffer )
-			s_pszFileBuffer = (char *)malloc( s_iBufferSize );
+		if ( !pszFileBuffer )
+			pszFileBuffer = (char *)MemAlloc( iBufferSize );
 
 		long int endpos;
 		fseek( file, 0, SEEK_END );
@@ -1840,16 +1854,16 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 		const char *pszSection = NULL;
 
 		// Read line by line
-		while ( fgets( s_pszFileBuffer, s_iBufferSize, file ) )
+		while ( fgets( pszFileBuffer, iBufferSize, file ) )
 		{
-			size_t length = strlen( s_pszFileBuffer );
+			size_t length = strlen( pszFileBuffer );
 
 			// Increase buffer size
-			while ( s_pszFileBuffer[ length - 1 ] != '\n' && ftell( file ) != endpos )
+			while ( pszFileBuffer[ length - 1 ] != '\n' && ftell( file ) != endpos )
 			{
-				s_iBufferSize *= 2;
+				iBufferSize *= 2;
 
-				void *realloc_mem = realloc( s_pszFileBuffer, s_iBufferSize );
+				void *realloc_mem = MemRealloc( pszFileBuffer, iBufferSize );
 
 				if ( !realloc_mem )
 				{
@@ -1857,16 +1871,16 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 					return false;
 				}
 
-				s_pszFileBuffer = (char *)realloc_mem;
-				fgets( s_pszFileBuffer + length, s_iBufferSize - length, file );
+				pszFileBuffer = (char *)realloc_mem;
+				fgets( pszFileBuffer + length, iBufferSize - length, file );
 
-				length = strlen( s_pszFileBuffer );
+				length = strlen( pszFileBuffer );
 			}
 
 			++line;
 
 			// Strip string from spaces and comments
-			char *str = ParseUtil_LStrip( s_pszFileBuffer );
+			char *str = ParseUtil_LStrip( pszFileBuffer );
 			ParseUtil_RemoveComment( str );
 			ParseUtil_RStrip( str );
 
@@ -1908,7 +1922,7 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 							else
 							{
 								// Dupe and save name of section
-								pszSection = strdup( str );
+								pszSection = MemStrdup( str );
 								m_SectionsTable.Insert( pszSection );
 							}
 						}
@@ -1971,7 +1985,7 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 				value = ParseUtil_Strip( value );
 
 				// Add entry
-				const char *pszKey = (const char *)malloc( strlen( key ) + strlen( value ) + 2 );
+				const char *pszKey = (const char *)MemAlloc( strlen( key ) + strlen( value ) + 2 );
 
 				if ( !pszKey )
 				{
@@ -1988,6 +2002,7 @@ bool CConfigModule::ParseFile( const char *pszFilePath )
 			}
 		}
 
+		MemFree( pszFileBuffer );
 		fclose( file );
 
 		m_ParseState = kCfgParseOK;
