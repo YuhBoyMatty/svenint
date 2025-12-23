@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "localplayer.h"
+#include "utils/prof.h"
 
 #define DRAW_STRING( ... ) Globals::gameutils->DrawConsoleString( __VA_ARGS__ )
 
@@ -16,6 +17,7 @@ extern ConVar sc_debug_show_clientent;
 extern ConVar sc_debug_show_entitystate;
 extern ConVar sc_debug_show_playerinfo;
 extern ConVar sc_debug_show_playermove;
+extern ConVar sc_debug_show_prof;
 
 //-----------------------------------------------------------------------------
 // CLocalPlayer implementation
@@ -388,7 +390,7 @@ void CLocalPlayer::Update( local_state_t *from, local_state_t *to, usercmd_t *cm
 	m_uiRandomSeed = random_seed;
 	m_dbTime = time;
 
-	if ( Globals::gameversion >= 522 )
+	if ( SVEN_VERSION() >= SVEN_VERSION_CHECK( 5, 22, 0 ) )
 		memcpy( &m_LocalState, to, sizeof( local_state_s ) );
 	else
 		memcpy( &m_LocalState, to, sizeof( local_state_5_11_s ) );
@@ -407,6 +409,7 @@ void CLocalPlayer::DrawDebugInfo( void )
 	DrawEntityState();
 	DrawPlayerInfo();
 	DrawPlayerMove();
+	DrawProfile();
 }
 
 void CLocalPlayer::DrawWeaponData( void )
@@ -1151,6 +1154,65 @@ void CLocalPlayer::DrawPlayerMove( void )
 	y += offset; DRAW_STRING( x, y, "playermove.vuser2: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser2() ) );
 	y += offset; DRAW_STRING( x, y, "playermove.vuser3: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser3() ) );
 	y += offset; DRAW_STRING( x, y, "playermove.vuser4: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser4() ) );
+}
+
+#ifdef PROF_ENABLED
+static int DrawProfilesTree( CProfileNode *pNode, int x, int y, int offset, int iDepth = 0 )
+{
+	if ( pNode == NULL )
+		return y;
+
+	if ( sc_debug_show_prof.GetInt() == 1 )
+	{
+		DRAW_STRING( x + iDepth * 150, y,
+					 "%s (%.2f us, %d calls)",
+					 pNode->GetName(),
+					 iDepth == 0 ? pNode->GetChildrenTime() : pNode->GetTime(),
+					 pNode->GetCalls() );
+	}
+	else if ( sc_debug_show_prof.GetInt() == 2 )
+	{
+		DRAW_STRING( x + iDepth * 150, y,
+					 "%s (%.2f ns, %d calls)",
+					 pNode->GetName(),
+					 iDepth == 0 ? PROF_TIME_NANOSEC( pNode->GetChildrenTime() ) : PROF_TIME_NANOSEC( pNode->GetTime() ),
+					 pNode->GetCalls() );
+	}
+	else if ( sc_debug_show_prof.GetInt() == 3 )
+	{
+		DRAW_STRING( x + iDepth * 150, y,
+					 "%s (%.2f ms, %d calls)",
+					 pNode->GetName(),
+					 iDepth == 0 ? PROF_TIME_MILLISEC( pNode->GetChildrenTime() ) : PROF_TIME_MILLISEC( pNode->GetTime() ),
+					 pNode->GetCalls() );
+	}
+
+	y += offset;
+
+	for ( CProfileNode *pChild : pNode->GetChildren() )
+		y = DrawProfilesTree( pChild, x, y, offset, iDepth + 1 );
+
+	return y;
+}
+#endif
+
+void CLocalPlayer::DrawProfile( void )
+{
+#ifdef PROF_ENABLED
+	if ( !sc_debug_show_prof.GetBool() )
+		return;
+
+	if ( Globals::cls->state != ca_active )
+		return;
+
+	const int x = int( float( Globals::gameutils->GetScreenWidth() ) * 0.015625f );
+	const int y = int( float( Globals::gameutils->GetScreenHeight() ) * 0.05f );
+	const int offset = sc_debug_new_line_height.GetInt();
+
+	Globals::gameutils->DrawSetTextColor( 180.f / 255.f, 220.f / 255.f, 255.f / 255.f );
+
+	DrawProfilesTree( &gProfileRoot, x, y, offset + 5 );
+#endif
 }
 
 static CLocalPlayer gLocalPlayer;

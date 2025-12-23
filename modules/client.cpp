@@ -13,6 +13,7 @@ namespace Modules { static CClientModule clientModule; CClientModule *client = &
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
+ConVar sc_prof( "sc_prof", "1", FCVAR_EXTDLL, "Enable profiling" );
 ConVar sc_disable_monster_info( "sc_disable_monster_info", "0", FCVAR_EXTDLL, "Disables HUD text message about monster's info" );
 ConVar sc_disable_sprays( "sc_disable_sprays", "0", FCVAR_EXTDLL, "Disables sprays of players" );
 ConVar sc_debug_new_line_height( "sc_debug_new_line_height", "20", FCVAR_EXTDLL, "Height for each line when print anything" );
@@ -25,6 +26,7 @@ ConVar sc_debug_show_clientent( "sc_debug_show_clientent", "0", FCVAR_EXTDLL, "S
 ConVar sc_debug_show_entitystate( "sc_debug_show_entitystate", "0", FCVAR_EXTDLL, "Shows on the screen client's entity state vars" );
 ConVar sc_debug_show_playerinfo( "sc_debug_show_playerinfo", "0", FCVAR_EXTDLL, "Shows on the screen player info, value is player's index to watch for" );
 ConVar sc_debug_show_playermove( "sc_debug_show_playermove", "0", FCVAR_EXTDLL, "Shows on the screen player move vars" );
+ConVar sc_debug_show_prof( "sc_debug_show_prof", "0", FCVAR_EXTDLL, "Shows on the screen profiling" );
 
 CON_COMMAND( sc_print_cvars, "Print registered ConVars / ConCommands" )
 {
@@ -129,19 +131,42 @@ CON_COMMAND( sc_dump_disasm, "Disassemble & dump into the console the given memo
 		MemoryUtils()->DumpOperands( &inst );
 }
 
+CON_COMMAND( sc_dump_disasm_bytes, "Disassemble & dump into the console the given sequence of bytes" )
+{
+	if ( args.ArgC() < 2 )
+	{
+		Msg( "Usage:  sc_dump_disasm_bytes <any sequence of hex bytes separated by a spacebar>\n" );
+		return;
+	}
+
+	int bytes = args.ArgC() - 1;
+	uint8_t *bytesSequence = (uint8_t *)malloc( bytes );
+
+	for ( int i = 1; i < args.ArgC(); i++ )
+		bytesSequence[ i - 1 ] = (uint8_t)( strtoul( args[ i ], NULL, 16 ) & 0xFF );
+
+	ud_t inst;
+	MemoryUtils()->InitDisasm( &inst, bytesSequence, 32, 15 );
+
+	if ( MemoryUtils()->Disassemble( &inst ) )
+		MemoryUtils()->DumpOperands( &inst );
+
+	free( bytesSequence );
+}
+
 CON_COMMAND( sc_dump_interfaces, "Dump interfaces from the specified module name" )
 {
 	if ( args.ArgC() > 1 )
 	{
 		InterfaceReg *pInterfaceRegs = NULL;
-		HMODULE hModule = GetModuleHandle( args[ 1 ] );
+		module_t hModule = MemoryUtils()->GetModule( args[ 1 ] );
 		if ( hModule == NULL )
 		{
 			Msg( "sc_dump_interfaces: no such module\n" );
 			return;
 		}
 
-		void *pfnCreateInterfaceFactory = GetProcAddress( hModule, "CreateInterface" );
+		void *pfnCreateInterfaceFactory = MemoryUtils()->GetProcAddress( hModule, "CreateInterface" );
 		if ( pfnCreateInterfaceFactory == NULL )
 		{
 			Msg( "sc_dump_interfaces: CreateInterface not found\n" );
@@ -365,7 +390,7 @@ CON_COMMAND( sc_test, "Retrieve an entity's info" )
 				Msg( "Player Info Pointer: %X\n", Globals::enginestudio->PlayerInfo( index - 1 ) );
 
 				hud_player_info_t playerInfo;
-				ZeroMemory( &playerInfo, sizeof( hud_player_info_s ) );
+				memset( &playerInfo, 0, sizeof( hud_player_info_s ) );
 
 				Globals::cl_enginefuncs->pfnGetPlayerInfo( index, &playerInfo );
 
@@ -440,6 +465,10 @@ CON_COMMAND( sc_load_model, "Load a given modelname" )
 		void *pModel = Globals::engineclient->LoadClientModel( pszModelPath );
 		Msg( "Model pointer: %X\n", pModel );
 	}
+	else
+	{
+		ConMsg("Usage:  sc_load_model <model path starting with models/...>\n");
+	}
 }
 
 CON_COMMAND( sc_find_model, "Find models with the given name" )
@@ -462,6 +491,7 @@ CON_COMMAND( sc_find_model, "Find models with the given name" )
 				}
 			}
 		}
+
 		return NULL;
 	};
 
@@ -692,6 +722,7 @@ bool CClientModule::Init( void )
 {
 	Globals::cl_enginefuncs->pfnClientCmd( "cl_timeout 9999999;clockwindow 0\n" );
 
+	Globals::cvar->RegisterConCommand( &sc_prof );
 	Globals::cvar->RegisterConCommand( &sc_disable_monster_info );
 	Globals::cvar->RegisterConCommand( &sc_disable_sprays );
 	Globals::cvar->RegisterConCommand( &sc_debug_new_line_height );
@@ -704,10 +735,12 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &sc_debug_show_entitystate );
 	Globals::cvar->RegisterConCommand( &sc_debug_show_playerinfo );
 	Globals::cvar->RegisterConCommand( &sc_debug_show_playermove );
+	Globals::cvar->RegisterConCommand( &sc_debug_show_prof );
 
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm_bytes ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_interfaces ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_netmsg ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_usermsg ) );
@@ -739,6 +772,7 @@ bool CClientModule::Init( void )
 
 void CClientModule::Shutdown( void )
 {
+	Globals::cvar->UnregisterConCommand( &sc_prof );
 	Globals::cvar->UnregisterConCommand( &sc_disable_monster_info );
 	Globals::cvar->UnregisterConCommand( &sc_disable_sprays );
 	Globals::cvar->UnregisterConCommand( &sc_debug_new_line_height );
@@ -751,10 +785,12 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_entitystate );
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_playerinfo );
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_playermove );
+	Globals::cvar->UnregisterConCommand( &sc_debug_show_prof );
 
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm_bytes ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_interfaces ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_netmsg ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_usermsg ) );

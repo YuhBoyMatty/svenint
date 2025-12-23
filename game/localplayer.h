@@ -121,6 +121,7 @@ private:
 	void DrawEntityState( void );
 	void DrawPlayerInfo( void );
 	void DrawPlayerMove( void );
+	void DrawProfile( void );
 
 private:
 	local_state_t m_LocalState;
