@@ -164,21 +164,31 @@ bool CShaderMenuBackGroundBlur::Load( void )
 	m_pBlurRadius = Modules::menu->AddParamFloat( this, "BlurRadius", NULL, 10.f, 0.1f, 150.f );
 	m_pBokehCoefficient = Modules::menu->AddParamFloat( this, "BokehCoefficient", NULL, 0.7f, 0.f, 1.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hBokeh, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hBokeh ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hBokeh );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hBokeh ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hBokeh );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderMenuBackGroundBlur::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hBokeh, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

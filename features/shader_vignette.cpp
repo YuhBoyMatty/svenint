@@ -73,6 +73,8 @@ void CShaderVignette::OnButtonPressed( CMenuElementButton *pButton )
 
 CShaderVignette::CShaderVignette( const char *pszCategoryName, const char *pszName ) : CBaseFeature( pszCategoryName, pszName )
 {
+	SetInitiallyDisabled();
+
 	m_pButtonRecompile = NULL;
 	m_pFalloff = NULL;
 	m_pAmount = NULL;
@@ -115,21 +117,31 @@ bool CShaderVignette::Load( void )
 	m_pFalloff = Modules::menu->AddParamFloat( this, "Falloff", NULL, 0.5f, 0.f, 1.f );
 	m_pAmount = Modules::menu->AddParamFloat( this, "Amount", NULL, 0.4f, 0.f, 5.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hVignette, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hVignette ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hVignette );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hVignette ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hVignette );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderVignette::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hVignette, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

@@ -84,7 +84,7 @@ void CShaderDepthBuffer::OnDisable( void )
 
 bool CShaderDepthBuffer::Load( void )
 {
-	Modules::menu->BindShaderFeature( this, false /* always enabled to store depth buffer */ );
+	Modules::menu->BindShaderFeature( this, false /* always enabled to store the depth buffer */ );
 	Modules::menu->AddElementResetButton( this, "Reset" );
 
 	m_pShow = Modules::menu->AddParamBool( this, "Show", NULL, false );
@@ -92,8 +92,27 @@ bool CShaderDepthBuffer::Load( void )
 	m_pZFar = Modules::menu->AddParamFloat( this, "ZFar", NULL, 4096.f, 0.01f, 4096.f );
 	m_pBrightness = Modules::menu->AddParamFloat( this, "Brightness", NULL, 1.f, 0.f, 1.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_DEPTH( m_hDepthBuffer, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hDepthBuffer ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hDepthBuffer );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hDepthBuffer ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hDepthBuffer );
+		PrintWarning( "Failed to generate the depth texture\n" );
+		return false;
+	}
 
 	SHADER_BEGIN_COMPILE_FILE( m_ShaderDepthBuffer, SVENINT_FOLDER_NAME "\\shaders\\pp_fullscreen.vsh", SVENINT_FOLDER_NAME "\\shaders\\depth_buffer.fsh" )
 		SHADER_LOCATE_UNIFORM( m_ShaderDepthBuffer, znear )
@@ -104,15 +123,6 @@ bool CShaderDepthBuffer::Load( void )
 	else { return false; }
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderDepthBuffer::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_DEPTH( m_hDepthBuffer, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

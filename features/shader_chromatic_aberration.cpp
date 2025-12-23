@@ -130,21 +130,31 @@ bool CShaderChromaticAberration::Load( void )
 	m_pShift = Modules::menu->AddParamFloat( this, "Shift", NULL, 0.025f, 0.f, 20.f );
 	m_pStrength = Modules::menu->AddParamFloat( this, "Strength", NULL, 1.f, 0.f, 10.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hChromaticAberration, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hChromaticAberration ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hChromaticAberration );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hChromaticAberration ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hChromaticAberration );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderChromaticAberration::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hChromaticAberration, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

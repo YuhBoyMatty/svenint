@@ -132,21 +132,31 @@ bool CShaderMotionBlur::Load( void )
 	m_pMinSpeed = Modules::menu->AddParamFloat( this, "MinSpeed", NULL, 270.f, 0.1f, 2000.f );
 	m_pMaxSpeed = Modules::menu->AddParamFloat( this, "MaxSpeed", NULL, 700.f, 0.1f, 2000.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hRadialBlur, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hRadialBlur ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hRadialBlur );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hRadialBlur ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hRadialBlur );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderMotionBlur::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hRadialBlur, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

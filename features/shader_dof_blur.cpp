@@ -164,21 +164,31 @@ bool CShaderDoFBlur::Load( void )
 	m_pMaxRange = Modules::menu->AddParamFloat( this, "MaxRange", NULL, 4096.f, 0.01f, 4096.f );
 	m_pBlurRange = Modules::menu->AddParamFloat( this, "BlurRange", NULL, 20.f, 0.f, 150.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hDoFBlur, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hDoFBlur ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hDoFBlur );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hDoFBlur ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hDoFBlur );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderDoFBlur::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hDoFBlur, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------

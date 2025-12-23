@@ -23,7 +23,6 @@ public:
 	CShaderMotionBlur( const char *pszCategoryName, const char *pszName );
 
 	virtual bool Load( void ) override;
-	virtual void PostLoad( void ) override;
 	virtual void Unload( void ) override;
 	virtual void OnEnable( void ) override;
 	virtual void OnDisable( void ) override;

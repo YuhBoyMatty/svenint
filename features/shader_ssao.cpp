@@ -196,21 +196,31 @@ bool CShaderSSAO::Load( void )
 	m_pMistStart = Modules::menu->AddParamFloat( this, "MistStart", NULL, 0.f, 0.f, 2048.f );
 	m_pMistEnd = Modules::menu->AddParamFloat( this, "MistEnd", NULL, 4096.0f, 0.f, 4096.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hSSAO, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hSSAO ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hSSAO );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hSSAO ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hSSAO );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Post load feature: register cvars/commands, attach hooks etc...
-//-----------------------------------------------------------------------------
-
-void CShaderSSAO::PostLoad( void )
-{
-	POST_PROCESSING_INIT_VARS_COLOR( m_hSSAO, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
 }
 
 //-----------------------------------------------------------------------------
