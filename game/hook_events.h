@@ -17,8 +17,8 @@
 typedef enum
 {
 	kHookPriorityNormal = 0,	// place hook in the middle of the call chain ( default priority )
-	kHookPriorityLow,			// place hook at the bottom of the call chain ( will be one of the first to be called )
-	kHookPriorityHigh			// place hook at the top of the call chain ( will be one of the last to be called )
+	kHookPriorityLow,			// place hook at the bottom of the call chain ( will be one of the last to be called )
+	kHookPriorityHigh			// place hook at the top of the call chain ( will be one of the first to be called )
 } EHookPriority;
 
 //-----------------------------------------------------------------------------
