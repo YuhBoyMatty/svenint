@@ -1,5 +1,35 @@
 SvenInt v3 Changelog
 
+23/12/2025 - Version 3.2.0:
+- Added Linux support, a New Year’s gift from me to all Linux users, and especially to that certain someone
+- Automatic update checking now notifies in the console about available updates (can be disabled via launch option -sint_nocheckupdates)
+- [GameData] Now all patterns and offsets are stored in the file "./svenint/gamedata.txt" so you can easily update them when needed, added RVA offsets to lookup gamedata faster, takes for me 0.2s to fully load SvenInt (enabled by default, can be disabled in gamedata.txt > Settings > PreferRVA)
+- [GameData] Added singleton 'CGameDataFinder *gamedata' for easier patterns or offsets lookup via file "./svenint/gamedata.txt"
+- [GameData] Added the patch version variable to the obtained game version (i.e. 5.26.1 and .1 is a patch version)
+- [GameData] Added macro SVEN_VERSION() & SVEN_VERSION_CHECK( major, minor, patch )
+- [Menu Module] Added SDL2 support both for Windows & Linux, disabled for Windows by default
+- [Client Module] Added ConCommand 'sc_dump_disasm_bytes' to disassemble the given sequence of hex bytes
+- [OpenGL Module] ARB functions are now loaded directly from the GL library (GLEW is not used) to decrease the size of the compiled binary
+- [Shaders] Added check if generated frame buffers and color textures are valid
+- [DoF Shader] Updated fragment shader, replaced 'switch' statement with 'if-else'
+- [Profiling] Added profiling tools (sc_debug_show_prof 1)
+- [Detours] Added priorities for detours being attached, implemented PIC resolver for Linux binaries
+- [Mem Alloc] Added dynamic memory management that monitors possible memory leaks
+- [No Sleep] Used VTable lookup instead of pattern scanning
+- [Private Chat] Fixed missing newline symbol when a decrypted message being printed into the console
+- [Chat History] Fixed crash exploit with messages from players that contain format specifiers
+- [Anti-AFK] Added chat notifications to players on the server when you go AFK and vice versa
+- [BSP] After 3 years was fixed crash on some maps (i.e. Afraid of Monster) when entity keyvalues are being parsed
+- [BSP] Now triggers & func_wall's are rendered in PVS only
+- [Draw Context] Added virtual method CheckPVS
+- [Entity List] Added CS 1.6 Weapons
+- [Cam Hack] Allow change Roll angle with attached camera, fixed wrong origin being set when pressing button 'Reset Orientation'
+- [Action Burst] Added more customizable options for Fast Crowbar, as well added 'None' mode to disable it
+- [Freeze] Added removal of punch angles when you're frozen
+- [Use Key] In Movement category added feature to change the slowdown cap when +use input is being hold (there are 3 options: customizable cap, cap removal and +use cap from 5.22 game version, well kinda of)
+- [Models Downloader] In Misc. category added feature that automatically downloads a missing player model from wootguy's scmodels database, use customizable options to limit the size & polygon count of models to download
+- [Ignore Unicode] A Linux-only feature (Visual category) allows you to replace Unicode/UTF characters with spaces if your game doesn't support them, otherwise you'll see VGUI artifacts when use SvenInt
+
 05/12/2025 - Version 3.1.3:
 - [Air Stuck] Added Air Stuck feature in the Exploit category
 - [Gib Abuse] Added Gib Abuse (Fly Mode) in the Player category, sends the command(s) 'gibme' every X (m)sec to fly up due to the dealen damage of 5000 HP. Use the holdable ConCommand '+sc_gibabuse', so no need to spam K (gibme) button everytime
