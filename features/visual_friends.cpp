@@ -14,7 +14,7 @@ using namespace Globals;
 // Vars
 //-----------------------------------------------------------------------------
 
-EXPOSE_FEATURE_SINGLETON( CFriends, crosshair, "Visual", "Friends" );
+EXPOSE_FEATURE_SINGLETON( CFriends, friends, "Visual", "Friends" );
 
 //-----------------------------------------------------------------------------
 // LoadFriendsFromFile
