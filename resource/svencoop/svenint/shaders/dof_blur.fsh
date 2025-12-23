@@ -12,36 +12,23 @@ uniform vec2 res;
 
 float curvilinear_value(in float time)
 {
-	switch (interptype)
-	{
-	// Simple spline
-	case 0:
+	if ( interptype == 0 ) // Simple spline
 	{
 		float time_squared = time * time;
-		return 3 * time_squared - 2 * time_squared * time;
-		break;
+		return 3.0 * time_squared - 2.0 * time_squared * time;
 	}
-	
-	// Parabolic
-	case 1:
+	else if ( interptype == 1 ) // Parabolic
+	{
+		return time * time;
+	}
+	else if ( interptype == 2 ) // Parabolic inverted
+	{
+		return 2.0 * time - time * time;
+	}
+	else if ( interptype == 3 ) // Cubic
 	{
 		float time_squared = time * time;
-		return 2 * time_squared - time_squared;
-		break;
-	}
-
-	// Parabolic inverted
-	case 2:
-		return 2 * time - time * time;
-		break;
-	
-	// Cubic
-	case 3:
-	{
-		float time_squared = time * time;
-		return 3 * time_squared * time - 2 * time_squared * time_squared;
-		break;
-	}
+		return 3.0 * time_squared * time - 2.0 * time_squared * time_squared;
 	}
 	
 	// Linear, no change
@@ -69,7 +56,7 @@ void main()
 	
 	// Simple spline
 	// float time_squared = time * time;
-	// time = 3 * time_squared - 2 * time_squared * time;
+	// time = 3.0 * time_squared - 2.0 * time_squared * time;
 	
 	vec2 radiusDir = dir * ( radius * ( time ) );
 	
