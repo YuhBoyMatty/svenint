@@ -45,12 +45,75 @@
 #include "game/hlsdk_mini.h"
 
 //-----------------------------------------------------------------------------
+// Macro definitions
+//-----------------------------------------------------------------------------
+
+#define DUMP_FILE_OFFSET ( 0 )
+
+#if DUMP_FILE_OFFSET
+void InitPrintDumpFileOffset( void );
+void ShutdownPrintDumpFileOffset( void );
+void PrintDumpFileOffset( const char *pszSymbolName, uint32_t ptr, module_t hModule );
+#define GAMEDATA_DUMP_FILE_OFFSET( name, ptr, lib ) PrintDumpFileOffset( name, (uint32_t)ptr, lib );
+#else
+#define GAMEDATA_DUMP_FILE_OFFSET( name, ptr, lib ) (void)0
+#endif
+
+#define SVEN_VERSION_CHECK( major, minor, patch ) ( ( major << 16 ) | ( minor << 8 ) | ( patch ) )
+#define SVEN_VERSION() SVEN_VERSION_CHECK( Globals::gameversion_major, Globals::gameversion_minor, Globals::gameversion_patch )
+
+//-----------------------------------------------------------------------------
+// Game data finder
+//-----------------------------------------------------------------------------
+
+namespace KeyValuesParser
+{
+	struct KeyValues;
+}
+
+class CGameDataFinder
+{
+public:
+	CGameDataFinder() : m_pGamedata( NULL ), m_bPreferRVA( false )
+	{
+	}
+
+	bool        Init( void );
+	void        Shutdown( void );
+
+	// Tries to automatically find a given symbol (i.e. a function), first is an RVA offset,
+	// if it fails we do switch to FindPattern (Windows) or FindSymbol (Linux)
+	// RVA offset name and pattern/symbol name are supposed to be the same
+	void		*AutoFind( module_t hModule, const char *pszModuleName, const char *pszSymbolName, bool bNotify = true );
+
+	void		*FindRVA( module_t hModule, const char *pszModuleName, const char *pszRvaOffsetName, bool bNotify = true );
+	void		*FindPattern( module_t hModule, const char *pszModuleName, const char *pszPatternName, bool bNotify = true, uint32_t offset = 0 );
+	void		*FindSymbol( module_t hModule, const char *pszModuleName, const char *pszSymbolName, bool bNotify = true );
+	uint32_t    FindOffset( module_t hModule, const char *pszModuleName, const char *pszOffsetName, bool bNotify = true );
+
+	inline bool Initialized( void ) const { return m_pGamedata != NULL; }
+	inline bool	PreferRVA( void ) const { return m_bPreferRVA; }
+
+private:
+	KeyValuesParser::KeyValues *m_pGamedata;
+	bool						m_bPreferRVA;
+};
+
+//-----------------------------------------------------------------------------
 // Various gamedata (patterns, modules, interfaces, function pointers, variables, etc.)
 //-----------------------------------------------------------------------------
 
 namespace Globals
 {
+	extern CGameDataFinder *gamedata;
+
 	extern int gameversion;
+	extern int gameversion_major;
+	extern int gameversion_minor;
+	extern int gameversion_patch;
+
+	extern char szGameVersion[ 16 ];
+
 	extern double *host_frametime;
 	extern double *realtime;
 
@@ -184,7 +247,6 @@ namespace GameData
 			EXTERN_PATTERNS( PlayerSpawns );
 			EXTERN_PATTERNS( FixPlayerStuck );
 			EXTERN_PATTERNS( CBaseEntity__FireBullets );
-			EXTERN_PATTERNS( CCrossbow__PrimaryAttack );
 			EXTERN_PATTERNS( UTIL_GetCircularGaussianSpread );
 			EXTERN_PATTERNS( FireTargets );
 			EXTERN_PATTERNS( CopyPEntityVars );
@@ -218,13 +280,13 @@ namespace GameData
 
 		namespace Client
 		{
-			constexpr size_t vtidx_CStudioModelRenderer__StudioSetupBones = 7;
-			constexpr size_t vtidx_CStudioModelRenderer__StudioRenderModel = 20;
+			extern size_t vtidx_CStudioModelRenderer__StudioSetupBones;
+			extern size_t vtidx_CStudioModelRenderer__StudioRenderModel;
 		}
 
 		namespace VGUI2
 		{
-			constexpr size_t vtidx_IPanel__PaintTraverse = 41;
+			extern size_t vtidx_IPanel__PaintTraverse;
 		}
 	}
 
@@ -272,9 +334,9 @@ namespace GameData
 		}
 	}
 
-	bool GetGameDLLModules( void );
-	bool GetGameDLLInterfaceFactories( void );
-	bool GetGameDLLInterfaces( void );
+	bool GetGameModules( void );
+	bool GetGameInterfaceFactories( void );
+	bool GetGameInterfaces( void );
 
 	bool FindGameSymbols( void );
 

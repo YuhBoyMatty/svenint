@@ -77,6 +77,60 @@ static inline constexpr unsigned int __svenint_get_pattern_length( const char *p
 	return nCount;
 }
 
+inline unsigned int svenint_get_pattern_length( const char *pszPattern )
+{
+	unsigned int nCount = 0;
+
+	while ( *pszPattern )
+	{
+		char symbol = *pszPattern;
+
+		if ( symbol != ' ' )
+		{
+			++nCount;
+
+			if ( symbol != '?' )
+				++pszPattern;
+		}
+
+		++pszPattern;
+	}
+
+	return nCount;
+}
+
+inline void svenint_construct_pattern( unsigned char *signature, const char *pszPattern, int length )
+{
+	char byte[ 3 ] = { 0 };
+	unsigned int nLength = 0;
+
+	while ( *pszPattern )
+	{
+		char symbol = *pszPattern;
+
+		if ( symbol != ' ' )
+		{
+			if ( symbol != '?' )
+			{
+				byte[ 0 ] = pszPattern[ 0 ];
+				byte[ 1 ] = pszPattern[ 1 ];
+
+				signature[ nLength ] = static_cast<unsigned char>( __svenint_hex_to_decimal_fast( byte ) );
+
+				++pszPattern;
+			}
+			else
+			{
+				signature[ nLength ] = 0x2A;
+			}
+
+			++nLength;
+		}
+
+		++pszPattern;
+	}
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -85,6 +139,7 @@ struct svenint_pattern_inner_wrapper
 {
 	constexpr svenint_pattern_inner_wrapper( const char *pszPattern ) : signature(), length( bytesCount ), ignorebyte( ignoreByte )
 	{
+		char byte[ 3 ] = { 0 };
 		unsigned int nLength = 0;
 
 		while ( *pszPattern )
@@ -95,8 +150,6 @@ struct svenint_pattern_inner_wrapper
 			{
 				if ( symbol != '?' )
 				{
-					char byte[ 3 ] = { 0 };
-
 					byte[ 0 ] = pszPattern[ 0 ];
 					byte[ 1 ] = pszPattern[ 1 ];
 
