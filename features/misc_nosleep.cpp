@@ -19,15 +19,11 @@ DECLARE_CLASS_HOOK( void, CGame__SleepUntilInput, void *thisptr, int nMaxSleepTi
 
 namespace FeaturesGameData
 {
-	namespace Patterns
+	namespace Offsets
 	{
 		namespace Engine
 		{
-			DEFINE_PATTERNS_2( CGame__SleepUntilInput,
-							   "5.25",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 53 56 57",
-							   "5.11",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 53 55 56" );
+			size_t vtidx_CGame__SleepUntilInput = 4;
 		}
 	}
 }
@@ -47,7 +43,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CGame__SleepUntilInput, void *thisptr, int nMax
 	if ( THIS_FEATURE_IS_ENABLED() )
 		nMaxSleepTime = 0;
 
-	ORIG_CGame__SleepUntilInput( thisptr, nMaxSleepTime );
+	ORIG_CGame__SleepUntilInput( ARG_THISPTR( thisptr ), nMaxSleepTime );
 }
 
 //-----------------------------------------------------------------------------
@@ -68,15 +64,21 @@ bool CNoSleep::Load( void )
 {
 	Modules::menu->BindFeature( this );
 
-	int patternIndex;
-	DEFINE_PATTERNS_FUTURE( fCGame__SleepUntilInput );
-	MemoryUtils()->FindPatternAsync( GameData::Modules::Engine, FeaturesGameData::Patterns::Engine::CGame__SleepUntilInput, fCGame__SleepUntilInput );
+	m_pfnCGame__SleepUntilInput = MemoryUtils()->FindVTable( GameData::Modules::Engine, "CGame" );
+	FEATURE_CHECK_SYMBOL( m_pfnCGame__SleepUntilInput, "CGame (VMT)" );
 
-	m_pfnCGame__SleepUntilInput = MemoryUtils()->GetPatternFutureValue( fCGame__SleepUntilInput, &patternIndex );
-	FEATURE_CHECK_SYMBOL_PATTERNS( m_pfnCGame__SleepUntilInput,
-								   "CGame::SleepUntilInput",
-								   FeaturesGameData::Patterns::Engine::CGame__SleepUntilInput,
-								   patternIndex );
+	if ( gamedata->Initialized() )
+	{
+		FeaturesGameData::Offsets::Engine::vtidx_CGame__SleepUntilInput = gamedata->FindOffset( GameData::Modules::Engine, "Engine", "CGame::SleepUntilInput" );
+		if ( FeaturesGameData::Offsets::Engine::vtidx_CGame__SleepUntilInput == ~0 )
+			return false;
+	}
+	else
+	{
+	#ifdef LINUX
+		return false;
+	#endif
+	}
 
 	return true;
 }
@@ -87,9 +89,11 @@ bool CNoSleep::Load( void )
 
 void CNoSleep::PostLoad( void )
 {
-	m_hCGame__SleepUntilInput = Detours()->DetourFunction( m_pfnCGame__SleepUntilInput,
-														   HOOKED_CGame__SleepUntilInput,
-														   GET_FUNC_PTR( ORIG_CGame__SleepUntilInput ) );
+	void *dummyInstance = m_pfnCGame__SleepUntilInput;
+	m_hCGame__SleepUntilInput = Detours()->DetourVirtualFunction( &dummyInstance,
+																  FeaturesGameData::Offsets::Engine::vtidx_CGame__SleepUntilInput,
+																  HOOKED_CGame__SleepUntilInput,
+																  GET_FUNC_PTR( ORIG_CGame__SleepUntilInput ) );
 }
 
 //-----------------------------------------------------------------------------
