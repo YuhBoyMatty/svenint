@@ -1,0 +1,1729 @@
+// SvenInt's gamedata
+
+"GameData"
+{
+    // Brief information on GameData:
+    //
+    // Now, any data we're looking for (SvenInt's core & user created Features) is containted here
+    // Just for case, if we're missing this file or we cannot find any data we look for, SvenInt (not features) will fallback
+	// for use of statically built patterns & defined offsets, though it will work for Windows only.
+    //
+    // There's option to look up data via RVA only (Relative Virtual Address) depending on the game version, which is highly efficient since we
+    // don't need to scan any patterns, just get the RVA offset and apply it to the pointer of the DLL's base allocation
+    // By default, we prefer RVA over pattern scanning just to speed up the load time, of course one of the cons is that if
+    // the game gets an update, I (or maybe you as a dev) have to recalc all RVA offsets again D:
+    //
+    // Section "RVA" is used both by Windows & Linux (in case of Linux if the version of the game is 5.26 or earlier, since Sniper has no brain so he removed debugging symbols :P)
+    // Section "Offsets" is used by Windows & Linux, based on the game version it gets an offset to a virtual method, class member, etc...
+    // Section "Patterns" is mostly used by Windows, although nothing prevent you to use it on Linux too
+    // Section "Symbols" is used only by Linux, since we have debugging symbols in Linux binaries, super easy to look up for any data!
+    // Well, it was that easy.. Since the version 5.26 now we don't look up for debugging symbols but use RVA offsets.
+    // But, symbols look up will be used in any version older than 5.26 (5.25, 5.22, etc)
+    //
+    // Pattern "__MsgFunc_ServerVer" in section "Patterns" is used both by Windows & Linux to look up for the game version, so if it fails, SvenInt will stop loading
+    // This section pattern is mostly used in sections "RVA" & "Offsets", but the most important is that SvenInt uses the obtained game version to conclude which
+    // interfaces of various structs to use, so it can provide compability with various Sven versions (i.e. class WeaponsResource has different size in 5.11, 5.22, 5.23)
+
+    "Settings"
+    {
+        // Lookup symbols with RVA offsets only, pattern scanning is completely ignored,
+        // except the routine of the SvenInt's core
+        "PreferRVA"         		"1"
+    }
+
+    // RVA offsets
+    "RVA"
+    {
+        "Engine"
+        {
+            "host_frametime"
+			{
+                "windows"
+                {
+                    "5.26"      "6746C78"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "30A4B8"
+                }
+            }
+
+            "realtime"
+			{
+                "windows"
+                {
+                    "5.26"      "6746C58"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "30A4B0"
+                }
+            }
+
+			// Linux-only
+            "clc_buffer"
+			{
+                "linux"
+                {
+                    "5.26"      "1BF628C"
+                }
+            }
+
+            "net_message"
+			{
+                "windows"
+                {
+                    "5.26"      "674B368"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "14FA600"
+                }
+            }
+
+            "msg_readcount"
+			{
+                "windows"
+                {
+                    "5.26"      "1029AF4"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F8F88"
+                }
+            }
+
+            "msg_badread"
+			{
+                "windows"
+                {
+                    "5.26"      "1029AF8"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F8F84"
+                }
+            }
+
+            "g_pClientUserMsgs"
+			{
+                "windows"
+                {
+                    "5.26"      "A27258"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "229B360"
+                }
+            }
+
+            "g_pEventHooks"
+			{
+                "windows"
+                {
+                    "5.26"      "A276E8"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "15C58B0"
+                }
+            }
+
+            "cmd_argc"
+			{
+                "windows"
+                {
+                    "5.26"      "1025830"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F4D00"
+                }
+            }
+
+            "cmd_argv"
+			{
+                "windows"
+                {
+                    "5.26"      "1025838"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F4BC0"
+                }
+            }
+
+            "cvar_vars"
+			{
+                "windows"
+                {
+                    "5.26"      "1039190"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "3077C0"
+                }
+            }
+
+            "cmd_functions"
+			{
+                "windows"
+                {
+                    "5.26"      "102582C"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F4A60"
+                }
+            }
+
+            "cl_enginefuncs"
+			{
+                "windows"
+                {
+                    "5.26"      "1DEB88"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2F1800"
+                }
+            }
+
+            "cl_funcs"
+			{
+                "windows"
+                {
+                    "5.26"      "34E7B0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "30F21E0"
+                }
+            }
+
+            "engine_studio_api"
+			{
+                "windows"
+                {
+                    "5.26"      "1E2898"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2EF840"
+                }
+            }
+
+            "studioapi"
+			{
+                "windows"
+                {
+                    "5.26"      "1E297C"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "2EF7D8"
+                }
+            }
+
+            "g_clmove"
+			{
+                "windows"
+                {
+                    "5.26"      "353100"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "1C17780"
+                }
+            }
+
+            "videomode_ptr"
+			{
+                "windows"
+                {
+                    "5.26"      "78D30E0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "7AE14A0"
+                }
+            }
+
+            "cls"
+			{
+                "windows"
+                {
+                    "5.26"      "3D7D70"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "1BE6220"
+                }
+            }
+
+            "Z_Free"
+			{
+                "windows"
+                {
+                    "5.26"      "D4160"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "E15E0"
+                }
+            }
+
+            "Mem_Free"
+			{
+                "windows"
+                {
+                    "5.26"      "1444F2"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "8CC90"
+                }
+            }
+
+            "Cvar_DirectSet"
+			{
+                "windows"
+                {
+                    "5.26"      "424C0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "63EF0"
+                }
+            }
+
+            "GL_Bind"
+			{
+                "windows"
+                {
+                    "5.26"      "4EEB0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "126440"
+                }
+            }
+
+            "Host_FilterTime"
+			{
+                "windows"
+                {
+                    "5.26"      "673D0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "7A620"
+                }
+            }
+
+            "Host_IsServerActive"
+			{
+                "windows"
+                {
+                    "5.26"      "66AA0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "7B7F0"
+                }
+            }
+
+            "Key_Event"
+			{
+                "windows"
+                {
+                    "5.26"      "70670"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "173800"
+                }
+            }
+
+            "Netchan_Transmit"
+			{
+                "windows"
+                {
+                    "5.26"      "74F60"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "8FE30"
+                }
+            }
+
+            "MSG_WriteUsercmd"
+			{
+                "windows"
+                {
+                    "5.26"      "3C240"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "5C070"
+                }
+            }
+
+            "SCR_UpdateScreen"
+			{
+                "windows"
+                {
+                    "5.26"      "5CF20"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "137050"
+                }
+            }
+
+            "SCR_BeginLoadingPlaque"
+			{
+                "windows"
+                {
+                    "5.26"      "5D440"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "136EF0"
+                }
+            }
+
+            "SCR_EndLoadingPlaque"
+			{
+                "windows"
+                {
+                    "5.26"      "5D4C0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "136900"
+                }
+            }
+
+			// Features go here
+            "gamespeed"
+			{
+                "windows"
+                {
+                    "5.26"      "162558"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "25EC98"
+                }
+            }
+			
+            "nextcmdtime"
+			{
+                "windows"
+                {
+                    "5.26"      "408D5C"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "1C170F8"
+                }
+            }
+			
+            "userinfo"
+            {
+                "windows"
+                {
+                    "5.26"		"A0BCE8"
+                }
+
+                "linux"
+                {
+                    "5.26"		"1BDA774"
+                }
+            }
+
+            "DM_PlayerState"
+            {
+                "windows"
+                {
+                    "5.26"		"6866308"
+                }
+
+                "linux"
+                {
+                    "5.26"		"CDA460"
+                }
+            }
+
+            "Host_FilterTime (31 FPS Unlock)"
+			{
+                "windows"
+                {
+                    "5.26"      "67476"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "260078" // Points directly to 31.0 float value
+                }
+            }
+			
+            "R_DrawViewModel (glClear)"
+			{
+                "windows"
+                {
+                    "5.26"      "54EB0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "13A6A3"
+                }
+            }
+			
+            "CL_ComputeClientInterpolationAmount"
+			{
+                "windows"
+                {
+                    "5.26"      "2AD60"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "116460"
+                }
+            }
+			
+            "CL_PlayerFlashlight"
+			{
+                "windows"
+                {
+                    "5.26"      "23E60"
+                    "5.25"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "FFE70"
+                }
+            }
+			
+            "Netchan_CanPacket"
+			{
+                "windows"
+                {
+                    "5.26"      "76080"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "8E490"
+                }
+            }
+			
+            "R_SetupFrame"
+			{
+                "windows"
+                {
+                    "5.26"      "55BA0"
+                    "5.25"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "139700"
+                }
+            }
+			
+            "V_RenderView"
+			{
+                "windows"
+                {
+                    "5.26"      "CDF60"
+                    "5.25"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "1353B0"
+                }
+            }
+			
+            "V_FadeAlpha"
+			{
+                "windows"
+                {
+                    "5.26"      "CE270"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "135E90"
+                }
+            }
+			
+            "R_LoadSkyboxInt"
+			{
+                "windows"
+                {
+                    "5.26"      "5FFD0"
+                    "5.25"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "149650"
+                }
+            }
+
+            "CRC_MapFile"
+			{
+                "windows"
+                {
+                    "5.26"      "41940"
+                    "5.25"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "65C10"
+                }
+            }
+
+            "host_framerate (Patch)"
+			{
+                "windows"
+                {
+                    "5.26"      "6740C"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "7A675"
+                }
+            }
+        }
+
+        "Client"
+        {
+			"g_StudioRenderer"
+			{
+                "windows"
+                {
+                    "5.26"      "5FB5D8"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "A594C0"
+                }
+            }
+
+			"g_ExtraPlayerInfo"
+			{
+                "windows"
+                {
+                    "5.26"      "644918"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "AA2AE0"
+                }
+            }
+
+			"gWR"
+			{
+                "windows"
+                {
+                    "5.26"      "1F8328"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "6552C0"
+                }
+            }
+
+			"IN_Move"
+			{
+                "windows"
+                {
+                    "5.26"      "3C5F0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "E252A"
+                }
+            }
+
+			"GetClientColor"
+			{
+                "windows"
+                {
+                    "5.26"      "31840"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "D44C8"
+                }
+            }
+			
+			// Features go here
+			"ev_punchangle"
+			{
+                "windows"
+                {
+                    "5.26"      "645A88"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "AA3BDC"
+                }
+            }
+			
+			"CHudBaseTextBlock::Print"
+			{
+                "windows"
+                {
+                    "5.26"      "55D70"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "FFBB4"
+                }
+            }
+			
+			"CHudTextMessage::MsgFunc_TextMsg"
+			{
+                "windows"
+                {
+                    "5.26"      "5B4D0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "106978"
+                }
+            }
+			
+			"m_pSoundEngine"
+			{
+                "windows"
+                {
+                    "5.26"      "5FB214"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "A581C0"
+                }
+            }
+			
+			"CClient_SoundEngine::Play2DSound"
+			{
+                "windows"
+                {
+                    "5.26"      "E7C0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "AD6CC"
+                }
+            }
+			
+			"CCamera::Process"
+			{
+                "windows"
+                {
+                    "5.26"      "39340"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "DE39A"
+                }
+            }
+			
+			"CVoiceBanMgr::SetPlayerBan"
+			{
+                "windows"
+                {
+                    "5.26"      "9D6C0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "163516"
+                }
+            }
+			
+			"CVoiceBanMgr::InternalFindPlayerSquelch"
+			{
+                "windows"
+                {
+                    "5.26"      "9D880"
+                    "5.25"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "1633D4"
+                }
+            }
+			
+			"CVoiceStatus::IsPlayerBlocked"
+			{
+                "windows"
+                {
+                    "5.26"      "9E970"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "165514"
+                }
+            }
+			
+			"CVoiceStatus::SetPlayerBlockedState"
+			{
+                "windows"
+                {
+                    "5.26"      "9EA00"
+                    "5.25"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "165EFC"
+                }
+            }
+			
+			"CVoiceStatus::UpdateServerState"
+			{
+                "windows"
+                {
+                    "5.26"      "9EF40"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "165CAA"
+                }
+            }
+			
+			"HACK_GetPlayerUniqueID"
+			{
+                "windows"
+                {
+                    "5.26"      "69390"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "117204"
+                }
+            }
+			
+			"CClient_SoundEngine::LoadSoundList"
+			{
+                "windows"
+                {
+                    "5.26"      "ECF0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "B0280"
+                }
+            }
+			
+			"CClient_SoundEngine::FlushCache"
+			{
+                "windows"
+                {
+                    "5.26"      "CA80"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "AEAC4"
+                }
+            }
+			
+			"CClient_SoundEngine::PlayFMODSound"
+			{
+                "windows"
+                {
+                    "5.26"      "D9F0"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+				
+                "linux"
+                {
+                    "5.26"      "AC5DC"
+                }
+            }
+        }
+
+        "Server"
+        {
+			"pSurvivalModeInstance"
+			{
+                "windows"
+                {
+                    "5.26"      "143EF0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "B27BC8"
+                }
+            }
+
+            "toggle_survival_mode_Callback"
+			{
+                "windows"
+                {
+                    "5.26"      "4F9380"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "33FC60"
+                }
+            }
+
+            "PlayerSpawns"
+			{
+                "windows"
+                {
+                    "5.26"      "264220"
+                    "5.25"      "0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "508E8E"
+                }
+            }
+
+            "FixPlayerStuck"
+			{
+                "windows"
+                {
+                    "5.26"      "21D0A0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "49E8FA"
+                }
+            }
+
+            "CBaseEntity::FireBullets"
+			{
+                "windows"
+                {
+                    "5.26"      "11E790"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "327584"
+                }
+            }
+
+            "UTIL_GetCircularGaussianSpread"
+			{
+                "windows"
+                {
+                    "5.26"      "26D040"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "54FDF4"
+                }
+            }
+
+            "FireTargets"
+			{
+                "windows"
+                {
+                    "5.26"      "250DB0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "508BE2"
+                }
+            }
+
+            "CopyPEntityVars"
+			{
+                "windows"
+                {
+                    "5.26"      "21F540"
+                    "5.11"      "0"
+                }
+            }
+			
+			// Features go here
+        }
+
+        "GameUI"
+        {
+			"RichText::InsertColorChange"
+			{
+                "windows"
+                {
+                    "5.26"      "47B60"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "C4460"
+                }
+            }
+
+			"RichText::InsertString"
+			{
+                "windows"
+                {
+                    "5.26"      "47BC0"
+                    "5.11"      "0"
+                }
+
+                "linux"
+                {
+                    "5.26"      "C8200"
+                }
+            }
+        }
+    }
+
+    // Offsets of virtual methods, member classes, etc..
+    "Offsets"
+    {
+        "Engine"
+        {
+			// Features go here
+			// vtidx
+            "CGame::SleepUntilInput"
+            {
+                "windows"
+                {
+                    "any"       "4"
+                }
+
+                "linux"
+                {
+                    "any"       "5"
+                }
+            }
+			
+            "modeloffset"
+            {
+                "windows"
+                {
+                    "5.26"		"592"
+                }
+
+                "linux"
+                {
+                    "5.26"		"592"
+                }
+            }
+        }
+
+        "Client"
+        {
+            // vtidx
+            "CStudioModelRenderer::StudioSetupBones"
+            {
+                "windows"
+                {
+                    "any"       "7"
+                }
+
+                "linux"
+                {
+                    "any"       "8"
+                }
+            }
+
+            // vtidx
+            "CStudioModelRenderer::StudioRenderModel"
+            {
+                "windows"
+                {
+                    "any"       "20"
+                }
+
+                "linux"
+                {
+                    "any"       "21"
+                }
+            }
+			
+			// Features go here
+            // vtidx
+            "CBasePlayerWeapon::TertiaryAttack"
+            {
+                "windows"
+                {
+                    "5.26"       "150"
+                    "5.25"       "150"
+                }
+
+                "linux"
+                {
+                    "5.26"       "151"
+                }
+            }
+        }
+
+        "Server"
+        {
+            // vtidx
+            "CBaseEntity::ObjectCaps"
+            {
+                "windows"
+                {
+                    "5.26"      "9"
+                    "5.25"      "9"
+                    "5.11"      "8"
+                }
+
+                "linux"
+                {
+                    "5.26"      "9"
+                }
+            }
+
+            // vtidx
+            "CBasePlayer::IsAlive"
+            {
+                "windows"
+                {
+                    "5.26"      "48"
+                    "5.25"      "47"
+                    "5.11"      "43"
+                }
+
+                "linux"
+                {
+                    "5.26"      "48"
+                }
+            }
+
+            // vtidx
+            "CBasePlayer::BeginRevive"
+            {
+                "windows"
+                {
+                    "5.26"      "90"
+                    "5.25"      "88"
+                    "5.11"      "82"
+                }
+
+                "linux"
+                {
+                    "5.26"      "90"
+                }
+            }
+
+            // vtidx
+            "CBasePlayer::EndRevive"
+            {
+                "windows"
+                {
+                    "5.26"      "91"
+                    "5.25"      "89"
+                    "5.11"      "83"
+                }
+
+                "linux"
+                {
+                    "5.26"      "91"
+                }
+            }
+
+            // vtidx
+            "CBasePlayer::SpecialSpawn"
+            {
+                "windows"
+                {
+                    "5.26"      "212"
+                    "5.25"      "210"
+                    "5.11"      "192"
+                }
+
+                "linux"
+                {
+                    "5.26"      "212"
+                }
+            }
+
+            // vtidx
+            "CBasePlayer::IsConnected"
+            {
+                "windows"
+                {
+                    "5.26"      "220"
+                    "5.25"      "218"
+                    "5.11"      "198"
+                }
+
+                "linux"
+                {
+                    "5.26"      "220"
+                }
+            }
+			
+			// Features go here
+            // vtidx
+            "CBasePlayerWeapon::TertiaryAttack"
+            {
+                "windows"
+                {
+                    "5.26"       "153"
+                    "5.25"       "151"
+                }
+
+                "linux"
+                {
+                    "5.26"       "154"
+                }
+            }
+        }
+
+        "VGUI2"
+        {
+            // vtidx
+            "IPanel::PaintTraverse"
+            {
+                "windows"
+                {
+                    "any"      "41"
+                }
+
+                "linux"
+                {
+                    "any"      "42"
+                }
+            }
+        }
+    }
+
+    // Signatures of functions
+    "Patterns"
+    {
+        "Engine"
+        {
+			// This pattern is a must have both for Windows & Linux
+            "Sys_InitializeGameDll"
+            {
+                "windows"
+                {
+                    "any"       "E8 ? ? ? ? 33 C0 83 3D ? ? ? ? ? 0F 9F C0 50 E8 ? ? ? ? 83 C4"
+                }
+				
+				"linux"
+				{
+					"any"		"55 57 56 53 E8 ? ? ? ? 81 C3 ? ? ? ? 83 EC ? E8 ? ? ? ? 8D BB E0 1E CB 00"
+				}
+            }
+
+            "ClientDLL_Init"
+            {
+                "windows"
+                {
+                    "any"       "68 ? ? ? ? FF 15 ? ? ? ? A1 ? ? ? ? 83 C4"
+                }
+            }
+
+            "Netchan_Transmit"
+            {
+                "windows"
+                {
+                    "any"       "B8 ? ? ? ? E8 ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? ? ? ? 8B 84 24 ? ? ? ? 53 55"
+                }
+            }
+
+            "SCR_BeginLoadingPlaque"
+            {
+                "windows"
+                {
+                    "any"       "6A ? E8 ? ? ? ? A1 ? ? ? ? 83 C4 ? 83 F8"
+                }
+            }
+
+            "V_EngineStudio_Init"
+            {
+                "windows"
+                {
+                    "any"       "68 ? ? ? ? 68 ? ? ? ? 6A ? FF D0 83 C4 ? 85 C0 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? E8 ? ? ? ? 68"
+                }
+            }
+
+			"Key_Event"
+			{
+				"windows"
+                {
+                    "any"       "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 04 00 00 56 8B B4 24 0C 04 00 00 81 FE"
+                }
+            }
+
+            "Z_Free"
+            {
+                "windows"
+                {
+                    "any"       "56 8B 74 24 08 85 F6 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 83 C6"
+                }
+            }
+
+            "Mem_Free"
+            {
+                "windows"
+                {
+                    "any"       "8B FF 55 8B EC 83 7D 08 ? 74 ? FF 75 08 6A"
+                }
+            }
+
+            "Cmd_AddCommand"
+            {
+                "windows"
+                {
+                    "any"       "57 8B 7C 24 08 57 E8 ? ? ? ? 83 C4 ? 80 38"
+                }
+            }
+
+
+            "Cvar_RemoveClientDLLCvars"
+            {
+                "windows"
+                {
+                    "5.22"      "56 8B 35 ? ? ? ? 57 33 FF 85 F6 74 ? 53"
+                    "5.11"      "55 56 8B 35 ? ? ? ? 33 ED"
+                }
+            }
+
+            "Cvar_DirectSet"
+			{
+				"windows"
+                {
+                    "5.26"      "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 53 8B 9C 24 ? 04 00 00 57 8B BC 24"
+                    "5.11"      "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 56 8B B4 24 ? 04 00 00 57 8B BC 24"
+                }
+            }
+
+			"LoadInsecureClient"
+			{
+                "windows"
+                {
+                    "5.22"      "FF 74 24 04 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0 75"
+                    "5.11"      "56 8B 74 24 08 56 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0"
+                }
+            }
+
+			"MSG_WriteUsercmd"
+			{
+				"windows"
+                {
+                    "5.25"      "56 68 ? ? ? ? E8 ? ? ? ? 8B 74 24 0C"
+                    "5.11"      "56 68 ? ? ? ? E8 ? ? ? ? 8B 4C 24 0C"
+                }
+            }
+
+			"SCR_UpdateScreen"
+			{
+                "windows"
+                {
+                    "5.25"      "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 83 3D ? ? ? ? ? 0F 85 ? ? ? ? C7 05"
+                    "5.11"      "83 EC ? 56 33 F6 39 35 ? ? ? ? 0F 85"
+                }
+            }
+
+			"SCR_EndLoadingPlaque"
+			{
+				"windows"
+                {
+                    "5.22"      "C7 05 ? ? ? ? ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? C7 05"
+                    "5.11"      "33 C0 A3 ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 68"
+                }
+            }
+
+			"V_VideoMode_Create"
+			{
+				"windows"
+                {
+                    "5.25"      "A3 ? ? ? ? 8B 4D F4 64 89 0D 00 00 00 00 59 5E 5B 8B E5 5D C3"
+                    "5.22"      "A3 ? ? ? ? 8B 4D F4"
+                    "5.11"      "A3 ? ? ? ? 59 C3 33 C0"
+                }
+            }
+
+			"Host_FilterTime"
+			{
+				"windows"
+                {
+                    "5.25"      "D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1"
+                    "5.22"      "51 D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1"
+                    "5.11"      "51 D9 ? 8B 0D ? ? ? ? D9 05"
+                }
+            }
+
+			"MSG_ReadByte"
+			{
+				"windows"
+                {
+                    "5.22"      "8B 0D ? ? ? ? 8D 51 01 3B 15 ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 A1 ? ? ? ? 0F B6 04 08"
+                    "5.11"      "A1 ? ? ? ? 8D 48 01 3B 0D ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 8B 15 ? ? ? ? 0F B6 04 02"
+                }
+            }
+			
+			// Features go here
+        }
+
+        "Client"
+        {
+			// This pattern is a must have both for Windows & Linux
+			"__MsgFunc_ServerVer"
+			{
+				"windows"
+				{
+					"5.23"     "8D 44 24 40 C6 44 24 3C 00 68 ? ? ? ? 50 0F 11 44 24 48"
+					"5.11"     "8D 54 24 1C 68 ? ? ? ? 52 89 44 24 24"
+				}
+
+				"linux"
+				{
+					"5.26"     "C7 44 24 08 ? ? ? ? 8D B3 2B CE E8 FF"
+				}
+			}
+			"RELOC_OFFSET__MsgFunc_ServerVer"
+			{
+				"linux"
+				{
+					"5.26"     "81 C3 ? ? ? ? 8D 6C 24 2C"
+				}
+			}
+		
+            "IN_Move"
+            {
+                "windows"
+                {
+                    "5.25"      "83 3D ? ? ? ? ? 75 ? 83 3D ? ? ? ? ? 74 ? FF 74 24 08"
+                    "5.11"      "83 3D ? ? ? ? ? 56 8B 74 24 0C 75 1A"
+                }
+            }
+
+			"GetClientColor"
+			{
+                "windows"
+                {
+                    "5.23"      "8B 4C 24 04 85 C9 7E"
+                    "5.11"      "8B 44 24 04 85 C0 7E"
+                }
+            }
+
+			"CHudAmmo::VidInit"
+			{
+                "windows"
+                {
+                    "5.26"      "81 FE ? ? ? ? 7C ? 5E B0 ? C3"
+                    "5.22"      "81 FE ? ? ? ? 7C ? B0 ? 5E C3"
+                    "5.11"      "81 FE ? ? ? ? 7C ? 81 3D ? ? ? ? ? ? ? ? 5E"
+                }
+            }
+			
+			// Features go here
+        }
+
+        "Server"
+        {
+            "PlayerSpawns"
+            {
+                "windows"
+                {
+                    "5.26"      "56 8B 74 24 0C 57 8B 7C 24 0C 85 FF 0F 84 ? ? ? ? 83 3F"
+                    "5.11"      "57 8B 7C 24 08 85 FF 0F 84 ? ? ? ? 83 3F ? 0F"
+                }
+            }
+
+			"FixPlayerStuck"
+			{
+                "windows"
+                {
+                    "5.26"      "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 03 00 00"
+                    "5.25"      "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 FC 02 00 00"
+                    "5.11"      "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 0C 03 00 00 56"
+                }
+            }
+
+			"CBaseEntity::FireBullets"
+			{
+                "windows"
+                {
+                    "5.26"      "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F1"
+                    "5.25"      "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F9 89 7D F0"
+                    "5.11"      "6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 55 56 57 A1 ? ? ? ? 33 C4 50 8D 84 24 BC 00 00 00"
+                }
+            }
+
+			"UTIL_GetCircularGaussianSpread"
+			{
+                "windows"
+                {
+                    "5.26"      "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00"
+                    "5.25"      "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00"
+                    "5.11"      "55 8B EC 83 E4 ? 83 EC ? 56 8B 75 08 57 8B 7D 0C"
+                }
+            }
+
+			"FireTargets"
+			{
+                "windows"
+                {
+                    "5.26"      "51 53 8B 5C 24 0C 57 8B 7C 24 14"
+                    "5.25"      "53 8B 5C 24 08 85 DB 0F 84 ? ? ? ? 80 3B ? 0F 84 ? ? ? ? 55"
+                    "5.11"      "8B 44 24 04 56 33 F6 3B C6"
+                }
+            }
+
+			"CopyPEntityVars"
+			{
+                "windows"
+                {
+                    "5.26"      "E8 ? ? ? ? F3 0F 10 84 24 90 01 00 00"
+                    "5.25"      "E8 ? ? ? ? F3 0F 10 84 24 8C 01 00 00"
+                    "5.11"      "E8 ? ? ? ? D9 ? D9 ? ? ? ? ? ? D8 ? DF E0 DD ? F6 C4 ? 74"
+                }
+            }
+			
+			// Features go here
+        }
+
+        "GameUI"
+        {
+			"CGameConsoleDialog::DPrint"
+			{
+                "windows"
+                {
+                    "5.22"      "55 8B EC 56 8B F1 FF B6 2C 01 00 00"
+                    "5.11"      "56 8B F1 8B 86 2C 01 00 00 8B 8E 18 01 00 00"
+                }
+            }
+        }
+    }
+
+    // Linux-only debug symbols
+    "Symbols"
+    {
+        "Engine"
+        {
+            // Vars
+            "host_frametime"            "host_frametime"
+            "realtime"                  "realtime"
+            // "clc_buffer"                "__NO_SYMBOL_HERE__"
+            "net_message"               "net_message"
+            "msg_readcount"             "msg_readcount"
+            "msg_badread"               "msg_badread"
+            "g_NetworkMessages"         "g_NetworkMessages"
+            "g_pClientUserMsgs"         "gClientUserMsgs"
+            "g_pEventHooks"             "g_pEventHooks"
+            "cmd_argc"                  "cmd_argc"
+            "cmd_argv"                  "cmd_argv"
+            "cvar_vars"                 "cvar_vars"
+            "cmd_functions"             "cmd_functions"
+            "cl_enginefuncs"            "cl_enginefuncs"
+            "cl_funcs"                  "cl_funcs"
+            "enginestudio"              "engine_studio_api"
+            "studioapi"                 "pStudioAPI"
+            "g_clmove"                  "g_clmove"
+            "videomode_ptr"             "videomode"
+            "cls"                       "cls"
+
+            // Functions
+            "Sys_InitializeGameDll"     "_Z22Host_InitializeGameDLLv"
+            // "ClientDLL_Init"            "__NO_SYMBOL_HERE__"
+            "Netchan_Transmit"          "_Z16Netchan_TransmitP9netchan_siPh"
+            "SCR_BeginLoadingPlaque"    "_Z22SCR_BeginLoadingPlaquei"
+            // "V_EngineStudio_Init"       "__NO_SYMBOL_HERE__"
+            "Z_Free"                    "_Z6Z_FreePv"
+            "Mem_Free"                  "_Z8Mem_FreePv"
+            "Cmd_AddCommand"            "_Z14Cmd_AddCommandPcPFvvE"
+            "Cvar_RemoveClientDLLCvars"     "_Z25Cvar_RemoveClientDLLCvarsv"
+            "Cvar_DirectSet"            "_Z14Cvar_DirectSetP6cvar_sPc"
+			// "LoadInsecureClient"        "__NO_SYMBOL_HERE__"
+			"MSG_WriteUsercmd"          "_Z16MSG_WriteUsercmdP9sizebuf_sP9usercmd_sS2_"
+			"SCR_UpdateScreen"          "_Z16SCR_UpdateScreenv"
+			"SCR_EndLoadingPlaque"      "_Z20SCR_EndLoadingPlaquev"
+			// "V_VideoMode_Create"        "__NO_SYMBOL_HERE__"
+			"Host_FilterTime"           "_Z15Host_FilterTimef"
+			// "MSG_ReadByte"              "__NO_SYMBOL_HERE__"
+			"Key_Event"                 "_Z9Key_Eventii"
+			
+			// Features go here
+        }
+
+        "Client"
+        {
+            "g_StudioRenderer"          "g_StudioRenderer"
+			"g_ExtraPlayerInfo"          "g_PlayerExtraInfo"
+			"gWR"                       "gWR"
+			// "gHUD::m_HideHUD"            "__NO_SYMBOL_HERE__"
+
+            "IN_Move"                   "_Z7IN_MovefP9usercmd_s"
+			"GetClientColor"            "_Z14GetClientColori"
+			// "CHudAmmo::VidInit"         "__NO_SYMBOL_HERE__"
+			
+			// Features go here
+        }
+
+        "Server"
+        {
+            // "pSurvivalModeInstance"             "__NO_SYMBOL_HERE__"
+            // "toggle_survival_mode_Callback"     "__NO_SYMBOL_HERE__"
+
+            // "PlayerSpawns"                       "__NO_SYMBOL_HERE__"
+			// "FixPlayerStuck"                     "__NO_SYMBOL_HERE__"
+			// "CBaseEntity::FireBullets"           "__NO_SYMBOL_HERE__"
+			// "UTIL_GetCircularGaussianSpread"     "__NO_SYMBOL_HERE__"
+			// "FireTargets"                        "__NO_SYMBOL_HERE__"
+			// "CopyPEntityVars"                    "__NO_SYMBOL_HERE__"
+			
+			// Features go here
+        }
+
+        "GameUI"
+        {
+            // "RichText::InsertColorChange"			"_ZN5vgui28RichText17InsertColorChangeE5Color"
+			// "RichText::InsertString"				"_ZN5vgui28RichText12InsertStringEPKc"
+
+			// "CGameConsoleDialog::DPrint"			"__NO_SYMBOL_HERE__"
+        }
+    }
+}
