@@ -1,5 +1,5 @@
 // SvenInt (c) Sw1ft
-// Shaders code was taken from MetaHookSv (c) hzqst
+// Some of shaders code was taken from MetaHookSv (c) hzqst
 // opengl.h
 
 #ifndef SINT_OPENGL_MODULE_H
@@ -9,7 +9,139 @@
 #pragma once
 #endif
 
+#ifdef SINT_USE_GLEW
 #include "GL/glew.h"
+#else
+
+#ifndef GLAPIENTRY
+#ifdef WIN32
+#define GLAPIENTRY __stdcall
+#else
+#define GLAPIENTRY __attribute__((__stdcall))
+#endif
+#endif
+
+#define GL_CLAMP_TO_EDGE 0x812F
+#define GL_DEPTH24_STENCIL8 0x88F0
+#define GL_DEPTH_ATTACHMENT 0x8D00
+#define GL_COLOR_ATTACHMENT0 0x8CE0
+#define GL_FRAMEBUFFER_BINDING 0x8CA6
+#define GL_FRAMEBUFFER 0x8D40
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+#define GL_FRAGMENT_SHADER_ARB 0x8B30
+#define GL_VERTEX_SHADER_ARB 0x8B31
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_LINK_STATUS 0x8B82
+#define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE1 0x84C1
+#define GL_TEXTURE2 0x84C2
+#define GL_TEXTURE3 0x84C3
+#define GL_TEXTURE4 0x84C4
+#define GL_ACTIVE_TEXTURE 0x84E0
+typedef char GLchar;
+
+typedef struct
+{
+	void ( GLAPIENTRY *glGenFramebuffersEXT )( GLsizei n, GLuint *ids );
+	void ( GLAPIENTRY *glDeleteFramebuffersEXT )( GLsizei n, const GLuint *ids );
+
+	void ( GLAPIENTRY *glDeleteTextures )( GLsizei n, const GLuint *textures );
+
+	GLint( GLAPIENTRY *glGetUniformLocationARB )( GLuint program, const GLchar *name );
+	GLint( GLAPIENTRY *glGetAttribLocationARB )( GLuint program, const GLchar *name );
+	void ( GLAPIENTRY *glUniform1i )( GLint location, GLint v0 );
+	void ( GLAPIENTRY *glUniform2iARB )( GLint location, GLint v0, GLint v1 );
+	void ( GLAPIENTRY *glUniform3iARB )( GLint location, GLint v0, GLint v1, GLint v2 );
+	void ( GLAPIENTRY *glUniform4iARB )( GLint location, GLint v0, GLint v1, GLint v2, GLint v3 );
+	void ( GLAPIENTRY *glUniform1f )( GLint location, GLfloat v0 );
+	void ( GLAPIENTRY *glUniform2fARB )( GLint location, GLfloat v0, GLfloat v1 );
+	void ( GLAPIENTRY *glUniform3f )( GLint location, GLfloat v0, GLfloat v1, GLfloat v2 );
+	void ( GLAPIENTRY *glUniform4f )( GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3 );
+
+	void ( GLAPIENTRY *glVertexAttrib3f )( GLuint index, GLfloat x, GLfloat y, GLfloat z );
+	void ( GLAPIENTRY *glVertexAttrib3fv )( GLuint index, const GLfloat *v );
+
+	void ( GLAPIENTRY *glMultiTexCoord2fARB )( GLenum target, GLfloat s, GLfloat t );
+	void ( GLAPIENTRY *glMultiTexCoord3fARB )( GLenum target, GLfloat s, GLfloat t, GLfloat r );
+
+	void ( GLAPIENTRY *glBindTexture )( GLenum target, GLuint texture );
+	void ( GLAPIENTRY *glTexStorage2D )( GLenum target, GLint levels, GLenum internalformat, GLsizei width, GLsizei height );
+	void ( GLAPIENTRY *glBindFramebuffer )( GLenum target, GLuint framebuffer );
+	void ( GLAPIENTRY *glBlitFramebuffer )( GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter );
+	void ( GLAPIENTRY *glFramebufferTexture )( GLenum target, GLenum attachment, GLuint texture, GLint level );
+
+	void ( GLAPIENTRY *glDeleteProgramsARB )( GLsizei n, const GLuint *programs );
+	void ( GLAPIENTRY *glGetProgramInfoLog )( GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog );
+	GLuint( GLAPIENTRY *glCreateShaderObjectARB )( GLenum shaderType );
+	void ( GLAPIENTRY *glUseProgramObjectARB )( GLuint program );
+	void ( GLAPIENTRY *glDetachObjectARB )( GLuint container, GLuint object );
+	void ( GLAPIENTRY *glDeleteObjectARB )( GLuint object );
+	GLuint( GLAPIENTRY *glCreateProgramObjectARB )( void );
+	void ( GLAPIENTRY *glAttachObjectARB )( GLuint container, GLuint object );
+	void ( GLAPIENTRY *glLinkProgramARB )( GLuint program );
+	void ( GLAPIENTRY *glCompileShader )( GLuint shader );
+	void ( GLAPIENTRY *glShaderSource )( GLuint shader, GLsizei count, const GLchar *const *string, const GLint *length );
+	void ( GLAPIENTRY *glGetProgramiv )( GLuint program, GLenum pname, GLint *params );
+	void ( GLAPIENTRY *glGetShaderiv )( GLuint shader, GLenum pname, GLint *params );
+	void ( GLAPIENTRY *glGetInfoLogARB )( GLuint obj, GLsizei maxLength, GLsizei *length, GLchar *infoLog );
+
+	void ( GLAPIENTRY *glActiveTexture )( GLenum texture );
+} GLFunctions;
+
+#define GL_LOAD_FUNC( func_name, func_ptr ) \
+    do { \
+        func_ptr = ( decltype( GLFunctions::func_name ) )pfnglGetProcAddress( #func_name ); \
+        if ( func_ptr == NULL ) { \
+            Warning2( "<SvenInt::OpenGL> Failed to load OpenGL function: %s\n", #func_name ); \
+            bOK = false; \
+        } \
+    } while (0)
+
+#define glGenFramebuffersEXT(n, ids)             glfuncs.glGenFramebuffersEXT(n, ids)
+#define glDeleteFramebuffersEXT(n, ids)         glfuncs.glDeleteFramebuffersEXT(n, ids)
+#define glDeleteTextures(n, textures)           glfuncs.glDeleteTextures(n, textures)
+#define glGetUniformLocationARB(program, name)  glfuncs.glGetUniformLocationARB(program, name)
+#define glGetAttribLocationARB(program, name)    glfuncs.glGetAttribLocationARB(program, name)
+#define glUniform1i(location, v0)               glfuncs.glUniform1i(location, v0)
+#define glUniform2iARB(location, v0, v1)        glfuncs.glUniform2iARB(location, v0, v1)
+#define glUniform3iARB(location, v0, v1, v2)  glfuncs.glUniform3iARB(location, v0, v1, v2)
+#define glUniform4iARB(location, v0, v1, v2, v3) glfuncs.glUniform4iARB(location, v0, v1, v2, v3)
+#define glUniform1f(location, v0)                glfuncs.glUniform1f(location, v0)
+#define glUniform2fARB(location, v0, v1)       glfuncs.glUniform2fARB(location, v0, v1)
+#define glUniform3f(location, v0, v1, v2)      glfuncs.glUniform3f(location, v0, v1, v2)
+#define glUniform4f(location, v0, v1, v2, v3)  glfuncs.glUniform4f(location, v0, v1, v2, v3)
+#define glVertexAttrib3f(index, x, y, z)        glfuncs.glVertexAttrib3f(index, x, y, z)
+#define glVertexAttrib3fv(index, v)             glfuncs.glVertexAttrib3fv(index, v)
+#define glMultiTexCoord2fARB(target, s, t)     glfuncs.glMultiTexCoord2fARB(target, s, t)
+#define glMultiTexCoord3fARB(target, s, t, r)   glfuncs.glMultiTexCoord3fARB(target, s, t, r)
+
+#define glBindTexture(target, texture)           glfuncs.glBindTexture(target, texture)
+#define glTexStorage2D(target, levels, internalformat, width, height) glfuncs.glTexStorage2D(target, levels, internalformat, width, height)
+#define glBindFramebuffer(target, framebuffer)    glfuncs.glBindFramebuffer(target, framebuffer)
+#define glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter) glfuncs.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+#define glFramebufferTexture(target, attachment, texture, level) glfuncs.glFramebufferTexture(target, attachment, texture, level)
+
+#define glDeleteProgramsARB(n, programs) glfuncs.glDeleteProgramsARB(n, programs)
+#define glGetProgramInfoLog(program, bufSize, length, infoLog) glfuncs.glGetProgramInfoLog(program, bufSize, length, infoLog)
+#define glCreateShaderObjectARB(shaderType) glfuncs.glCreateShaderObjectARB(shaderType)
+#define glUseProgramObjectARB(program)           glfuncs.glUseProgramObjectARB(program)
+#define glDetachObjectARB(container, object)    glfuncs.glDetachObjectARB(container, object)
+#define glDeleteObjectARB(object)                glfuncs.glDeleteObjectARB(object)
+#define glCreateProgramObjectARB()               glfuncs.glCreateProgramObjectARB()
+#define glAttachObjectARB(container, object)      glfuncs.glAttachObjectARB(container, object)
+#define glLinkProgramARB(program)                 glfuncs.glLinkProgramARB(program)
+#define glCompileShader(shader)                   glfuncs.glCompileShader(shader)
+#define glShaderSource(shader, count, string, length) glfuncs.glShaderSource(shader, count, string, length)
+#define glGetProgramiv(program, pname, params)   glfuncs.glGetProgramiv(program, pname, params)
+#define glGetShaderiv(shader, pname, params)     glfuncs.glGetShaderiv(shader, pname, params)
+#define glGetInfoLogARB(obj, maxLength, length, infoLog) glfuncs.glGetInfoLogARB(obj, maxLength, length, infoLog)
+
+#define glActiveTexture(texture)                 glfuncs.glActiveTexture(texture)
+
+extern GLFunctions glfuncs;
+
+#endif
 
 //-----------------------------------------------------------------------------
 // Mini helpers to make fragment Shaders implementation a bit faster
@@ -194,6 +326,11 @@ public:
 	inline float	GetScreenHeightf( void ) const { return m_fheight; }
 	
 	inline float	GetScreenAspectRatio( void ) const { return m_aspect; }
+
+#ifndef SINT_USE_GLEW
+private:
+	bool InitGlFuncs( GLFunctions *gl );
+#endif
 
 private:
 	bool m_bInitialized;

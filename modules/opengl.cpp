@@ -8,6 +8,10 @@
 
 namespace Modules { static COpenGLModule openglModule; COpenGLModule *opengl = &openglModule; }
 
+#ifndef SINT_USE_GLEW
+GLFunctions glfuncs = { 0 };
+#endif
+
 //-----------------------------------------------------------------------------
 // Textures
 //-----------------------------------------------------------------------------
@@ -22,11 +26,11 @@ GLuint GL_GenTexture( void )
 void GL_UploadDepthStencilTexture( int texId, int w, int h )
 {
 	glBindTexture( GL_TEXTURE_2D, texId );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexStorage2D( GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, w, h );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexStorage2D( GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, w, h );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
@@ -577,7 +581,7 @@ void COpenGLModule::BindTexture( GLuint texture )
 	if ( GameData::Pointers::Engine::GL_Bind == NULL )
 		return;
 
-	function_cast<void ( __cdecl * )( GLuint )>( GameData::Pointers::Engine::GL_Bind )( texture );
+	function_cast<void ( CALLCONV_CDECL * )( GLuint )>( GameData::Pointers::Engine::GL_Bind )( texture );
 }
 
 //-----------------------------------------------------------------------------
@@ -599,11 +603,73 @@ COpenGLModule::COpenGLModule()
 }
 
 //-----------------------------------------------------------------------------
+// Init GL funcs
+//-----------------------------------------------------------------------------
+
+#ifndef SINT_USE_GLEW
+#ifdef LINUX
+#include <GL/glx.h>
+#endif
+
+bool COpenGLModule::InitGlFuncs( GLFunctions *gl )
+{
+	bool bOK = true;
+
+#ifdef WIN32
+	auto pfnglGetProcAddress = wglGetProcAddress;
+#else
+	auto pfnglGetProcAddress = glXGetProcAddressARB;
+#endif
+
+	GL_LOAD_FUNC( glGenFramebuffersEXT, gl->glGenFramebuffersEXT );
+	GL_LOAD_FUNC( glDeleteFramebuffersEXT, gl->glDeleteFramebuffersEXT );
+	GL_LOAD_FUNC( glDeleteTextures, gl->glDeleteTextures );
+	GL_LOAD_FUNC( glGetUniformLocationARB, gl->glGetUniformLocationARB );
+	GL_LOAD_FUNC( glGetAttribLocationARB, gl->glGetAttribLocationARB );
+	GL_LOAD_FUNC( glUniform1i, gl->glUniform1i );
+	GL_LOAD_FUNC( glUniform2iARB, gl->glUniform2iARB );
+	GL_LOAD_FUNC( glUniform3iARB, gl->glUniform3iARB );
+	GL_LOAD_FUNC( glUniform4iARB, gl->glUniform4iARB );
+	GL_LOAD_FUNC( glUniform1f, gl->glUniform1f );
+	GL_LOAD_FUNC( glUniform2fARB, gl->glUniform2fARB );
+	GL_LOAD_FUNC( glUniform3f, gl->glUniform3f );
+	GL_LOAD_FUNC( glUniform4f, gl->glUniform4f );
+	GL_LOAD_FUNC( glVertexAttrib3f, gl->glVertexAttrib3f );
+	GL_LOAD_FUNC( glVertexAttrib3fv, gl->glVertexAttrib3fv );
+	GL_LOAD_FUNC( glMultiTexCoord2fARB, gl->glMultiTexCoord2fARB );
+	GL_LOAD_FUNC( glMultiTexCoord3fARB, gl->glMultiTexCoord3fARB );
+	GL_LOAD_FUNC( glBindTexture, gl->glBindTexture );
+	GL_LOAD_FUNC( glTexStorage2D, gl->glTexStorage2D );
+	GL_LOAD_FUNC( glBindFramebuffer, gl->glBindFramebuffer );
+	GL_LOAD_FUNC( glBlitFramebuffer, gl->glBlitFramebuffer );
+	GL_LOAD_FUNC( glFramebufferTexture, gl->glFramebufferTexture );
+	GL_LOAD_FUNC( glUseProgramObjectARB, gl->glUseProgramObjectARB );
+	GL_LOAD_FUNC( glDetachObjectARB, gl->glDetachObjectARB );
+	GL_LOAD_FUNC( glDeleteObjectARB, gl->glDeleteObjectARB );
+	GL_LOAD_FUNC( glDeleteProgramsARB, gl->glDeleteProgramsARB );
+	GL_LOAD_FUNC( glGetProgramInfoLog, gl->glGetProgramInfoLog );
+	GL_LOAD_FUNC( glCreateShaderObjectARB, gl->glCreateShaderObjectARB );
+	GL_LOAD_FUNC( glCreateProgramObjectARB, gl->glCreateProgramObjectARB );
+	GL_LOAD_FUNC( glAttachObjectARB, gl->glAttachObjectARB );
+	GL_LOAD_FUNC( glLinkProgramARB, gl->glLinkProgramARB );
+	GL_LOAD_FUNC( glCompileShader, gl->glCompileShader );
+	GL_LOAD_FUNC( glShaderSource, gl->glShaderSource );
+	GL_LOAD_FUNC( glGetProgramiv, gl->glGetProgramiv );
+	GL_LOAD_FUNC( glGetShaderiv, gl->glGetShaderiv );
+	GL_LOAD_FUNC( glGetInfoLogARB, gl->glGetInfoLogARB );
+	GL_LOAD_FUNC( glActiveTexture, gl->glActiveTexture );
+
+	return bOK;
+}
+#endif
+
+//-----------------------------------------------------------------------------
 // Init module
 //-----------------------------------------------------------------------------
 
 bool COpenGLModule::Init( void )
 {
+#ifdef SINT_USE_GLEW
 	// Init glew
 	GLenum status = glewInit();
 
@@ -628,6 +694,13 @@ bool COpenGLModule::Init( void )
 	DevMsg( "GL Version (string)  : %s\n", version );
 	DevMsg( "GL Version (integer) : %d.%d\n", major, minor );
 	DevMsg( "GLSL Version         : %s\n", glslVersion );
+#else
+	if ( !InitGlFuncs( &glfuncs ) )
+	{
+		Warning( "[SvenInt] GL initialization failure. Shader features are not available\n" );
+		return false;
+	}
+#endif
 
 	m_bInitialized = true;
 
