@@ -101,12 +101,12 @@ CBaseExtraPlayerInfo *GetBaseExtraPlayerInfo( void *pExtraPlayerInfo, int iGameV
 	if ( pExtraPlayerInfo == NULL || iGameVersion == 0 )
 		return &gExtraPlayerInfoDummy;
 
-	if ( iGameVersion >= 526 )
+	if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 26, 0 ) )
 	{
 		gExtraPlayerInfo_5_26.Init( pExtraPlayerInfo );
 		return &gExtraPlayerInfo_5_26;
 	}
-	else if ( iGameVersion >= 515 /* 522 */ )
+	else if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 15, 0 ) /* 522 */ )
 	{
 		gExtraPlayerInfo.Init( pExtraPlayerInfo );
 		return &gExtraPlayerInfo;

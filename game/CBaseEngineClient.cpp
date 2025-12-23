@@ -245,17 +245,17 @@ CBaseEngineClient *GetBaseEngineClient( void *pEngineClient, int iGameVersion )
 	if ( pEngineClient == NULL || iGameVersion == 0 )
 		return &gEngineClientDummy;
 
-	if ( iGameVersion >= 526 )
+	if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 26, 0 ) )
 	{
 		gEngineClient_5_26.Init( pEngineClient );
 		return &gEngineClient_5_26;
 	}
-	else if ( iGameVersion >= 523 )
+	else if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 23, 0 ) )
 	{
 		gEngineClient_5_23.Init( pEngineClient );
 		return &gEngineClient_5_23;
 	}
-	else if ( iGameVersion == 522 )
+	else if ( iGameVersion == SVEN_VERSION_CHECK( 5, 22, 0 ) )
 	{
 		gEngineClient_5_22.Init( pEngineClient );
 		return &gEngineClient_5_22;

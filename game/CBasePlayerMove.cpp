@@ -256,7 +256,7 @@ CBasePlayerMove *GetBasePlayerMove( void *pPlayerMove, int iGameVersion )
 	if ( pPlayerMove == NULL || iGameVersion == 0 )
 		return &gPlayerMoveDummy;
 
-	if ( iGameVersion >= 526 )
+	if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 26, 0 ) )
 	{
 		gPlayerMove_5_26.Init( pPlayerMove );
 		return &gPlayerMove_5_26;

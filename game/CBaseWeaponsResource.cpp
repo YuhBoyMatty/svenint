@@ -112,12 +112,12 @@ CBaseWeaponsResource *GetBaseWeaponsResource( void *pWeaponsResource, int iGameV
 	if ( pWeaponsResource == NULL || iGameVersion == 0 )
 		return &gWeaponsResourceDummy;
 
-	if ( iGameVersion >= 523 )
+	if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 23, 0 ) )
 	{
 		gWeaponsResource_5_23.Init( pWeaponsResource );
 		return &gWeaponsResource_5_23;
 	}
-	else if ( iGameVersion >= 515 )
+	else if ( iGameVersion >= SVEN_VERSION_CHECK( 5, 15, 0 ) )
 	{
 		gWeaponsResource.Init( pWeaponsResource );
 		return &gWeaponsResource;
