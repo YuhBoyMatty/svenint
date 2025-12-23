@@ -122,7 +122,7 @@ bool CPrivateChat::OnSendMessage( bool bTeam )
 	//Msg( "pszMessage: %s\n", pszMessage );
 
 	size_t msglen = get_encrypt_length( strlen( pszMessage ) );
-	char *pszEncryptedMessage = (char *)calloc( msglen + 1, sizeof( char ) );
+	char *pszEncryptedMessage = (char *)MemCalloc( msglen + 1, sizeof( char ) );
 	if ( pszEncryptedMessage == NULL )
 		return true;
 
@@ -143,7 +143,7 @@ bool CPrivateChat::OnSendMessage( bool bTeam )
 
 	//Msg( "cmd: %s\n", cmd );
 
-	free( pszEncryptedMessage );
+	MemFree( pszEncryptedMessage );
 	m_bWaitSingleFrame = true;
 	return true;
 }
@@ -214,16 +214,16 @@ void CPrivateChat::OnReceiveMessage( int client, const char *pszMessage )
 
 	size_t msglen = 8 * ( get_encrypt_length( strlen( msg ) / 2 ) / 8 );
 
-	char *pszEncryptedMessage = (char *)calloc( msglen + 1, sizeof( char ) );
-	char *pszDecryptedMessage = (char *)calloc( msglen + 2, sizeof( char ) );
+	char *pszEncryptedMessage = (char *)MemCalloc( msglen + 1, sizeof( char ) );
+	char *pszDecryptedMessage = (char *)MemCalloc( msglen + 2, sizeof( char ) );
 
 	if ( pszEncryptedMessage == NULL || pszDecryptedMessage == NULL )
 	{
 		if ( pszEncryptedMessage != NULL )
-			free( pszEncryptedMessage );
+			MemFree( pszEncryptedMessage );
 
 		if ( pszDecryptedMessage != NULL )
-			free( pszDecryptedMessage );
+			MemFree( pszDecryptedMessage );
 
 		if ( bFoundNewlineChar )
 			*pszNewlineChar = '\n';
@@ -248,10 +248,14 @@ void CPrivateChat::OnReceiveMessage( int client, const char *pszMessage )
 
 	char result[ 256 ] = "[PM] ";
 	strcat( result, pszDecryptedMessage );
+
+	if ( strchr( result, '\n' ) == NULL )
+		strcat( result, "\n" );
+
 	memcpy( msg - 4, result, strlen( result ) + 1 );
 
-	free( pszEncryptedMessage );
-	free( pszDecryptedMessage );
+	MemFree( pszEncryptedMessage );
+	MemFree( pszDecryptedMessage );
 }
 
 //-----------------------------------------------------------------------------
@@ -366,7 +370,7 @@ bool CPrivateChat::Load( void )
 
 void CPrivateChat::PostLoad( void )
 {
-	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText );
+	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText, kDetourPriorityHigh );
 	m_hCmdHook_Say = gamehooks->HookConsoleCommand( "say", HOOKED_CmdHook_Say, &ORIG_CmdHook_Say );
 	m_hCmdHook_SayTeam = gamehooks->HookConsoleCommand( "say_team", HOOKED_CmdHook_SayTeam, &ORIG_CmdHook_SayTeam );
 }
