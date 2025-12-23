@@ -60,4 +60,6 @@ void ConColorMsg( const Color &clr, const char *pszMessageFormat, ... );
 void ConMsg( const char *pszMessageFormat, ... );
 void ConDMsg( const char *pszMessageFormat, ... );
 
+void ConColorMsgNoFormat( const Color & clr, const char *pszMessage );
+
 #endif // !SINT_DBG_H
