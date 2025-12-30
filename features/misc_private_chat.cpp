@@ -108,7 +108,7 @@ bool CPrivateChat::OnSendMessage( bool bTeam )
 	while ( *pszMessage == ' ' && *pszMessage != '\0' )
 		++pszMessage;
 
-	if ( *pszMessage == '\0' )
+	if ( *pszMessage == '\0' || !strnicmp( pszMessage, "/me ", Q_ARRAYSIZE( ( "/me " ) ) - 1 ) )
 		return false;
 
 	const bool bHasPrivateMessagePrefix = ( strnicmp( pszMessage, "/pm ", Q_ARRAYSIZE( "/pm " ) - 1 ) == 0 );
