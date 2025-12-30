@@ -281,8 +281,18 @@ void CSilentAngles::FixMoveEnd( usercmd_t *cmd )
 
 bool CSilentAngles::CanSetAngles( usercmd_t *cmd, int fAbortFlags )
 {
-	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_NOT_WALKING ) && localplayer->GetMoveType() != MOVETYPE_WALK )
-		return false;
+	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_NOT_WALKING ) )
+	{
+		if ( localplayer->GetMoveType() == MOVETYPE_FLY )
+		{
+			if ( !localplayer->GetVelocity().IsZeroFast() )
+				return false;
+		}
+		else if ( localplayer->GetMoveType() != MOVETYPE_WALK )
+		{
+			return false;
+		}
+	}
 
 	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_IN_WATER ) && localplayer->GetWaterLevel() > WL_FEET )
 		return false;
