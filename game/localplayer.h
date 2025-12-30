@@ -122,6 +122,7 @@ private:
 	void DrawPlayerInfo( void );
 	void DrawPlayerMove( void );
 	void DrawProfile( void );
+	void DrawNetmsgBufferUsage( void );
 
 private:
 	local_state_t m_LocalState;

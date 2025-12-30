@@ -18,6 +18,7 @@ extern ConVar sc_debug_show_entitystate;
 extern ConVar sc_debug_show_playerinfo;
 extern ConVar sc_debug_show_playermove;
 extern ConVar sc_debug_show_prof;
+extern ConVar sc_debug_show_netmsg_buffer;
 
 //-----------------------------------------------------------------------------
 // CLocalPlayer implementation
@@ -396,6 +397,11 @@ void CLocalPlayer::Update( local_state_t *from, local_state_t *to, usercmd_t *cm
 		memcpy( &m_LocalState, to, sizeof( local_state_5_11_s ) );
 
 	Globals::clientweapon->SetCurrentWeaponCustom( to->client.m_iId == 0 );
+
+	if ( to->client.m_iId != 0 )
+	{
+		Globals::clientweapon->SetCurrentWeaponID( to->client.m_iId );
+	}
 }
 
 void CLocalPlayer::DrawDebugInfo( void )
@@ -410,6 +416,7 @@ void CLocalPlayer::DrawDebugInfo( void )
 	DrawPlayerInfo();
 	DrawPlayerMove();
 	DrawProfile();
+	DrawNetmsgBufferUsage();
 }
 
 void CLocalPlayer::DrawWeaponData( void )
@@ -1154,6 +1161,40 @@ void CLocalPlayer::DrawPlayerMove( void )
 	y += offset; DRAW_STRING( x, y, "playermove.vuser2: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser2() ) );
 	y += offset; DRAW_STRING( x, y, "playermove.vuser3: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser3() ) );
 	y += offset; DRAW_STRING( x, y, "playermove.vuser4: %.6f %.6f %.6f", VectorExpand( *Globals::playermove->vuser4() ) );
+}
+
+void CLocalPlayer::DrawNetmsgBufferUsage( void )
+{
+	if ( !sc_debug_show_netmsg_buffer.GetBool() )
+		return;
+
+	if ( Globals::cls->state != ca_active )
+		return;
+
+	const int x = int( float( Globals::gameutils->GetScreenWidth() ) * 0.015625f );
+	int y = int( float( Globals::gameutils->GetScreenHeight() ) * 0.0185185f );
+
+	const int offset = sc_debug_new_line_height.GetInt();
+
+	Globals::gameutils->DrawSetTextColor( 180.f / 255.f, 220.f / 255.f, 255.f / 255.f );
+
+	if ( Globals::net_message != NULL )
+	{
+		DRAW_STRING( x, y, "net_message usage:" );
+		y += offset; DRAW_STRING( x, y, "cursize: %d bytes", Globals::net_message->cursize );
+		y += offset; DRAW_STRING( x, y, "maxsize: %d bytes", Globals::net_message->maxsize );
+		y += offset; DRAW_STRING( x, y, "%.1f / 100 %%", ( (float)Globals::net_message->cursize / (float)Globals::net_message->maxsize ) * 100.f );
+
+		y += 2 * offset;
+	}
+
+	if ( Globals::clc_buffer != NULL )
+	{
+		DRAW_STRING( x, y, "clc_buffer usage:" );
+		y += offset; DRAW_STRING( x, y, "cursize: %d bytes", Globals::clc_buffer->cursize );
+		y += offset; DRAW_STRING( x, y, "maxsize: %d bytes", Globals::clc_buffer->maxsize );
+		y += offset; DRAW_STRING( x, y, "%.1f / 100 %%", ( (float)Globals::clc_buffer->cursize / (float)Globals::clc_buffer->maxsize ) * 100.f );
+	}
 }
 
 #ifdef PROF_ENABLED

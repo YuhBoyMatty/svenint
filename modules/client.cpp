@@ -27,6 +27,7 @@ ConVar sc_debug_show_entitystate( "sc_debug_show_entitystate", "0", FCVAR_EXTDLL
 ConVar sc_debug_show_playerinfo( "sc_debug_show_playerinfo", "0", FCVAR_EXTDLL, "Shows on the screen player info, value is player's index to watch for" );
 ConVar sc_debug_show_playermove( "sc_debug_show_playermove", "0", FCVAR_EXTDLL, "Shows on the screen player move vars" );
 ConVar sc_debug_show_prof( "sc_debug_show_prof", "0", FCVAR_EXTDLL, "Shows on the screen profiling" );
+ConVar sc_debug_show_netmsg_buffer( "sc_debug_show_netmsg_buffer", "0", FCVAR_EXTDLL, "Shows buffer usage of network messages" );
 
 CON_COMMAND( sc_print_cvars, "Print registered ConVars / ConCommands" )
 {
@@ -361,7 +362,6 @@ CON_COMMAND( multvar, "Multiply a cvar" )
 	}
 }
 
-
 CON_COMMAND( append, "Append a command into the beginning of command queue\n Similar to how \"special\" appends \"_special\"\n" )
 {
 	if ( args.ArgC() < 2 )
@@ -467,7 +467,7 @@ CON_COMMAND( sc_load_model, "Load a given modelname" )
 	}
 	else
 	{
-		ConMsg("Usage:  sc_load_model <model path starting with models/...>\n");
+		ConMsg( "Usage:  sc_load_model <model path starting with models/...>\n" );
 	}
 }
 
@@ -698,7 +698,8 @@ CON_COMMAND( setang, "Sets view angles" )
 		va.y = y;
 		va.z = z;
 
-		Globals::cl_enginefuncs->SetViewAngles( va );
+		if ( va.IsValid() )
+			Globals::cl_enginefuncs->SetViewAngles( va );
 	}
 	else
 	{
@@ -736,6 +737,7 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &sc_debug_show_playerinfo );
 	Globals::cvar->RegisterConCommand( &sc_debug_show_playermove );
 	Globals::cvar->RegisterConCommand( &sc_debug_show_prof );
+	Globals::cvar->RegisterConCommand( &sc_debug_show_netmsg_buffer );
 
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
@@ -786,6 +788,7 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_playerinfo );
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_playermove );
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_prof );
+	Globals::cvar->UnregisterConCommand( &sc_debug_show_netmsg_buffer );
 
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
