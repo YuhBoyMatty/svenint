@@ -114,6 +114,7 @@ private:
 		unsigned int m_uint;
 		float m_float;
 		bool m_boolean;
+		char *m_cstring;
 		float m_color[ 4 ];
 		float m_vector[ 3 ];
 	} m_defaultValue;

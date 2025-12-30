@@ -260,6 +260,7 @@ CConfigProperty::CConfigProperty( const char *pszPropName, int iPropType, void *
 	if ( m_iPropType == kCfgPropertyCString )
 	{
 		m_value.m_cstring = (char *)MemCalloc( sizeof( char ), CFG_PROPERTY_CSTRING_SIZE );
+
 		if ( m_value.m_cstring == NULL )
 		{
 			Assert( m_value.m_cstring != NULL );
@@ -290,6 +291,7 @@ CConfigProperty::CConfigProperty( const char *pszPropName, int iPropType, void *
 
 	case kCfgPropertyCString:
 		strncpy( m_value.m_cstring, (char *)pDefaultValue, CFG_PROPERTY_CSTRING_SIZE - 1 );
+		m_defaultValue.m_cstring = (char *)pDefaultValue; // this is dangerous!!
 		break;
 
 	case kCfgPropertyColorRGB:
@@ -315,17 +317,31 @@ CConfigProperty::CConfigProperty( const char *pszPropName, int iPropType, void *
 
 CConfigProperty::~CConfigProperty()
 {
-	if ( m_iPropType == kCfgPropertyCString && m_value.m_cstring != NULL )
+	if ( m_iPropType == kCfgPropertyCString )
 	{
-		MemFree( m_value.m_cstring );
-		m_value.m_cstring = NULL;
+		if ( m_value.m_cstring != NULL )
+		{
+			MemFree( m_value.m_cstring );
+			m_value.m_cstring = NULL;
+		}
+
+		m_defaultValue.m_cstring = NULL;
 	}
 }
 
 void CConfigProperty::Revert( void )
 {
 	static_assert( sizeof( m_value ) == sizeof( m_defaultValue ), "Different sizes" );
-	memcpy( &m_value, &m_defaultValue, sizeof( m_value ) );
+
+	if ( m_iPropType == kCfgPropertyCString )
+	{
+		if ( m_value.m_cstring != NULL && m_defaultValue.m_cstring != NULL )
+			strncpy( m_value.m_cstring, m_defaultValue.m_cstring, CFG_PROPERTY_CSTRING_SIZE - 1 );
+	}
+	else
+	{
+		memcpy( &m_value, &m_defaultValue, sizeof( m_value ) );
+	}
 }
 
 void CConfigProperty::CopyStringFrom( const char *pszStr )
