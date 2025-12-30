@@ -13,9 +13,9 @@ https://youtu.be/h59zz0tma4U?si=um7QOgV7PSSO6dd6
 2. Extract the archive to the game’s root folder
 3. Launch the game with the -insecure parameter (just for safe)
 4. Injection
-**4.1 Windows**
+4.1 Windows
 Use any DLL injector to inject library `svenint.dll`
-**4.2 Linux**
+4.2 Linux (Ubuntu at least)
 Run the script `./load` with sudo, it will automatically inject library `libsvenint.so`.
 Note: sometimes load of SvenInt may fail because of incorrect reading of file `gamedata.txt`, in this case restart the game and repeat the injection. To check why SvenInt may not load, go to the root folder of the game, here you will find the logs file `svenint.log`
 **Important:** in Linux, by default, enabled feature named `Ignore Unicode` (category Visual) that replaces all Unicode/UTF characters with spaces, it's needed if your game does support ASCII only, disable the feature if you can see (not using SvenInt) Unicode characters
@@ -24,17 +24,18 @@ Note: sometimes load of SvenInt may fail because of incorrect reading of file `g
 SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `./svenint/gamedata.txt`, any update of this mod means that you should consider updating your `gamedata.txt`
 
 ## Fixing possible issues
-* Disable shaders (via launch option or menu) in case if your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
+* Disable shaders (via launch option or menu) in case your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
 * Disable Models Downloader feature in case you experience crashes from time to time
+* If you have bugged sounds on a specified server then you have to follow this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of the server
 
 ## Features
 * **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
 * **Movement:** Air Run, Auto Jump, Auto Ceil-Clipping, Auto Edgejump, Fastrun, Auto Jumpbug, Auto Selfsink, Auto Strafer, Auto Wallstrafe, Use Key (Change the slowdown cap when holding +use input)
 * **HUD:** Chat Colors, Chat History (Source-like), Grenade Timer, Remap Colors, Speedometer (BXT), Custom Vote Popup
-* **Visual:** Crosshair, ESP, Friends List, Hit Markers, Ignore Unicode (Linux-only), No Fade, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Rader
+* **Visual:** Crosshair, ESP, Friends List, Hit Markers, Ignore Unicode (Linux-only), No Fade, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Radar
 * **Render:** BSP, Chams / Glow, Draw Entities, Fog, Frame Skipper, Lightmap, Models Replacement, Skybox Replacement, Viewmodel Tweaks, Wallhack
 * **Exploit:** Action Burst, Air Stuck, Fake Lag
-* **Misc:** Anti Sound Spam (Studio Events), Bypass Cvar Query, Game Patches (Tertiary Attack Glitch / Unlock 31 FPS at map loading), Ignore Different Map Versions, Models Downloader (Autodownload missing player models), Mute Manager (Useless since 5.26), No Sleep (When the game is minimized), Private Chat (Encrypted messages, use chat command: /pm your text goes next), Soundcache (Saves downloaded soundcache to enter the server faster), Votebot
+* **Misc:** Anti Slowhack, Anti Sound Spam (Studio Events), Bypass Cvar Query, Game Patches (Tertiary Attack Glitch / Unlock 31 FPS at map loading), Ignore Different Map Versions, Models Downloader (Autodownload missing player models), Mute Manager (Useless since 5.26), No Sleep (When the game is minimized), Private Chat (Encrypted messages, use chat command: /pm your text goes next), Soundcache (Saves downloaded soundcache to enter the server faster), Votebot
 * **Speedrun Tools:** HUD, Landing Prediction, Legit Mode, Player Hulls Visualization, Revive Area Visualization, Revive Boost Info, Revive Info, Timer, Timescale, Usables Visualization
 * **Shaders:** Bloom, Chromatic Aberration, Color Correction, Depth Buffer, DoF Blur, Menu Background Blur, Motion Blur, SSAO, Vignette
 * **Configs Save & Auto Load**
@@ -42,8 +43,9 @@ SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `.
 
 ### Console Variables/Commands
 Type in the console the following command: `sc_print_cvars all`.
-
 The command above will print information about each ConVar/ConCommand that belongs to the mod. Use the console command `help <cvarname>` to get detailed information about the given cvar/cmd.
+
+For example, you can bind auto jump feature: 'bind F3 sc_autojump'
 
 ### Launch Parameters
 * **-sint_noconsole**: disable debug console (enabled by default) [Windows only]
@@ -63,7 +65,7 @@ The command above will print information about each ConVar/ConCommand that belon
 build_win.bat
 ```
 
-### Building on Linux
+### Building on Linux (Debian/Ubuntu)
 1. Install dependencies
 ```
 sudo dpkg --add-architecture i386
