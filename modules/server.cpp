@@ -56,7 +56,8 @@ CON_COMMAND( setpos, "Set local player's position" )
 				vecOrigin.z = (float)atof( args[ 3 ] );
 			}
 
-			pPlayer->v.origin = vecOrigin;
+			if ( vecOrigin.IsValid() )
+				pPlayer->v.origin = vecOrigin;
 		}
 	}
 }
@@ -83,7 +84,8 @@ CON_COMMAND( setpos_exact, "Set local player's position" )
 				vecOrigin.z = (float)atof( args[ 3 ] ) - pPlayer->v.view_ofs.z;
 			}
 
-			pPlayer->v.origin = vecOrigin;
+			if ( vecOrigin.IsValid() )
+				pPlayer->v.origin = vecOrigin;
 		}
 	}
 }
@@ -139,12 +141,14 @@ CON_COMMAND( setvel, "Set local player's position" )
 				vecVelocity.z = (float)atof( args[ 3 ] );
 			}
 
-			pPlayer->v.velocity = vecVelocity;
+			if ( vecVelocity.IsValid() )
+				pPlayer->v.velocity = vecVelocity;
 		}
 	}
 }
 
 ConVar sc_sv_disable_spread( "sc_sv_disable_spread", "0", FCVAR_EXTDLL, "Disables spread on server-side" );
+ConVar sc_allow_svenint_usermsg( "sc_allow_svenint_usermsg", "0", FCVAR_EXTDLL, "Allow processing SvenInt's user message" );
 
 //-----------------------------------------------------------------------------
 // User message hook
@@ -152,6 +156,9 @@ ConVar sc_sv_disable_spread( "sc_sv_disable_spread", "0", FCVAR_EXTDLL, "Disable
 
 static int UserMsgHook_SvenInt( const char *pszUserMsg, int iSize, void *pBuffer )
 {
+	if ( !sc_allow_svenint_usermsg.GetBool() )
+		return 0;
+
 	CMessageBuffer message( pszUserMsg, pBuffer, iSize, true );
 
 	int type = message.ReadByte();
@@ -381,6 +388,7 @@ bool CServerModule::Init( void )
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( setpos_saved ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( setvel ) );
 	Globals::cvar->RegisterConCommand( &sc_sv_disable_spread );
+	Globals::cvar->RegisterConCommand( &sc_allow_svenint_usermsg );
 
 	Globals::cl_enginefuncs->pfnHookUserMsg( "SvenInt", UserMsgHook_SvenInt );
 
@@ -419,4 +427,5 @@ void CServerModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( setpos_saved ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( setvel ) );
 	Globals::cvar->UnregisterConCommand( &sc_sv_disable_spread );
+	Globals::cvar->UnregisterConCommand( &sc_allow_svenint_usermsg );
 }
