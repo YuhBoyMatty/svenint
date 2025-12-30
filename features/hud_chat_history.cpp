@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "hud_chat_history.h"
 #include "hud_chat_colors.h"
+#include "player_camhack.h"
 #include "r_drawing.h"
 #include "game/messagebuffer.h"
 
@@ -442,6 +443,9 @@ EHookResult CChatHistory::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 	if ( m_textHistory.size() > (size_t)m_pMaxHistory->GetInt() )
 		m_textHistory.erase( m_textHistory.begin() + m_pMaxHistory->GetInt(), m_textHistory.end() );
+
+	if ( Features::camhack->IsEnabled() )
+		return kHookContinue;
 
 	const bool bShowHistory = !!( *key_dest );
 	const Color clrText = m_pTextColor->GetColor32();
