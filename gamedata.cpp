@@ -1305,7 +1305,7 @@ namespace GameData
 						iPatchVer = atoi( pszSecondSeparator );
 					}
 
-					Globals::gameversion = iMajorVer * 100 + iMinorVer;
+					Globals::gameversion = SVEN_VERSION_CHECK( iMajorVer, iMinorVer, iPatchVer );
 					Globals::gameversion_major = iMajorVer;
 					Globals::gameversion_minor = iMinorVer;
 					Globals::gameversion_patch = iPatchVer;

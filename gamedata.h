@@ -60,7 +60,7 @@ void PrintDumpFileOffset( const char *pszSymbolName, uint32_t ptr, module_t hMod
 #endif
 
 #define SVEN_VERSION_CHECK( major, minor, patch ) ( ( major << 16 ) | ( minor << 8 ) | ( patch ) )
-#define SVEN_VERSION() SVEN_VERSION_CHECK( Globals::gameversion_major, Globals::gameversion_minor, Globals::gameversion_patch )
+#define SVEN_VERSION() ( Globals::gameversion )
 
 //-----------------------------------------------------------------------------
 // Game data finder
