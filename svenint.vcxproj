@@ -107,6 +107,7 @@
     <ClInclude Include="features\hud_remap_colors.h" />
     <ClInclude Include="features\hud_speedometer.h" />
     <ClInclude Include="features\hud_vote_popup.h" />
+    <ClInclude Include="features\misc_antislowhack.h" />
     <ClInclude Include="features\misc_antisoundspam.h" />
     <ClInclude Include="features\misc_bypass_cvar_query.h" />
     <ClInclude Include="features\misc_chatsounds.h" />
@@ -338,6 +339,7 @@
     <ClCompile Include="features\hud_remap_colors.cpp" />
     <ClCompile Include="features\hud_speedometer.cpp" />
     <ClCompile Include="features\hud_vote_popup.cpp" />
+    <ClCompile Include="features\misc_antislowhack.cpp" />
     <ClCompile Include="features\misc_antisoundspam.cpp" />
     <ClCompile Include="features\misc_bypass_cvar_query.cpp" />
     <ClCompile Include="features\misc_chatsounds.cpp" />

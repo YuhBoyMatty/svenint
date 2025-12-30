@@ -601,6 +601,9 @@
     <ClCompile Include="features\visual_ignore_unicode.cpp">
       <Filter>features\Visual</Filter>
     </ClCompile>
+    <ClCompile Include="features\misc_antislowhack.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1280,6 +1283,9 @@
     </ClInclude>
     <ClInclude Include="features\visual_ignore_unicode.h">
       <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_antislowhack.h">
+      <Filter>features\Misc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

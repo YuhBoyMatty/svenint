@@ -121,6 +121,7 @@ set(SVENINT_SOURCE_FILES
 	features/hud_remap_colors.cpp
 	features/hud_speedometer.cpp
 	features/hud_vote_popup.cpp
+	features/misc_antislowhack.cpp
 	features/misc_antisoundspam.cpp
 	features/misc_bypass_cvar_query.cpp
 	features/misc_clientmenu.cpp
