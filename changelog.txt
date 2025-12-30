@@ -1,5 +1,22 @@
 SvenInt v3 Changelog
 
+31/12/2025 - Version 3.2.1:
+- [GameData] Use macro SVEN_VERSION_CHECK on Globals::gameversion when the game version found
+- [Menu & Config Modules] Fix crash when reverting a string property
+- [Scripts Module] Fix slashes on Windows
+- [Client Module] Show usage of network buffers
+- [Server Module] Added ConVar 'sc_allow_svenint_usermsg' (default: 0)
+- [Hooks Module] When drawing a weapon, assign its ID as the current one. Credits: a1
+- [Mem Alloc] Increase size of hash table
+- [Memory Utils] Fix typos
+- [Color Correction] Added missing check of generated framebuffer & color texture
+- [Chat History] Hide when Cam Hack is enabled
+- [Entity List] Added xmas gifts model & C4 world model
+- [Private Chat] Prevent use of private chat with /me message
+- [Silent Angles] Allow set of silent angles when not moving on a ladder
+- [Models Downloader] Changed FEATURE_CHECK_SYMBOL to FEATURE_CHECK_SYMBOL_STATUS
+- [Anti Slowhack] In Misc. category added feature to prevent slowhacking from a server 
+
 23/12/2025 - Version 3.2.0:
 - Added Linux support, a New Year’s gift from me to all Linux users, and especially to that certain someone
 - Automatic update checking now notifies in the console about available updates (can be disabled via launch option -sint_nocheckupdates)
