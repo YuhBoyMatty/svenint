@@ -516,8 +516,10 @@ void CEntityList::AddClasses( void )
 	AddClassInfo( "w_m249.mdl", CLASS_ITEM_CS_M249, FL_CLASS_ITEM );
 	AddClassInfo( "w_he.mdl", CLASS_ITEM_CS_HEGRENADE, FL_CLASS_ITEM );
 	AddClassInfo( "w_c4.mdl", CLASS_ITEM_CS_C4, FL_CLASS_ITEM );
+	AddClassInfo( "w_bp.mdl", CLASS_ITEM_CS_C4, FL_CLASS_ITEM );
 
 	AddClassInfo( "spooky_gifts.mdl", CLASS_ITEM_SPOOKY_GIFTS, FL_CLASS_ITEM );
+	AddClassInfo( "xmas_gifts.mdl", CLASS_ITEM_XMAS_GIFTS, FL_CLASS_ITEM );
 
 	// World entites that have at least one hitbox
 	AddClassInfo( "bigrat.mdl", CLASS_NONE, FL_CLASS_WORLD_ENTITY );
@@ -832,6 +834,7 @@ void CEntityList::AddExtraClassInfos( void )
 	AddExtraClassInfo( CLASS_ITEM_CS_C4, "C4" );
 
 	AddExtraClassInfo( CLASS_ITEM_SPOOKY_GIFTS, "Spooky Gifts" );
+	AddExtraClassInfo( CLASS_ITEM_XMAS_GIFTS, "Xmas Gifts" );
 }
 
 //-----------------------------------------------------------------------------
