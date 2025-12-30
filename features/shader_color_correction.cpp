@@ -165,8 +165,27 @@ bool CShaderColorCorrection::Load( void )
 	m_pBlueLevel = Modules::menu->AddParamFloat( this, "BlueLevel", NULL, 1.f, 0.f, 1.f );
 	m_pGrain = Modules::menu->AddParamFloat( this, "Grain", NULL, 0.f, 0.f, 512.f );
 
+#ifdef SINT_USE_GLEW
 	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "GLEW" );
+#else
+	FEATURE_REQUIRE_GAMEDATA( Modules::opengl->IsInitialized(), "ARB Functions" );
+#endif
 	FEATURE_REQUIRE_GAMEDATA( GameData::Pointers::Engine::GL_Bind, "GL_Bind" );
+
+	POST_PROCESSING_INIT_VARS_COLOR( m_hColorCorrection, Modules::opengl->GetScreenWidth(), Modules::opengl->GetScreenHeight() );
+
+	if ( POST_PROCESSING_FBO( m_hColorCorrection ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hColorCorrection );
+		PrintWarning( "Failed to generate the frame buffer\n" );
+		return false;
+	}
+	if ( POST_PROCESSING_TEX( m_hColorCorrection ) == 0 )
+	{
+		POST_PROCESSING_FREE_VARS( m_hColorCorrection );
+		PrintWarning( "Failed to generate the color texture\n" );
+		return false;
+	}
 
 	Compile();
 
