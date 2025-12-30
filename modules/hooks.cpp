@@ -251,6 +251,11 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_CL_CreateMove, float frametime, userc
 		ORIG_CL_CreateMove( frametime, cmd, active );
 	}
 
+	if ( cmd->weaponselect != 0 )
+	{
+		Globals::clientweapon->SetCurrentWeaponID( cmd->weaponselect );
+	}
+
 	HOOK_EVENT_POST_CALL_CHAIN();
 
 	// Here here and only here
@@ -914,7 +919,7 @@ static void HOOKED_NetMsgHook_TempEntity( void )
 		if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)171 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) ) &&
 			 *reinterpret_cast<int *>( color2 ) == ( ( (byte)207 ) | ( (byte)23 << 8 ) | ( (byte)7 << 16 ) | ( (byte)0xFF << 24 ) ) )
 		{
-			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( "Player:  " ) / sizeof( char ) ) - 1;
+			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( ( "Player:  " ) ) ) - 1;
 
 			// Starts with
 			if ( !strncmp( "Player:  ", szMessage, playerStrLength ) )
@@ -958,7 +963,7 @@ static void HOOKED_NetMsgHook_TempEntity( void )
 		else if ( *reinterpret_cast<int *>( color1 ) == ( ( (byte)7 ) | ( (byte)171 << 8 ) | ( (byte)95 << 16 ) ) &&
 				  *reinterpret_cast<int *>( color2 ) == ( ( (byte)7 ) | ( (byte)207 << 8 ) | ( (byte)95 << 16 ) | ( (byte)0xFF << 24 ) ) )
 		{
-			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( "Player:  " ) / sizeof( char ) ) - 1;
+			constexpr size_t playerStrLength = ( Q_ARRAYSIZE( ( "Player:  " ) ) ) - 1;
 
 			// Starts with
 			if ( !strncmp( "Player:  ", szMessage, playerStrLength ) )
