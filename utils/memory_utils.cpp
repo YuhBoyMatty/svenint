@@ -1134,10 +1134,8 @@ void *CMemoryUtils::FindPatternWithin( module_t hModule, pattern_t * pPattern, v
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - nLength;
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;
@@ -1177,10 +1175,8 @@ void *CMemoryUtils::FindPatternWithin( module_t hModule, const char *pszPattern,
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - nMaskLength;
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;
@@ -1218,10 +1214,8 @@ void *CMemoryUtils::FindPatternWithin( module_t hModule, const char *pszPattern,
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - length;
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;
@@ -1259,10 +1253,8 @@ void *CMemoryUtils::FindPatternWithin( module_t hModule, uint8_t *pPattern, uint
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - length;
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;
@@ -1302,10 +1294,8 @@ void *CMemoryUtils::FindStringWithin( module_t hModule, const char *pszString, v
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - nLength;
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;
@@ -1343,10 +1333,8 @@ void *CMemoryUtils::FindAddressWithin( module_t hModule, void *pAddress, void *p
 	uint8_t *pModuleSearchEnd = pModuleSearchStart + moduleInfo.SizeOfImage - sizeof( void * );
 
 	// Lol, reloc data is outside of the module's address space
-#ifdef LINUX
 	if ( pModuleSearchStart > (uint8_t *)pSearchStart || pModuleSearchEnd < (uint8_t *)pSearchEnd )
 		return NULL;
-#endif
 
 	pModuleSearchStart = (uint8_t *)pSearchStart;
 	pModuleSearchEnd = (uint8_t *)pSearchEnd;

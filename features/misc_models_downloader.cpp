@@ -574,7 +574,8 @@ bool CModelsDownloader::Load( void )
             }
         }
 
-        FEATURE_CHECK_SYMBOL( DM_PlayerState, "DM_PlayerState" );
+        bool bOK = true;
+        FEATURE_CHECK_SYMBOL_STATUS( DM_PlayerState, "DM_PlayerState" );
     #endif
     }
 
