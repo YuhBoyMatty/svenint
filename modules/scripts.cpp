@@ -101,7 +101,7 @@ CON_COMMAND( sc_script_execute, "Execute a script file" )
 		std::string sFilePath = UTIL_GetLongPathName();
 
 	#ifdef WIN32
-		sFilePath += "/" SVENINT_FOLDER_NAME "/scripts/";
+		sFilePath += "\\" SVENINT_FOLDER_NAME "\\scripts\\";
 	#else
 		sFilePath += "/" SVENINT_FOLDER_NAME "/scripts/";
 	#endif
