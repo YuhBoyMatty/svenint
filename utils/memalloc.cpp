@@ -51,7 +51,7 @@ typedef struct memblock_s
 // Vars
 //-----------------------------------------------------------------------------
 
-static CHashTable<void *, memblock_t> mempool( 63 );
+static CHashTable<void *, memblock_t> mempool( 255 );
 static int mempoolsize = 0;
 
 //-----------------------------------------------------------------------------
