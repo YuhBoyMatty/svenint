@@ -126,6 +126,14 @@ bool CWallhack::Load( void )
 
 	m_pfnglBegin = MemoryUtils()->GetProcAddress( GameData::Modules::OpenGL, "glBegin" );
 	FEATURE_CHECK_SYMBOL( m_pfnglBegin, "glBegin" );
+	
+#ifdef LINUX
+	if ( *(uint32_t *)m_pfnglBegin == 0xFB1E0FF3 && *( (uint8_t *)m_pfnglBegin + sizeof( uint32_t ) ) == 0xE8 )
+	{
+		PrintWarning( "Unable to attach detour for \"%s\"\n", "glBegin" );
+		return false;
+	}
+#endif
 
 	return true;
 }

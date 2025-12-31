@@ -415,6 +415,14 @@ bool CChams::Load( void )
 
 	m_pfnglColor4f = MemoryUtils()->GetProcAddress( GameData::Modules::OpenGL, "glColor4f" );
 	FEATURE_CHECK_SYMBOL( m_pfnglColor4f, "glColor4f" );
+	
+#ifdef LINUX
+	if ( *(uint32_t *)m_pfnglColor4f == 0xFB1E0FF3 && *( (uint8_t *)m_pfnglColor4f + sizeof( uint32_t ) ) == 0xE8 )
+	{
+		PrintWarning( "Unable to attach detour for \"%s\"\n", "glColor4f" );
+		return false;
+	}
+#endif
 
 	return true;
 }
