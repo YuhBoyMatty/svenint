@@ -13,9 +13,10 @@ https://youtu.be/h59zz0tma4U?si=um7QOgV7PSSO6dd6
 2. Extract the archive to the game’s root folder
 3. Launch the game with the -insecure parameter (just for safe)
 4. Injection
-4.1 Windows
+4.1 **Windows**
 Use any DLL injector to inject library `svenint.dll`
-4.2 Linux (Ubuntu at least)
+
+4.2 **Linux** (Ubuntu at least)
 Run the script `./load` with sudo, it will automatically inject library `libsvenint.so`.
 Note: sometimes load of SvenInt may fail because of incorrect reading of file `gamedata.txt`, in this case restart the game and repeat the injection. To check why SvenInt may not load, go to the root folder of the game, here you will find the logs file `svenint.log`
 **Important:** in Linux, by default, enabled feature named `Ignore Unicode` (category Visual) that replaces all Unicode/UTF characters with spaces, it's needed if your game does support ASCII only, disable the feature if you can see (not using SvenInt) Unicode characters
