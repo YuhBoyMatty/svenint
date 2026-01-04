@@ -13,6 +13,7 @@ https://youtu.be/h59zz0tma4U?si=um7QOgV7PSSO6dd6
 2. Extract the archive to the game’s root folder
 3. Launch the game with the -insecure parameter (just for safe)
 4. Injection
+
 4.1 **Windows**
 Use any DLL injector to inject library `svenint.dll`
 
@@ -28,6 +29,7 @@ SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `.
 * Disable shaders (via launch option or menu) in case your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
 * Disable Models Downloader feature in case you experience crashes from time to time
 * If you have bugged sounds on a specified server then you have to follow this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of the server
+* On Linux, consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected
 
 ## Features
 * **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
