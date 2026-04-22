@@ -6,6 +6,7 @@
 #include "mov_autojump.h"
 #include "player_antiafk.h"
 #include "player_stick.h"
+#include "player_silent_angles.h"
 
 using namespace Globals;
 
@@ -172,12 +173,17 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	// CL_CreateMove post event
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
 
+	m_bStrafed = false;
+
 	extern bool g_bStrafedRight;
 	static bool s_bLastStrafedRight = g_bStrafedRight;
 	static bool s_bFlip = false;
 	static bool s_bSkipFlip = false;
 
-	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) )
+	const bool bStrafeTowardsMovementButtons = m_pStrafeTowardsMovementButtons->GetBool();
+	const bool bPressedAnyMovementButton = ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) );
+
+	if ( bStrafeTowardsMovementButtons ^ bPressedAnyMovementButton )
 		return kHookContinue;
 
 	if ( Features::antiafk->IsEnabled() ||
@@ -186,10 +192,15 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		 playermove->iuser1() != 0 ||
 		 playermove->movetype() != MOVETYPE_WALK ||
 		 playermove->waterlevel() > WL_FEET )
+	{
 		return kHookContinue;
+	}
 
 	Vector va;
 	float targetYaw;
+
+	Strafe::StrafeDir strafeDir = static_cast<Strafe::StrafeDir>( sc_strafe_dir.GetInt() );
+	Strafe::StrafeType strafeType = static_cast<Strafe::StrafeType>( sc_strafe_type.GetInt() );
 
 	cl_enginefuncs->GetViewAngles( va );
 
@@ -203,9 +214,36 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	else
 	{
 		if ( sc_strafe_vectorial.GetBool() )
+		{
 			targetYaw = va[ 1 ];
+
+			if ( bStrafeTowardsMovementButtons )
+			{
+				Vector2D vecMove;
+
+				if ( cmd->buttons & IN_FORWARD )
+					vecMove.x += 1.f;
+				if ( cmd->buttons & IN_BACK )
+					vecMove.x += -1.f;
+				if ( cmd->buttons & IN_MOVELEFT )
+					vecMove.y += 1.f;
+				if ( cmd->buttons & IN_MOVERIGHT )
+					vecMove.y += -1.f;
+
+				if ( vecMove.x == 0.f && vecMove.y == 0.f || ( cmd->buttons & IN_BACK ) && m_pStopWhenHoldingBackButton->GetBool() )
+				{
+					strafeType = Strafe::StrafeType::MAXDECCEL;
+				}
+				else
+				{
+					targetYaw = NormalizeAngle( targetYaw + VEC_RAD2DEG( atan2f( vecMove.y, vecMove.x ) ) );
+				}
+			}
+		}
 		else
+		{
 			targetYaw = 0.f;
+		}
 
 		m_strafeData.frame.StrafeToViewAngles = true;
 	}
@@ -213,8 +251,8 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	UpdateStrafeData( m_strafeData,
 					  pEvent->GetArg<float>( "frametime" ),
 					  true,
-					  static_cast<Strafe::StrafeDir>( sc_strafe_dir.GetInt() ),
-					  static_cast<Strafe::StrafeType>( sc_strafe_type.GetInt() ),
+					  strafeDir,
+					  strafeType,
 					  targetYaw,
 					  sc_strafe_point_x.GetFloat(),
 					  sc_strafe_point_y.GetFloat() );
@@ -245,16 +283,54 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		if ( out.Processed )
 		{
-			bool bOldLastStrafedRight = s_bLastStrafedRight;
+			const bool bLastStrafedRightOld = s_bLastStrafedRight;
 			s_bLastStrafedRight = g_bStrafedRight;
 
-			if ( m_pBypassAntiStrafer->GetBool() &&
-				 s_bSkipFlip &&
-				 bOldLastStrafedRight != g_bStrafedRight &&
-				 ( !bWasStandingOnGround || m_strafeData.vars.OnGround ) )
+			if ( m_pBypassAntiStrafer->GetBool() )
 			{
-				s_bSkipFlip = false;
-				return kHookContinue;
+				// Mimic human inputs
+				if ( m_pBypassMode->GetInt() == 0 )
+				{
+					if ( bLastStrafedRightOld != g_bStrafedRight )
+					{
+						// L4DST kicks in.. AGAIN
+						float thetaMove = atan2f( out.Sidespeed, out.Forwardspeed );
+						//float flSpeed = sqrtf( out.Sidespeed * out.Sidespeed + out.Forwardspeed * out.Forwardspeed );
+						float moveDirDeg = NormalizeAngle( va[ 1 ] - VEC_RAD2DEG( thetaMove ) );
+
+						/*
+						if ( g_bStrafedRight )
+							cmd->viewangles[1] = NormalizeAngle( moveDirDeg + 90.0f );
+						else
+							cmd->viewangles[1] = NormalizeAngle( moveDirDeg - 90.0f );
+
+						RotateMoveInputs( cmd, va[ 1 ] );
+
+						cmd->forwardmove = 0.0f;
+						*/
+
+						float flNewYaw;
+						if ( g_bStrafedRight )
+							flNewYaw = NormalizeAngle( moveDirDeg + 90.0f );
+						else
+							flNewYaw = NormalizeAngle( moveDirDeg - 90.0f );
+
+						Vector vecNewAngles = cmd->viewangles;
+						vecNewAngles.y = flNewYaw;
+
+						Features::silentangles->SetAngles( vecNewAngles );
+						Features::silentangles->LockAngles(); // no change allowed anymore
+					}
+				}
+				// Skip flip
+				else if ( m_pBypassMode->GetInt() == 1 &&
+						  s_bSkipFlip &&
+						  bLastStrafedRightOld != g_bStrafedRight &&
+						  ( !bWasStandingOnGround || m_strafeData.vars.OnGround ) )
+				{
+					s_bSkipFlip = false;
+					return kHookContinue;
+				}
 			}
 
 			s_bSkipFlip = true;
@@ -264,7 +340,9 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 			cmd->viewangles[ 1 ] = va[ 1 ] = out.Yaw;
 
-			if ( bOldLastStrafedRight == g_bStrafedRight )
+			m_bStrafed = true;
+
+			if ( bLastStrafedRightOld == g_bStrafedRight )
 				s_bFlip = false;
 			else
 				s_bFlip = !s_bFlip;
@@ -287,6 +365,9 @@ CStrafer::CStrafer( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	m_pVectorialStrafer = NULL;
 	m_pIgnoreGround = NULL;
 	m_pBypassAntiStrafer = NULL;
+	m_pBypassMode = NULL;
+	m_pStrafeTowardsMovementButtons = NULL;
+	m_pStopWhenHoldingBackButton = NULL;
 	m_pStrafeDir = NULL;
 	m_pStrafeType = NULL;
 
@@ -294,6 +375,8 @@ CStrafer::CStrafer( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	sv_accelerate = NULL;
 	sv_airaccelerate = NULL;
 	sv_stopspeed = NULL;
+
+	m_bStrafed = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -303,6 +386,7 @@ CStrafer::CStrafer( const char *pszCategoryName, const char *pszName ) : CBaseFe
 void CStrafer::OnEnable( void )
 {
 	hookevents->RegisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
+	m_bStrafed = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -312,6 +396,7 @@ void CStrafer::OnEnable( void )
 void CStrafer::OnDisable( void )
 {
 	hookevents->UnregisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
+	m_bStrafed = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -322,9 +407,19 @@ bool CStrafer::Load( void )
 {
 	Modules::menu->BindFeature( this );
 
+	Modules::menu->AddElementSeparator( this );
 	m_pVectorialStrafer = Modules::menu->AddParamBool( this, "VectorialStrafer", NULL, true );
 	m_pIgnoreGround = Modules::menu->AddParamBool( this, "IgnoreGround", NULL, true );
-	m_pBypassAntiStrafer = Modules::menu->AddParamBool( this, "BypassAntiStrafer", NULL, false );
+
+	Modules::menu->AddElementSeparator( this, "Bypass Anti-Strafer" );
+	m_pBypassAntiStrafer = Modules::menu->AddParamBool( this, "BypassAntiStrafer", "Bypass", false );
+	m_pBypassMode = Modules::menu->AddParamList( this, "BypassMode", NULL, 0, " 0 - Mimic human inputs\0 1 - Skip flips\0\0" );
+
+	Modules::menu->AddElementSeparator( this );
+	m_pStrafeTowardsMovementButtons = Modules::menu->AddParamBool( this, "StrafeTowardsMovementButtons", "Strafe towards movement buttons", false );
+	m_pStopWhenHoldingBackButton = Modules::menu->AddParamBool( this, "StopWhenHoldingBackButton", "Hold 'Back' button to quickly stop", false );
+
+	Modules::menu->AddElementSeparator( this );
 	m_pStrafeDir = Modules::menu->AddParamList( this, "StrafeDir", NULL, 3, " 0 - Left\0 1 - Right\0 2 - Best\0 3 - Viewangles\0 4 - Point\0\0" );
 	m_pStrafeType = Modules::menu->AddParamList( this, "StrafeType", NULL, 0, " 0 - Max Acceleration\0 1 - Max Angle\0 2 - Max Deceleration\0 3 - Const Speed\0\0" );
 

@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "mov_fastrun.h"
+#include "player_silent_angles.h"
 
 using namespace Globals;
 
@@ -29,69 +30,62 @@ EHookResult CFastrun::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		return kHookContinue;
 
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
+
+	if ( !( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) ) )
+		return kHookContinue;
+
 	const float flMaxSpeed = localplayer->GetMaxSpeed();
+	Vector2D vecMove;
 
-	if ( ( cmd->buttons & IN_FORWARD && cmd->buttons & IN_MOVELEFT ) ||
-		 ( cmd->buttons & IN_BACK && cmd->buttons & IN_MOVERIGHT ) )
+	// We do the mapping now
+	if ( cmd->buttons & IN_FORWARD )
+		vecMove.x += 1.f;
+	if ( cmd->buttons & IN_BACK )
+		vecMove.x -= 1.f;
+	if ( cmd->buttons & IN_MOVELEFT )
+		vecMove.y -= 1.f;
+	if ( cmd->buttons & IN_MOVERIGHT )
+		vecMove.y += 1.f;
+
+	vecMove.NormalizeInPlace();
+
+	cmd->forwardmove = vecMove.x * flMaxSpeed;
+	cmd->sidemove = vecMove.y * flMaxSpeed;
+
+	const float thetaRotation = VEC_DEG2RAD( 45.f );
+	const float fm = cmd->forwardmove, sm = cmd->sidemove;
+	const float cy = cosf( thetaRotation ), sy = sinf( thetaRotation );
+
+	// Rotate to wish direction
+	if ( m_bSideway )
 	{
-		if ( m_bSideway )
-		{
-			cmd->sidemove -= flMaxSpeed; // sqrtf(2.0f) * flMaxSpeed   vvv
-			cmd->forwardmove -= flMaxSpeed;
-
-			m_bSideway = false;
-		}
-		else
-		{
-			cmd->sidemove += flMaxSpeed;
-			cmd->forwardmove += flMaxSpeed;
-
-			m_bSideway = true;
-		}
+		cmd->forwardmove = fm * cy - sm * sy;
+		cmd->sidemove = fm * sy + sm * sy;
 	}
-	else if ( ( cmd->buttons & IN_FORWARD && cmd->buttons & IN_MOVERIGHT ) ||
-			  ( cmd->buttons & IN_BACK && cmd->buttons & IN_MOVELEFT ) )
+	else
 	{
-		if ( m_bSideway )
-		{
-			cmd->sidemove -= flMaxSpeed;
-			cmd->forwardmove += flMaxSpeed;
-
-			m_bSideway = false;
-		}
-		else
-		{
-			cmd->sidemove += flMaxSpeed;
-			cmd->forwardmove -= flMaxSpeed; // sqrtf(2.0f) * flMaxSpeed  ^^^
-
-			m_bSideway = true;
-		}
+		cmd->forwardmove = fm * cy + sm * sy;
+		cmd->sidemove = -fm * sy + sm * sy;
 	}
-	else if ( cmd->buttons & IN_FORWARD || cmd->buttons & IN_BACK )
+
+	m_bSideway = !m_bSideway;
+
+	if ( m_pBypassAntiStrafer->GetBool() )
 	{
-		if ( m_bSideway )
-		{
-			cmd->sidemove -= flMaxSpeed;
-			m_bSideway = false;
-		}
+		float thetaMove = atan2f( cmd->sidemove, cmd->forwardmove );
+		float flSpeed = flMaxSpeed; // sqrtf( cmd->sidemove * cmd->sidemove + cmd->forwardmove * cmd->forwardmove );
+		float moveDirDeg = NormalizeAngle( cmd->viewangles[ 1 ] - VEC_RAD2DEG( thetaMove ) );
+
+		float flNewYaw;
+		if ( !m_bSideway ) // strafing to right
+			flNewYaw = NormalizeAngle( moveDirDeg + 90.0f );
 		else
-		{
-			cmd->sidemove += flMaxSpeed;
-			m_bSideway = true;
-		}
-	}
-	else if ( cmd->buttons & IN_MOVELEFT || cmd->buttons & IN_MOVERIGHT )
-	{
-		if ( m_bSideway )
-		{
-			cmd->forwardmove -= flMaxSpeed;
-			m_bSideway = false;
-		}
-		else
-		{
-			cmd->forwardmove += flMaxSpeed;
-			m_bSideway = true;
-		}
+			flNewYaw = NormalizeAngle( moveDirDeg - 90.0f );
+
+		Vector vecNewAngles = cmd->viewangles;
+		vecNewAngles.y = flNewYaw;
+
+		Features::silentangles->SetAngles( vecNewAngles );
 	}
 
 	return kHookContinue;
@@ -105,6 +99,7 @@ CFastrun::CFastrun( const char *pszCategoryName, const char *pszName ) : CBaseFe
 {
 	SetInitiallyDisabled();
 
+	m_pBypassAntiStrafer = NULL;
 	m_bSideway = false;
 }
 
@@ -133,6 +128,8 @@ void CFastrun::OnDisable( void )
 bool CFastrun::Load( void )
 {
 	Modules::menu->BindFeature( this );
+
+	m_pBypassAntiStrafer = Modules::menu->AddParamBool( this, "BypassAntiStrafer", NULL, false );
 	return true;
 }
 

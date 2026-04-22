@@ -32,12 +32,16 @@ public:
 
 public:
 	void UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY );
+	inline bool IsStrafed( void ) const { return m_bStrafed; }
 	inline bool IsBypassEnabled( void ) const { return m_pBypassAntiStrafer->GetBool(); }
 
 private:
 	CMenuValueBool *m_pVectorialStrafer;
 	CMenuValueBool *m_pIgnoreGround;
 	CMenuValueBool *m_pBypassAntiStrafer;
+	CMenuValueList *m_pBypassMode;
+	CMenuValueBool *m_pStrafeTowardsMovementButtons;
+	CMenuValueBool *m_pStopWhenHoldingBackButton;
 	CMenuValueList *m_pStrafeDir;
 	CMenuValueList *m_pStrafeType;
 
@@ -47,6 +51,8 @@ private:
 	struct cvar_s *sv_accelerate;
 	struct cvar_s *sv_airaccelerate;
 	struct cvar_s *sv_stopspeed;
+
+	bool m_bStrafed;
 };
 
 EXTERN_FEATURE( CStrafer, strafer );
