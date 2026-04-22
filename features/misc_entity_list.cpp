@@ -34,7 +34,6 @@ void CEntityList::Update( void )
 	cl_entity_s *pViewModel = cl_enginefuncs->GetViewModel();
 
 	bool bWasValid = true;
-	int nLocalPlayer = pLocal->index;
 
 	for ( register int i = 1; i <= MY_MAXENTS; ++i )
 	{
@@ -57,7 +56,7 @@ void CEntityList::Update( void )
 
 		if ( ( pszSlashLastOccur = strrchr( pModel->name, '/' ) ) == NULL )
 			continue;
-			
+
 		pszModelName = pszSlashLastOccur + 1;
 
 		if ( !( pStudioHeader = (studiohdr_t *)enginestudio->Mod_Extradata( pModel ) ) ||
@@ -141,16 +140,20 @@ void CEntityList::Update( void )
 			}
 		}
 
+		int iPrevPos = pEntity->current_position - 1;
+		if ( iPrevPos < 0 )
+			iPrevPos += HISTORY_MAX;
+
 		m_ents[ i ].m_pEntity = pEntity;
 		m_ents[ i ].m_pStudioHeader = pStudioHeader;
 
-		m_ents[ i ].m_vecVelocity = pEntity->curstate.origin - pEntity->prevstate.origin;
+		m_ents[ i ].m_vecVelocity = pEntity->ph[ pEntity->current_position ].origin - pEntity->ph[ iPrevPos ].origin;
 		//m_ents[ i ].m_frametime = pEntity->curstate.animtime - pEntity->prevstate.animtime;
 
 		m_ents[ i ].m_bPlayer = pEntity->player;
 		m_ents[ i ].m_bDucked = pEntity->curstate.usehull;
 		m_ents[ i ].m_bVisible = UTIL_WorldToScreen( pEntity->curstate.origin + pEntity->curstate.mins +
-													( ( pEntity->curstate.origin + pEntity->curstate.maxs ) - ( pEntity->curstate.origin + pEntity->curstate.mins ) ) * 0.5f,
+													 ( ( pEntity->curstate.origin + pEntity->curstate.maxs ) - ( pEntity->curstate.origin + pEntity->curstate.mins ) ) * 0.5f,
 													 vScreen );
 
 		m_ents[ i ].m_vecPrevOrigin = !bWasValid ? pEntity->curstate.origin : m_ents[ i ].m_vecOrigin;
@@ -890,8 +893,8 @@ EHookResult CEntityList::OnEvent( CHookEvent *pEvent, bool bPostCall )
 //-----------------------------------------------------------------------------
 
 CEntityList::CEntityList( const char *pszCategoryName, const char *pszName ) : CBaseFeature( pszCategoryName, pszName ),
-																				m_classTable( 1023 ),
-																				m_modelsTable( 1023 )
+m_classTable( 1023 ),
+m_modelsTable( 1023 )
 {
 	memset( m_ents, 0, Q_ARRAYSIZE( m_ents ) );
 
