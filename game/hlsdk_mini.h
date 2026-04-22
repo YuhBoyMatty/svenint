@@ -1433,7 +1433,7 @@ typedef struct playermove_funcs_s
 	int				( *PM_GetModelType )( struct model_s *mod );
 	void			( *PM_GetModelBounds )( struct model_s *mod, float *mins, float *maxs );
 	void *( *PM_HullForBsp )( physent_t *pe, float *offset );
-	float			( *PM_TraceModel )( physent_t *pEnt, float *start, float *end, struct trace_s *trace );
+	float			( *PM_TraceModel )( physent_t *pEnt, float *start, float *end, pmtrace_t *trace );
 	int				( *COM_FileSize )( char *filename );
 	byte *( *COM_LoadFile ) ( char *path, int usehunk, int *pLength );
 	void			( *COM_FreeFile ) ( void *buffer );
