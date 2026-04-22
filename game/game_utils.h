@@ -110,6 +110,15 @@ bool UTIL_IsDead( void );
 bool UTIL_IsSpectating( void );
 int UTIL_GetLocalPlayerIndex( void );
 
+typedef struct pm_ladder_s
+{
+	physent_t *pe;
+	Vector normal;
+	float angle;
+} pm_ladder_t;
+
+bool UTIL_GetPlayerMoveLadder( pm_ladder_t *ladder );
+
 // Intersection tests
 #define UTIL_IsPointInsideAABB( point, mins, maxs ) UTIL_IsAABBIntersectingAABB( point, point, mins, maxs )
 
@@ -123,6 +132,7 @@ inline bool UTIL_IsAABBIntersectingAABB( const Vector &vecBoxMins1, const Vector
 bool UTIL_IsLineIntersectingAABB( const Vector &p1, const Vector &p2, const Vector &vecBoxMins, const Vector &vecBoxMaxs );
 bool UTIL_IsSphereIntersectingAABB( const Vector &vecCenter, const float flRadiusSqr, const Vector &vecAbsMins, const Vector &vecAbsMaxs, float *pflOutDistance );
 bool UTIL_IsRayIntersectingAABB( const Vector &vecBoxMins, const Vector &vecBoxMaxs, const Vector &vecRayOrigin, const Vector &vecRayDir, float *pflMinIntersection, float *pflMaxIntersection );
+bool UTIL_IsRayIntersectingSphere( const Vector &rayOrigin, const Vector &rayDir, const Vector &vecCenter, const float flRadius, float *pflOutDistance );
 
 // Random
 int UTIL_SharedRandomLong( unsigned int seed, int low, int high );

@@ -370,6 +370,65 @@ int UTIL_GetLocalPlayerIndex( void )
 		Globals::playermove->player_index() + 1;
 }
 
+bool UTIL_GetPlayerMoveLadder( pm_ladder_t *ladder )
+{
+	if ( ladder == NULL )
+		return false;
+
+	ladder->pe = NULL;
+	ladder->angle = 0.f;
+
+	if ( Globals::localplayer->GetMoveType() != MOVETYPE_FLY || Globals::localplayer->IsDead() )
+		return false;
+
+	physent_t *pe;
+	Vector &vecOrigin = *Globals::playermove->origin();
+
+	Vector vecPlayerMins = vecOrigin;
+	Vector vecPlayerMaxs = vecOrigin;
+
+	if ( Globals::playermove->flags() & FL_DUCKING )
+	{
+		vecPlayerMins += VEC_DUCK_HULL_MIN;
+		vecPlayerMaxs += VEC_DUCK_HULL_MAX;
+	}
+	else
+	{
+		vecPlayerMins += VEC_HULL_MIN;
+		vecPlayerMaxs += VEC_HULL_MAX;
+	}
+
+	for ( int i = 0; i < Globals::playermove->nummoveent(); i++ )
+	{
+		pe = &Globals::playermove->moveents()[ i ];
+
+		if ( pe->model == NULL || pe->model->type != mod_brush || pe->skin != CONTENTS_LADDER )
+			continue;
+
+		pmtrace_t trace;
+
+		const Vector &vecMins = pe->model->mins;
+		const Vector &vecMaxs = pe->model->maxs;
+
+		if ( vecPlayerMins.z > vecMaxs.z || vecPlayerMaxs.z < vecMins.z )
+			continue;
+
+		if ( !UTIL_IsAABBIntersectingAABB( vecMins, vecMaxs, vecPlayerMins + Vector( 0.f, 0.f, -2.f ), vecPlayerMaxs + Vector( 0.f, 0.f, 2.f ) ) )
+			continue;
+
+		Vector vecLadderCenter = ( vecMins + vecMaxs ) * 0.5f;
+		Globals::playermove->funcs()->PM_TraceModel( pe, vecOrigin, vecLadderCenter, &trace );
+
+		ladder->pe = pe;
+		ladder->normal = trace.plane.normal;
+		ladder->angle = VEC_RAD2DEG( atan2f( trace.plane.normal.y, trace.plane.normal.x ) );
+
+		return true;
+	}
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Intersection tests
 //-----------------------------------------------------------------------------
@@ -499,6 +558,40 @@ bool UTIL_IsRayIntersectingAABB( const Vector &vecBoxMins, const Vector &vecBoxM
 
 	if ( pflMaxIntersection != NULL )
 		*pflMaxIntersection = tmax;
+
+	return true;
+}
+
+
+bool UTIL_IsRayIntersectingSphere( const Vector &rayOrigin, const Vector &rayDir, const Vector &vecCenter, const float flRadius, float *pflOutDistance )
+{
+	Vector L = rayOrigin - vecCenter;
+
+	float radiusSq = ( flRadius * flRadius ) * 0.25f;
+
+	float a = rayDir.Dot( rayDir );
+	float b = 2.0f * L.Dot( rayDir );
+	float c = L.Dot( L ) - radiusSq;
+
+	float discr = b * b - 4.0f * a * c;
+
+	if ( discr < 0 ) return false;
+
+	float sqrtDiscr = sqrtf( discr );
+	float t0 = ( -b - sqrtDiscr ) / ( 2.0f * a );
+	float t1 = ( -b + sqrtDiscr ) / ( 2.0f * a );
+
+	if ( t0 > t1 ) std::swap( t0, t1 );
+
+	if ( t0 < 0 )
+	{
+		t0 = t1;
+		if ( t0 < 0 )
+			return false;
+	}
+
+	if ( pflOutDistance != NULL )
+		*pflOutDistance = t0;
 
 	return true;
 }
