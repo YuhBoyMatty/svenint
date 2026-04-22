@@ -29,9 +29,12 @@ public:
 
 private:
 	void MoveToDesiredPoint( usercmd_t *cmd, const Vector2D &vecDesiredPoint );
+
+	void execute_hl_c04( usercmd_t *cmd );
 	void execute_hl_c10( usercmd_t *cmd );
 
 private:
+	CMenuValueBool *m_pHL_C04;
 	CMenuValueBool *m_pHL_C10;
 
 	float m_flWaitForNPC;

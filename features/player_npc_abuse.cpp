@@ -48,7 +48,7 @@ void CAutoNPCAbuse::MoveToDesiredPoint( usercmd_t *cmd, const Vector2D &vecDesir
 }
 
 //-----------------------------------------------------------------------------
-// hl_c10
+// hl_c04 / hl_c10
 // 
 // How it works:
 // 
@@ -65,6 +65,37 @@ void CAutoNPCAbuse::MoveToDesiredPoint( usercmd_t *cmd, const Vector2D &vecDesir
 // 
 // Door opens, we're done.
 //-----------------------------------------------------------------------------
+
+void CAutoNPCAbuse::execute_hl_c04( usercmd_t *cmd )
+{
+	// Best spot for hl_c04 was found by frizzy & xWhitey
+
+	const Vector2D vecPerformOrigin( 443.f, 1133.f );
+	QAngle vecAnglesNpcInitialPoint( 60.f, -90.f, 0.f );
+	QAngle vecAnglesNpcMovePoint( 41.f, 24.f, 0.f );
+
+	if ( playermove->origin()->AsVector2D().DistTo( vecPerformOrigin ) > 1.f )
+	{
+		MoveToDesiredPoint( cmd, vecPerformOrigin );
+		m_flWaitForNPC = -1.f;
+		return;
+	}
+
+	if ( m_flWaitForNPC == -1.f )
+	{
+		cl_enginefuncs->SetViewAngles( vecAnglesNpcInitialPoint );
+		cl_enginefuncs->pfnClientCmd( "npc_moveto" );
+
+		m_flWaitForNPC = cl_enginefuncs->GetClientTime() + 1.f;
+	}
+	else if ( cl_enginefuncs->GetClientTime() - m_flWaitForNPC >= 0.f )
+	{
+		cl_enginefuncs->SetViewAngles( vecAnglesNpcMovePoint );
+		cl_enginefuncs->pfnClientCmd( "npc_moveto" );
+
+		Disable();
+	}
+}
 
 void CAutoNPCAbuse::execute_hl_c10( usercmd_t *cmd )
 {
@@ -114,13 +145,13 @@ EHookResult CAutoNPCAbuse::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	if ( pszMapname == NULL )
 		return kHookContinue;
 
-	if ( m_pHL_C10->GetBool() && strstr( pszMapname, "_c10.bsp" ) )
+	if ( m_pHL_C04->GetBool() && strstr( pszMapname, "_c04" ) )
+	{
+		execute_hl_c04( cmd );
+	}
+	else if (  m_pHL_C10->GetBool() && strstr( pszMapname, "_c10" ) )
 	{
 		execute_hl_c10( cmd );
-	}
-	else
-	{
-		Disable();
 	}
 
 	return kHookContinue;
@@ -134,7 +165,9 @@ CAutoNPCAbuse::CAutoNPCAbuse( const char *pszCategoryName, const char *pszName )
 {
 	SetInitiallyDisabled();
 	
+	m_pHL_C04 = NULL;
 	m_pHL_C10 = NULL;
+
 	m_flWaitForNPC = -1.f;
 }
 
@@ -166,6 +199,7 @@ bool CAutoNPCAbuse::Load( void )
 {
 	Modules::menu->BindFeature( this );
 
+	m_pHL_C04 = Modules::menu->AddParamBool( this, "hl_c04", NULL, true );
 	m_pHL_C10 = Modules::menu->AddParamBool( this, "hl_c10", NULL, true );
 
 	return true;
