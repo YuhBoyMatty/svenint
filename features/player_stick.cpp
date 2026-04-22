@@ -475,11 +475,8 @@ void CStick::SetViewAngles( cl_entity_t *pPlayer, usercmd_t *cmd )
 
 bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 {
-	physent_t *pe;
-	hull_t *hull;
-	int num;
-	Vector test;
-	physent_t *pLadder = NULL;
+	pm_ladder_t ladder;
+	Vector vecAngles;
 
 	if ( !m_pOvercomeObstacles->GetBool() || localplayer->GetMoveType() != MOVETYPE_FLY )
 	{
@@ -487,40 +484,12 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 		return false;
 	}
 
-	for ( int i = 0; i < playermove->nummoveent(); i++ )
-	{
-		pe = &playermove->moveents()[ i ];
-
-		if ( pe->model && (modtype_t)playermove->funcs()->PM_GetModelType( pe->model ) == mod_brush && pe->skin == CONTENTS_LADDER )
-		{
-			hull = (hull_t *)playermove->funcs()->PM_HullForBsp( pe, test );
-			num = hull->firstclipnode;
-
-			// Offset the test point appropriately for this hull.
-			VectorSubtract( *playermove->origin(), test, test );
-
-			// Test the player's hull for intersection with this model
-			//if ( playermove->funcs()->PM_HullPointContents( hull, num, test ) == CONTENTS_EMPTY )
-			//	continue;
-
-			// Assume the ladder we're climbing on is the latest touched physent
-			pLadder = pe;
-			//break;
-		}
-	}
-
-	if ( pLadder == NULL )
+	if ( UTIL_GetPlayerMoveLadder( &ladder ) )
 	{
 		//cmd->buttons |= IN_JUMP;
 		m_iClimb = 0;
 		return false;
 	}
-
-	trace_t trace;
-
-	Vector vecAngles;
-	Vector ladderCenter;
-	Vector modelmins, modelmaxs;
 
 	if ( m_iClimb == 0 )
 	{
@@ -536,15 +505,8 @@ bool CStick::TryMoveOnLadder( cl_entity_t *pPlayer, usercmd_t *cmd )
 		}
 	}
 
-	playermove->funcs()->PM_GetModelBounds( pLadder->model, modelmins, modelmaxs );
-
-	VectorAdd( modelmins, modelmaxs, ladderCenter );
-	VectorScale( ladderCenter, 0.5, ladderCenter );
-
-	playermove->funcs()->PM_TraceModel( pLadder, *playermove->origin(), ladderCenter, &trace );
-
 	vecAngles.x = 89.f;
-	vecAngles.y = VEC_RAD2DEG( atan2f( trace.plane.normal.y, trace.plane.normal.x ) );
+	vecAngles.y = ladder.angle;
 	vecAngles.z = 0.f;
 
 	vecAngles.y -= 90.f;
