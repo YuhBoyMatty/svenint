@@ -115,6 +115,9 @@ int CDrawing::GetNumberSpriteHeight()
 
 void CDrawing::DrawCircle3D( Vector &position, float points, float radius, int r, int g, int b, int a )
 {
+	surface->DrawSetColor( r, g, b, a );
+	surface->DrawSetTextColor( r, g, b, a );
+
 	float step = (float)M_PI * 2.0f / points;
 
 	for ( float a = 0; a < ( M_PI * 2.0f ); a += step )
@@ -126,14 +129,16 @@ void CDrawing::DrawCircle3D( Vector &position, float points, float radius, int r
 		if ( !UTIL_WorldToScreen( start, start2d ) || !UTIL_WorldToScreen( end, end2d ) )
 			return;
 
-		DrawLine( (int)start2d.x, (int)start2d.y, (int)end2d.x, (int)end2d.y, r, g, b, (int)a );
+		surface->DrawLine( (int)start2d.x, (int)start2d.y, (int)end2d.x, (int)end2d.y );
 	}
 }
 
 void CDrawing::DrawCircle( float position[ 2 ], float points, float radius, int r, int g, int b, int a )
 {
-	float step = (float)M_PI * 2.0f / points;
+	surface->DrawSetColor( r, g, b, a );
+	surface->DrawSetTextColor( r, g, b, a );
 
+	float step = (float)M_PI * 2.0f / points;
 	float start[ 2 ], end[ 2 ];
 
 	for ( float x = 0; x < ( M_PI * 2.0f ); x += step )
@@ -142,7 +147,7 @@ void CDrawing::DrawCircle( float position[ 2 ], float points, float radius, int 
 		start[ 1 ] = radius * sinf( x ) + position[ 1 ];
 		end[ 0 ] = radius * cosf( x + step ) + position[ 0 ];
 		end[ 1 ] = radius * sinf( x + step ) + position[ 1 ];
-		DrawLine( (int)start[ 0 ], (int)start[ 1 ], (int)end[ 0 ], (int)end[ 1 ], r, g, b, a );
+		surface->DrawLine( (int)start[ 0 ], (int)start[ 1 ], (int)end[ 0 ], (int)end[ 1 ] );
 	}
 }
 
@@ -207,6 +212,7 @@ void CDrawing::DrawOutlinedRect( int x, int y, int w, int h, int r, int g, int b
 void CDrawing::DrawLine( int x0, int y0, int x1, int y1, int r, int g, int b, int a )
 {
 	surface->DrawSetTextColor( r, g, b, a );
+	surface->DrawSetColor( r, g, b, a );
 	surface->DrawLine( x0, y0, x1, y1 );
 }
 
@@ -485,7 +491,7 @@ void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b
 	{
 		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
 		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
-}
+	}
 	else
 	{
 		localize->ConvertANSIToUnicode( pszString, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
@@ -735,12 +741,18 @@ void CDrawing::PostLoad( void )
 	m_hFontFriends = surface->CreateFont();
 	m_hFontVotePopup = surface->CreateFont();
 	m_hFontChat = surface->CreateFont();
+	m_hFontInputs = surface->CreateFont();
 
 	surface->AddGlyphSetToFont( m_hFontESP, "Verdana", iWidth <= 800 ? 8 : 12, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontESP2, "Verdana", iWidth <= 800 ? 22 : 26, FW_SEMIBOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontFriends, "Verdana", iWidth <= 800 ? 16 : 20, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontVotePopup, "Lucida-Console", iWidth <= 800 ? 16 : 20, FW_EXTRABOLD, NULL, NULL, vgui::ISurface::FONTFLAG_NONE, 0, 0 );
 	surface->AddGlyphSetToFont( m_hFontChat, "Tahoma", iWidth <= 800 ? 16 : 20, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
+#ifdef LINUX
+	surface->AddGlyphSetToFont( m_hFontInputs, "Verdana", iWidth <= 800 ? 8 : 12, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
+#else
+	surface->AddGlyphSetToFont( m_hFontInputs, "Verdana", iWidth <= 800 ? 10 : 14, FW_BOLD, NULL, NULL, vgui::ISurface::FONTFLAG_DROPSHADOW, 0, 0 );
+#endif
 
 	InitSprites();
 
