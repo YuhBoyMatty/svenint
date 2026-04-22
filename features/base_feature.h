@@ -59,15 +59,15 @@
 
 #define FEATURE_CON_COMMAND_TOGGLE( name, description ) CON_COMMAND( name, description ) { \
 		if ( args.ArgC() > 1 ) { \
-			bool bEnable = !!atoi( args[ 1 ] ); \
+			const bool bEnable = !!atoi( args[ 1 ] ); \
 			if ( bEnable != THIS_FEATURE()->IsEnabled() ) { \
 				THIS_FEATURE()->Toggle(); \
-				Globals::gameutils->PrintChatText( "<SvenInt> %s is %s\n", THIS_FEATURE()->GetName(), bEnable ? "ON" : "OFF" ); \
+				THIS_FEATURE()->PrintState(); \
 			} \
 		} \
 		else { \
-			bool bEnabled = THIS_FEATURE()->Toggle(); \
-			Globals::gameutils->PrintChatText( "<SvenInt> %s is %s\n", THIS_FEATURE()->GetName(), bEnabled ? "ON" : "OFF" ); \
+			THIS_FEATURE()->Toggle(); \
+			THIS_FEATURE()->PrintState(); \
 		} \
 	}
 
@@ -142,6 +142,8 @@ public:
 
 	const char			*GetCategoryName( void );
 	const char			*GetName( void );
+
+	void				PrintState( bool bCustomState = false, bool bState = true );
 
 	void				PrintMsg( const char *pszMessage, ... );
 	void				PrintWarning( const char *pszMessage, ... );

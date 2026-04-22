@@ -39,19 +39,21 @@ EXPOSE_FEATURE_SINGLETON( CFreeze, freeze, "Player", "Freeze" );
 
 CON_COMMAND( sc_freeze, "Prevents netchan from transmitting any data to a server" )
 {
+	extern ConVar sc_print_chat_feature_toggle_notification;
+
 	if ( args.ArgC() > 1 )
 	{
-		bool bEnable = !!atoi( args[ 1 ] );
+		const bool bEnable = !!atoi( args[ 1 ] );
 		if ( bEnable != THIS_FEATURE()->IsManualUse() )
 		{
 			THIS_FEATURE()->ToggleManualUse();
-			Globals::gameutils->PrintChatText( "<SvenInt> %s is %s\n", THIS_FEATURE()->GetName(), bEnable ? "ON" : "OFF" );
+			THIS_FEATURE()->PrintState( true, bEnable );
 		}
 	}
 	else
 	{
-		bool bEnabled = THIS_FEATURE()->ToggleManualUse();
-		Globals::gameutils->PrintChatText( "<SvenInt> %s is %s\n", THIS_FEATURE()->GetName(), bEnabled ? "ON" : "OFF" );
+		const bool bEnabled = THIS_FEATURE()->ToggleManualUse();
+		THIS_FEATURE()->PrintState( true, bEnabled );
 	}
 }
 

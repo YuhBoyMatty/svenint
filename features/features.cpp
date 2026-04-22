@@ -286,6 +286,16 @@ void CBaseFeature::SetFeatureInfo( const char *pszCategoryName, const char *pszN
 	m_pszName = pszName;
 }
 
+void CBaseFeature::PrintState( bool bCustomState /* = false */, bool bState /* = true */ )
+{
+	extern ConVar sc_print_chat_feature_toggle_notification;
+
+	if ( sc_print_chat_feature_toggle_notification.GetBool() )
+		Globals::gameutils->PrintChatText( "<SvenInt> %s is %s\n", GetName(), ( bCustomState ? bState : m_bEnabled ) ? "ON" : "OFF" );
+	else
+		Msg( "<SvenInt> %s is %s\n", GetName(), ( bCustomState ? bState : m_bEnabled ) ? "ON" : "OFF" );
+}
+
 void CBaseFeature::PrintMsg( const char *pszMessage, ... )
 {
 	va_list args;
@@ -327,6 +337,8 @@ void CBaseFeature::PrintFeatures( void )
 	CBaseFeature *pCur, *pNext;
 	pCur = CBaseFeature::s_pBaseFeaturesList;
 
+	int iRunning = 0, iNotActive = 0, iFailedToLoad = 0;
+
 	while ( pCur != NULL )
 	{
 		i++;
@@ -345,19 +357,31 @@ void CBaseFeature::PrintFeatures( void )
 
 		if ( !loaded )
 		{
+			iFailedToLoad++;
 			Warning( "failed to load\n" );
 		}
 		else if ( enabled )
 		{
+			iRunning++;
 			ConColorMsg( { 90, 255, 90, 255 }, "running\n" );
 		}
 		else
 		{
+			iNotActive++;
 			ConColorMsg( { 255, 255, 127, 255 }, "not active\n" );
 		}
 
 		pCur = pNext;
 	}
+
+	Msg( "--------------------------------------------\n" );
+
+	Msg( "Running: " );
+	ConColorMsg( { 90, 255, 90, 255 }, "%d\n", iRunning );
+	Msg( "Not active: " );
+	ConColorMsg( { 255, 255, 127, 255 }, "%d\n", iNotActive );
+	Msg( "Failed to load: " );
+	Warning( "%d\n", iFailedToLoad );
 
 	Msg( "--------------------------------------------\n" );
 }

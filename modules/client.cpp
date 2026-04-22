@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "client.h"
+#include "utils/util.h"
 #include "features/base_feature.h"
 
 #include <regex>
@@ -13,6 +14,7 @@ namespace Modules { static CClientModule clientModule; CClientModule *client = &
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
+ConVar sc_print_chat_feature_toggle_notification( "sc_print_chat_feature_toggle_notification", "1", FCVAR_EXTDLL, "Print to the chat a notification when enabling/disabling a feature" );
 ConVar sc_prof( "sc_prof", "1", FCVAR_EXTDLL, "Enable profiling" );
 ConVar sc_disable_monster_info( "sc_disable_monster_info", "0", FCVAR_EXTDLL, "Disables HUD text message about monster's info" );
 ConVar sc_disable_sprays( "sc_disable_sprays", "0", FCVAR_EXTDLL, "Disables sprays of players" );
@@ -245,7 +247,7 @@ CON_COMMAND( sc_dump_usermsg, "Dump network messages" )
 	}
 }
 
-CON_COMMAND( help, "Find help about a ConVar / ConCommand registered through SvenInt." )
+CON_COMMAND( sc_help, "Find help about a ConVar / ConCommand registered through SvenInt." )
 {
 	if ( args.ArgC() > 1 )
 	{
@@ -255,11 +257,11 @@ CON_COMMAND( help, "Find help about a ConVar / ConCommand registered through Sve
 		if ( var )
 			ConVar_PrintDescription( var );
 		else
-			ConMsg( "help:  no cvar or command named \"%s\"\n", pszName );
+			ConMsg( "sc_help:  no cvar or command named \"%s\"\n", pszName );
 	}
 	else
 	{
-		ConMsg( "Usage:  help <cvarname>\n" );
+		ConMsg( "Usage:  sc_help <cvarname>\n" );
 	}
 }
 
@@ -362,11 +364,11 @@ CON_COMMAND( multvar, "Multiply a cvar" )
 	}
 }
 
-CON_COMMAND( append, "Append a command into the beginning of command queue\n Similar to how \"special\" appends \"_special\"\n" )
+CON_COMMAND( sc_append, "Append a command into the beginning of command queue\n Similar to how \"special\" appends \"_special\"\n" )
 {
 	if ( args.ArgC() < 2 )
 	{
-		ConMsg( "Usage:  append <command>\n" );
+		ConMsg( "Usage:  sc_append <command>\n" );
 		return;
 	}
 
@@ -473,28 +475,6 @@ CON_COMMAND( sc_load_model, "Load a given modelname" )
 
 CON_COMMAND( sc_find_model, "Find models with the given name" )
 {
-	auto strstrci = []( const char *s, const char *p ) -> char *
-	{
-		if ( *p == '\0' )
-			return (char *)s;
-		for ( ; *s; s++ )
-		{
-			if ( tolower( (unsigned char)*s ) == tolower( (unsigned char)*p ) )
-			{
-				size_t i;
-				for ( i = 1;; i++ )
-				{
-					if ( p[ i ] == '\0' )
-						return (char *)s;
-					if ( tolower( (unsigned char)s[ i ] ) != tolower( (unsigned char)p[ i ] ) )
-						break;
-				}
-			}
-		}
-
-		return NULL;
-	};
-
 	if ( args.ArgC() > 1 )
 	{
 		const char *pszModelNameOccur = args[ 1 ];
@@ -723,6 +703,7 @@ bool CClientModule::Init( void )
 {
 	Globals::cl_enginefuncs->pfnClientCmd( "cl_timeout 9999999;clockwindow 0\n" );
 
+	Globals::cvar->RegisterConCommand( &sc_print_chat_feature_toggle_notification );
 	Globals::cvar->RegisterConCommand( &sc_prof );
 	Globals::cvar->RegisterConCommand( &sc_disable_monster_info );
 	Globals::cvar->RegisterConCommand( &sc_disable_sprays );
@@ -746,11 +727,11 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_interfaces ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_netmsg ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_usermsg ) );
-	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( help ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_help ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( toggle ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( incrementvar ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( multvar ) );
-	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( append ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_append ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_test ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_steamids ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_steamid_to_steam64id ) );
@@ -774,6 +755,7 @@ bool CClientModule::Init( void )
 
 void CClientModule::Shutdown( void )
 {
+	Globals::cvar->UnregisterConCommand( &sc_print_chat_feature_toggle_notification );
 	Globals::cvar->UnregisterConCommand( &sc_prof );
 	Globals::cvar->UnregisterConCommand( &sc_disable_monster_info );
 	Globals::cvar->UnregisterConCommand( &sc_disable_sprays );
@@ -797,11 +779,11 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_interfaces ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_netmsg ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_usermsg ) );
-	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( help ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_help ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( toggle ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( incrementvar ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( multvar ) );
-	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( append ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_append ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_test ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_steamids ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_steamid_to_steam64id ) );
