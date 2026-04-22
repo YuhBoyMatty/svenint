@@ -16,6 +16,30 @@
 #define PARSE_STRIP_CHARS_LEN (sizeof(PARSE_STRIP_CHARS) - 1)
 #define PARSE_COMMENT_PREFIX_LEN (sizeof(PARSE_COMMENT_PREFIX) - 1)
 
+inline char *strstrci( const char *s, const char *p )
+{
+	if ( *p == '\0' )
+		return (char *)s;
+
+	for ( ; *s; s++ )
+	{
+		if ( tolower( (unsigned char)*s ) == tolower( (unsigned char)*p ) )
+		{
+			size_t i;
+			for ( i = 1;; i++ )
+			{
+				if ( p[ i ] == '\0' )
+					return (char *)s;
+
+				if ( tolower( (unsigned char)s[ i ] ) != tolower( (unsigned char)p[ i ] ) )
+					break;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 inline int UTIL_ContainsChars( char ch, const char *chars, size_t length )
 {
 	for ( size_t i = 0; i < length; ++i )
