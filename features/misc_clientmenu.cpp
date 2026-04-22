@@ -522,19 +522,19 @@ bool CClientMenu::LoadFromFile( void )
 
 	if ( result_code == KeyValuesParser::PARSE_FAILED )
 	{
-		PrintWarning( "[ClientMenu] Failed to parse file \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\". Reason: %s (%d)\n", KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
+		PrintWarning( "Failed to parse file \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\". Reason: %s (%d)\n", KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
 		return false;
 	}
 
 	if ( kv_filemanager == NULL )
 	{
-		PrintWarning( "[ClientMenu] File \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\" is empty\n" );
+		PrintWarning( "File \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\" is empty\n" );
 		return false;
 	}
 
 	if ( kv_filemanager->Key() != "clientmenu/clientmenu.txt" )
 	{
-		PrintWarning( "[ClientMenu] Expected \"clientmenu/clientmenu.txt\" as main section in the file \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\"\n" );
+		PrintWarning( "Expected \"clientmenu/clientmenu.txt\" as main section in the file \"./" SVENINT_FOLDER_NAME "/clientmenu/clientmenu.txt\"\n" );
 
 		MemFreeInstance( kv_filemanager );
 		return false;
@@ -572,7 +572,7 @@ bool CClientMenu::LoadFromFile( void )
 		{
 			if ( stricmp( pszExt, ".txt" ) )
 			{
-				PrintWarning( "[ClientMenu] Extension of file \"%s\" isn't supported. Use \"*.txt\" extension\n", pszFilename );
+				PrintWarning( "Extension of file \"%s\" isn't supported. Use \"*.txt\" extension\n", pszFilename );
 				continue;
 			}
 
@@ -593,19 +593,19 @@ bool CClientMenu::LoadFromFile( void )
 
 		if ( result_code == KeyValuesParser::PARSE_FAILED )
 		{
-			PrintWarning( "[ClientMenu] Failed to open file \"../%s\". Reason: %s (%d)\n", sPath.c_str(), KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
+			PrintWarning( "Failed to open file \"../%s\". Reason: %s (%d)\n", sPath.c_str(), KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
 			continue;
 		}
 
 		if ( kv_clientmenu == NULL )
 		{
-			PrintWarning( "[ClientMenu] File \"../%s\" is empty\n", sPath.c_str() );
+			PrintWarning( "File \"../%s\" is empty\n", sPath.c_str() );
 			continue;
 		}
 
 		if ( kv_clientmenu->Key() != "ClientMenu" )
 		{
-			PrintWarning( "[ClientMenu] Expected \"ClientMenu\" as main section in the file \"../%s\"\n", sPath.c_str() );
+			PrintWarning( "Expected \"ClientMenu\" as main section in the file \"../%s\"\n", sPath.c_str() );
 			MemFreeInstance( kv_clientmenu );
 		}
 
@@ -639,19 +639,19 @@ bool CClientMenu::LoadFromFile( void )
 
 			if ( result_code == KeyValuesParser::PARSE_FAILED )
 			{
-				PrintWarning( "[ClientMenu] Failed to open localization file \"../%s\". Reason: %s (%d)\n", sLocalizationPath.c_str(), KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
+				PrintWarning( "Failed to open localization file \"../%s\". Reason: %s (%d)\n", sLocalizationPath.c_str(), KeyValuesParser::GetLastErrorMessage(), KeyValuesParser::GetLastErrorLine() );
 				break;
 			}
 
 			if ( kv_localization == NULL )
 			{
-				PrintWarning( "[ClientMenu] Localization file \"../%s\" is empty\n", sLocalizationPath.c_str() );
+				PrintWarning( "Localization file \"../%s\" is empty\n", sLocalizationPath.c_str() );
 				break;
 			}
 
 			if ( kv_localization->Key() != "lang" )
 			{
-				PrintWarning( "[ClientMenu] Expected \"lang\" as main section in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
+				PrintWarning( "Expected \"lang\" as main section in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
 				MemFreeInstance( kv_localization );
 				break;
@@ -688,7 +688,7 @@ bool CClientMenu::LoadFromFile( void )
 
 			if ( !bFoundLang )
 			{
-				PrintWarning( "[ClientMenu] Key \"Language\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
+				PrintWarning( "Key \"Language\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
 				MemFreeInstance( kv_localization );
 				break;
@@ -696,7 +696,7 @@ bool CClientMenu::LoadFromFile( void )
 
 			if ( bLangMismatch )
 			{
-				PrintWarning( "[ClientMenu] Language mismatch in the key \"Language\" of the localization file \"%s.txt\" (expected \"%s\")\n", sLocalizationFile.c_str(), menu->Value().c_str() );
+				PrintWarning( "Language mismatch in the key \"Language\" of the localization file \"%s.txt\" (expected \"%s\")\n", sLocalizationFile.c_str(), menu->Value().c_str() );
 
 				MemFreeInstance( kv_localization );
 				break;
@@ -704,7 +704,7 @@ bool CClientMenu::LoadFromFile( void )
 
 			if ( !bHasTokens )
 			{
-				PrintWarning( "[ClientMenu] Section \"Tokens\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
+				PrintWarning( "Section \"Tokens\" is not present in the localization file \"%s.txt\"\n", sLocalizationFile.c_str() );
 
 				MemFreeInstance( kv_localization );
 				break;
@@ -721,7 +721,7 @@ bool CClientMenu::LoadFromFile( void )
 
 				if ( found != localizationMap.end() )
 				{
-					PrintWarning( "[ClientMenu] Token \"%s\" is already declared in the localization file \"%s.txt\"\n", token->Key().c_str(), sLocalizationFile.c_str() );
+					PrintWarning( "Token \"%s\" is already declared in the localization file \"%s.txt\"\n", token->Key().c_str(), sLocalizationFile.c_str() );
 					continue;
 				}
 
@@ -784,7 +784,7 @@ bool CClientMenu::LoadFromFile( void )
 								else
 								{
 									pMenuContext->FeedLabel( localization_missing_string, label_num );
-									//Warning("[ClientMenu] Localization file \"%s.txt\" is missing string \"%s\" of client menu \"%s\"\n",
+									//PrintWarning("Localization file \"%s.txt\" is missing string \"%s\" of client menu \"%s\"\n",
 									//		sLocalizationFile.c_str(), label_item->Value().c_str() + 1, file->Key().c_str());
 								}
 							}
@@ -810,7 +810,7 @@ bool CClientMenu::LoadFromFile( void )
 						else
 						{
 							pMenuContext->FeedTitle( localization_missing_string );
-							//Warning("[ClientMenu] Localization file \"%s.txt\" is missing string \"%s\" of client menu \"%s\"\n",
+							//PrintWarning("Localization file \"%s.txt\" is missing string \"%s\" of client menu \"%s\"\n",
 							//		sLocalizationFile.c_str(), menu_item->Value().c_str() + 1, file->Key().c_str());
 						}
 					}
