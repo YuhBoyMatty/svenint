@@ -2,10 +2,8 @@
 // dllmain.cpp
 
 #ifdef _WIN32
-#ifndef _DEBUG
-#ifdef _CPPRTTI
+#if !defined(_DEBUG) && defined(_CPPRTTI)
 #error "RTTI enabled"
-#endif
 #endif
 #else
 #include <stdio.h>
@@ -270,7 +268,7 @@ void *MainThread( void *arg )
     #endif
 
         // Don't unload SvenInt until 'RCtrl' will be pressed
-        while ( !GetAsyncKeyState( VK_RCONTROL ) ) { Sleep( 200 ); };
+        while ( !GetAsyncKeyState( Modules::menu->GetUnloadKey() ) ) { Sleep( 200 ); };
 
         UnloadSvenInt();
     #else
@@ -369,8 +367,50 @@ static size_t UpdateDownloadBufferWriteCallback( void *contents, size_t size, si
 
 static void Update_CheckVersion( const char *data )
 {
-    int iMajorVer = 0, iMinorVer = 0, iPatchVer = 0;
+    if ( data == NULL || data[ 0 ] == '\0' )
+        return;
 
+    int iMajorVer = 0, iMinorVer = 0, iPatchVer = 0;
+#if 1
+    char szDate[ 32 ] = { 0 };
+    char *pszChangelogDuped = MemStrdup( data );
+
+    if ( sscanf( data, "%31s - Version %d.%d.%d", szDate, &iMajorVer, &iMinorVer, &iPatchVer ) < 4 )
+    {
+        Warning2( "<Update Check> Failed to parse changelog format\n" );
+        return;
+    }
+
+    if ( SVENINT_VERSION() < SVENINT_VERSION_CHECK( iMajorVer, iMinorVer, iPatchVer ) )
+    {
+        Msg( "\n" );
+        Msg( "===============================================" );
+        Msg( "\n" );
+        Msg( "\n* Changelog from %s:\n\n", szDate );
+
+        const char *pszChangelog = strchr( data, '\n' );
+        if ( pszChangelog != NULL )
+        {
+            pszChangelog++;
+            Msg( "%s\n", pszChangelog );
+        }
+
+        Msg( "\n" );
+        Msg( "===============================================" );
+        Msg( "\n" );
+
+        Warning2( "\nA newer version of SvenInt is available: %d.%d.%d (Current: %d.%d.%d)\n",
+                  iMajorVer, iMinorVer, iPatchVer, SVENINT_MAJOR_VERSION, SVENINT_MINOR_VERSION, SVENINT_PATCH_VERSION );
+        Warning2( "Consider updating it: https://github.com/sw1ft747/svenint/releases\n" );
+
+        Modules::menu->FeedChangelog( pszChangelogDuped );
+    }
+    else
+    {
+        MemFree( pszChangelogDuped );
+        Msg( "SvenInt is up to date.\n" );
+    }
+#else
     const char *pszMajorVer = strstr( data, "SVENINT_MAJOR_VERSION" );
     const char *pszMinorVer = strstr( data, "SVENINT_MINOR_VERSION" );
     const char *pszPatchVer = strstr( data, "SVENINT_PATCH_VERSION" );
@@ -406,6 +446,7 @@ static void Update_CheckVersion( const char *data )
     {
         Msg( "SvenInt is up to date.\n" );
     }
+#endif
 }
 
 void CheckForUpdate( void )
@@ -442,7 +483,11 @@ void CheckForUpdate( void )
     curl = curl_easy_init();
     if ( curl != NULL )
     {
+    #if 1
+        curl_easy_setopt( curl, CURLOPT_URL, "https://raw.githubusercontent.com/sw1ft747/svenint/refs/heads/main/changelog_latest.txt" );
+    #else
         curl_easy_setopt( curl, CURLOPT_URL, "https://raw.githubusercontent.com/sw1ft747/svenint/refs/heads/main/svenint.h" );
+    #endif
         curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, UpdateDownloadBufferWriteCallback );
         curl_easy_setopt( curl, CURLOPT_WRITEDATA, (void *)&chunk );
         curl_easy_setopt( curl, CURLOPT_TIMEOUT, 10L );
@@ -455,7 +500,7 @@ void CheckForUpdate( void )
         }
         else
         {
-            Warning2( "Failed to check for update. Request timed out or failed: %s\n", curl_easy_strerror( res ) );
+            Warning2( "Failed to check for updates. Reason: %s\n", curl_easy_strerror( res ) );
         }
 
         curl_easy_cleanup( curl );

@@ -871,7 +871,7 @@ bool CMenuModule::SDL_IsKeyPressed( uint32_t scancode )
     int numkeys;
     const Uint8 *state = SDL_GetKeyboardState( &numkeys );
 
-    if ( scancode < numkeys )
+    if ( scancode < (uint32_t)numkeys )
         return state[ scancode ];
 
     return false;
@@ -1422,6 +1422,29 @@ void CMenuModule::DrawPrivateCategories( void )
 
 		ImGui::EndMenu();
 	}
+
+	if ( m_bUpdateAvailable && m_pszChangelog != NULL )
+	{
+		if ( ImGui::BeginMenu( "What's New?", m_bOpened ) )
+		{
+			ImGui::TextUnformatted( m_pszChangelog );
+
+			ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+
+			if ( ImGui::Button( "GitHub Releases" ) )
+			{
+			#ifdef WIN32
+				ShellExecute( NULL, "open", "https://github.com/sw1ft747/svenint/releases", NULL, NULL, SW_SHOWNORMAL );
+			#else
+				system( "xdg-open https://github.com/sw1ft747/svenint/releases &" );
+			#endif
+			}
+
+			ImGui::EndMenu();
+		}
+
+		DrawIndicatingDot( 1.f, 0.1f, 4.5f, 232, 232, 48, 255 );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1478,6 +1501,27 @@ void CMenuModule::DrawMiscInfo( void )
 	flTextWidth = ImGui::CalcTextSize( "Memory: 00000 KB" ).x;
 	ImGui::SetCursorPosX( ImGui::GetWindowWidth() - flLastTextWidth - flTextWidth - ImGui::GetStyle().ItemSpacing.x * 2.f );
 	ImGui::Text( "Memory: %d KB", MemConsumed() / 1024 );
+}
+
+//-----------------------------------------------------------------------------
+// Draw indicating dot on top of an menu item
+//-----------------------------------------------------------------------------
+
+void CMenuModule::DrawIndicatingDot( float flAnchorX, float flAnchorY, float flRadius, int r, int g, int b, int a )
+{
+	const ImVec2 vecMins = ImGui::GetItemRectMin();
+	const ImVec2 vecMaxs = ImGui::GetItemRectMax();
+
+	const float flPosX = vecMins.x + ( vecMaxs.x - vecMins.x ) * flAnchorX;
+	const float flPosY = vecMins.y + ( vecMaxs.y - vecMins.y ) * flAnchorY;
+	const ImVec2 vecPos = ImVec2( flPosX, flPosY );
+
+	const float flPulse = ( sinf( (float)ImGui::GetTime() * 4.f ) * 0.5f ) + 0.5f;
+	const ImU32 clrDot = IM_COL32( r, g, b, a );
+	const ImU32 clrGlow = IM_COL32( r, g, b, (int)( (float)a * flPulse ) );
+
+	ImGui::GetWindowDrawList()->AddCircleFilled( vecPos, flRadius, clrGlow );
+	ImGui::GetWindowDrawList()->AddCircleFilled( vecPos, flRadius / 1.5f, clrDot );
 }
 
 //-----------------------------------------------------------------------------
@@ -2151,9 +2195,9 @@ void CMenuModule::OnConfigSave( const char *pszFilename, bool bShaderConfig )
 //-----------------------------------------------------------------------------
 
 CMenuModule::CMenuModule() : m_MenuConVarBinds( 63, m_Functor, m_Functor )
-#ifdef IMGUI_USE_SDL
+						#ifdef IMGUI_USE_SDL
 							, m_MapKeysWinAPIToSDL( 15 ), m_MapKeysSDLToWinAPI( 15 )
-#endif
+						#endif
 {
 	m_bOpened = false;
 	m_bThemeLoaded = false;
@@ -2163,6 +2207,7 @@ CMenuModule::CMenuModule() : m_MenuConVarBinds( 63, m_Functor, m_Functor )
 	m_flCloseTime = -1.f;
 
 	m_pCfgMenuKey = NULL;
+	m_pCfgMenuUnloadKey = NULL;
 	m_pCfgMenuOpacity = NULL;
 	m_pCfgMenuFont = NULL;
 	m_pCfgMenuTheme = NULL;
@@ -2177,6 +2222,9 @@ CMenuModule::CMenuModule() : m_MenuConVarBinds( 63, m_Functor, m_Functor )
 	m_pCfgMenuRainbowAlpha = NULL;
 
 	memset( &m_CustomThemeVars, 0, sizeof( menu_custom_theme_vars ) );
+
+	m_pszChangelog = NULL;
+	m_bUpdateAvailable = false;
 
 	m_pFont = NULL;
 	m_pFontL4D = NULL;
@@ -2299,8 +2347,10 @@ void CMenuModule::InitConfigProperties( void )
 	int defaultTheme = 0;
 
 	m_pCfgMenuKey = Modules::config->AddProperty<int>( "Settings", "MenuButton", VK_INSERT );
+	m_pCfgMenuUnloadKey = Modules::config->AddProperty<int>( "Settings", "UnloadButton", VK_RCONTROL );
 
 	m_pCfgMenuKey->SetRadix( 16 );
+	m_pCfgMenuUnloadKey->SetRadix( 16 );
 
 	m_pCfgMenuHide = Modules::config->AddProperty( "Settings", "MenuHide", true );
 	m_pCfgMenuOpacity = Modules::config->AddProperty( "Settings", "MenuOpacity", 1.f );
@@ -2363,6 +2413,11 @@ bool CMenuModule::Init( void )
 void CMenuModule::Shutdown( void )
 {
 	Modules::config->UnregisterListener( this );
+
+	if ( m_pszChangelog != NULL )
+	{
+		MemFree( m_pszChangelog );
+	}
 
 #ifndef IMGUI_USE_SDL
 	if ( m_hGameWnd != NULL && m_hGameWndProc != NULL )

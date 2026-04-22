@@ -11,7 +11,7 @@
 #include "config.h"
 
 #ifdef WIN32
-//#define IMGUI_USE_SDL
+#define IMGUI_USE_SDL
 #endif
 #define IMGUI_USE_GL3 ( 1 )
 
@@ -480,6 +480,13 @@ public:
 #endif
 
 	int				GetVirtualKey( int iWinApiOrSdl, bool bSDL = true );
+	inline int		GetUnloadKey( void ) const { return m_pCfgMenuUnloadKey->GetInt(); }
+
+	inline void		FeedChangelog( char *pszChangelog )
+	{
+		m_pszChangelog = pszChangelog;
+		m_bUpdateAvailable = ( pszChangelog != NULL );
+	}
 
 	inline Vector	&GetFrozenCameraAngles( void ) { return m_va; }
 	void			KeepCameraFrozen( void );
@@ -505,6 +512,7 @@ private:
 	void			DrawCustomizableTheme( void );
 	void			DrawCustomizableRainbowColor( void );
 	void			DrawMiscInfo( void );
+	void			DrawIndicatingDot( float flAnchorX, float flAnchorY, float flRadius, int r, int g, int b, int a );
 
 	void			UpdateRainbow( void );
 	void			UpdateConfigs( void );
@@ -582,6 +590,7 @@ private:
 	float			m_flCloseTime;
 
 	CConfigProperty *m_pCfgMenuKey;
+	CConfigProperty *m_pCfgMenuUnloadKey;
 	CConfigProperty *m_pCfgMenuHide;
 	CConfigProperty *m_pCfgMenuOpacity;
 	CConfigProperty *m_pCfgMenuFont;
@@ -614,6 +623,9 @@ private:
 	CHashTable<int, int> m_MapKeysWinAPIToSDL;
 	CHashTable<int, int> m_MapKeysSDLToWinAPI;
 #endif
+
+	char *m_pszChangelog;
+	bool m_bUpdateAvailable;
 
 	std::vector<CMenuCategory> m_categories;
 
