@@ -5,38 +5,41 @@ Supported versions of the game: 5.26, 5.25 and 5.11
 
 Power of Speedrun Tools provided by that mod:
 https://youtu.be/QTiYMgazPjE?si=bmS2X2IYqXBer270
+
 https://youtu.be/XsKlNMPGTls?si=Z-0XybjmiOnNJvV8
+
 https://youtu.be/h59zz0tma4U?si=um7QOgV7PSSO6dd6
 
 ## Installation
 1. Download the release archive for your OS (Windows/Linux)
 2. Extract the archive to the game’s root folder
-3. Launch the game with the -insecure parameter (just for safe)
+3. Launch the game with the `-insecure` parameter (just for safe)
 4. Injection
 
 4.1 **Windows**
 Use any DLL injector to inject library `svenint.dll`
 
-4.2 **Linux** (Ubuntu at least)
-Run the script `./load` with sudo, it will automatically inject library `libsvenint.so`.
+4.2 **Linux** (Debian/Ubuntu at least)
+Run the script `sudo bash ./load` with sudo, it will automatically inject library `libsvenint.so`.
 Note: sometimes load of SvenInt may fail because of incorrect reading of file `gamedata.txt`, in this case restart the game and repeat the injection. To check why SvenInt may not load, go to the root folder of the game, here you will find the logs file `svenint.log`
-**Important:** in Linux, by default, enabled feature named `Ignore Unicode` (category Visual) that replaces all Unicode/UTF characters with spaces, it's needed if your game does support ASCII only, disable the feature if you can see (not using SvenInt) Unicode characters
+
+**Important:** by default, in Linux enabled the feature named `Ignore Unicode` (category Visual), it replaces all Unicode/UTF characters with spaces, it's needed if your game does support ASCII only, disable the feature if you can see Unicode characters not using SvenInt
 
 ## Gamedata
 SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `./svenint/gamedata.txt`, any update of this mod means that you should consider updating your `gamedata.txt`
 
 ## Fixing possible issues
 * Disable shaders (via launch option or menu) in case your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
-* Disable Models Downloader feature in case you experience crashes from time to time
-* If you have bugged sounds on a specified server then you have to follow this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of the server
-* On Linux, consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected
+* If you have bugged sounds on a specified server, go to this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of a server
+* On Linux, consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected or some features fail to load (i.e. Wallhack & Chams)
+* When parsing of some .txt files fails (i.e. gamedata.txt) on Linux, change their new lines sequence to LF
 
 ## Features
 * **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
-* **Movement:** Air Run, Auto Jump, Auto Ceil-Clipping, Auto Edgejump, Fastrun, Auto Jumpbug, Auto Selfsink, Auto Strafer, Auto Wallstrafe, Use Key (Change the slowdown cap when holding +use input)
+* **Movement:** Air Run, Auto Climb, Auto Jump, Auto Ceil-Clipping, Auto Edgejump, Fastrun, Auto Jumpbug, Auto Selfsink, Auto Strafer, Auto Wallstrafe, Use Key (Change the slowdown cap when holding +use input)
 * **HUD:** Chat Colors, Chat History (Source-like), Grenade Timer, Remap Colors, Speedometer (BXT), Custom Vote Popup
-* **Visual:** Crosshair, ESP, Friends List, Hit Markers, Ignore Unicode (Linux-only), No Fade, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Radar
-* **Render:** BSP, Chams / Glow, Draw Entities, Fog, Frame Skipper, Lightmap, Models Replacement, Skybox Replacement, Viewmodel Tweaks, Wallhack
+* **Visual:** Crosshair, ESP, Friends List, Hit Markers, Ignore Unicode (Linux-only), Inputs, No Fade, No MOTD, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Radar
+* **Render:** Bobbing, BSP, Chams / Glow, Draw Entities, Fog, Frame Skipper, Lightmap, Models Replacement, Skybox Replacement, Smoke Simulation, Viewmodel Tweaks, Wallhack
 * **Exploit:** Action Burst, Air Stuck, Fake Lag
 * **Misc:** Anti Slowhack, Anti Sound Spam (Studio Events), Bypass Cvar Query, Game Patches (Tertiary Attack Glitch / Unlock 31 FPS at map loading), Ignore Different Map Versions, Models Downloader (Autodownload missing player models), Mute Manager (Useless since 5.26), No Sleep (When the game is minimized), Private Chat (Encrypted messages, use chat command: /pm your text goes next), Soundcache (Saves downloaded soundcache to enter the server faster), Votebot
 * **Speedrun Tools:** HUD, Landing Prediction, Legit Mode, Player Hulls Visualization, Revive Area Visualization, Revive Boost Info, Revive Info, Timer, Timescale, Usables Visualization
@@ -46,7 +49,7 @@ SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `.
 
 ### Console Variables/Commands
 Type in the console the following command: `sc_print_cvars all`.
-The command above will print information about each ConVar/ConCommand that belongs to the mod. Use the console command `help <cvarname>` to get detailed information about the given cvar/cmd.
+The command will print information about each ConVar/ConCommand that belongs to the mod. Use the console command `sc_help <cvarname>` to get detailed information about a given cvar/cmd.
 
 For example, you can bind auto jump feature: 'bind F3 sc_autojump'
 
@@ -77,5 +80,5 @@ sudo apt-get install -y cmake gcc g++ gcc-multilib g++-multilib libglu1-mesa-dev
 ```
 2. Build the project in Release configuration
 ```
-./build_linux
+sudo bash ./build_linux
 ```
