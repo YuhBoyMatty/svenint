@@ -861,7 +861,7 @@ void CMuteManager::PostLoad( void )
 	m_hCVoiceStatus__UpdateServerState = Detours()->DetourFunction( m_pfnCVoiceStatus__UpdateServerState, HOOKED_CVoiceStatus__UpdateServerState, GET_FUNC_PTR( ORIG_CVoiceStatus__UpdateServerState ) );
 	m_hHACK_GetPlayerUniqueID = Detours()->DetourFunction( m_pfnHACK_GetPlayerUniqueID, HOOKED_HACK_GetPlayerUniqueID, GET_FUNC_PTR( ORIG_HACK_GetPlayerUniqueID ) );
 
-	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText );
+	m_hUserMsgHook_SayText = gamehooks->HookUserMessage( "SayText", UserMsgHook_SayText, &ORIG_UserMsgHook_SayText, kDetourPriorityHigh );
 
 	cvar->RegisterConCommand( &EXPAND_CON_COMMAND( imm_mute_voice ) );
 	cvar->RegisterConCommand( &EXPAND_CON_COMMAND( imm_mute_chat ) );

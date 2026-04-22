@@ -259,7 +259,7 @@ static int UserMsgHook_TextMsg( const char *pszUserMsg, int iSize, void *pBuffer
 void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src )
 {
 	// Check for muted player
-	if ( client > 0 )
+	/*if ( client > 0 )
 	{
 		const char *pszLevelName = cl_enginefuncs->pfnGetLevelName();
 		cl_entity_t *pLocal = cl_enginefuncs->GetLocalPlayer();
@@ -268,7 +268,7 @@ void CChatHistory::OnReceiveMessage( int client, const char *pszMessage, int src
 		{
 			// TODO
 		}
-	}
+	}*/
 
 	bool bFoundNewlineChar = false;
 	char *pszNewlineChar = const_cast<char *>( pszMessage );
