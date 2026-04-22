@@ -140,6 +140,7 @@ set(SVENINT_SOURCE_FILES
 	features/misc_soundcache.cpp
 	features/misc_votebot.cpp
 	features/mov_airrun.cpp
+	features/mov_autoclimb.cpp
 	features/mov_autojump.cpp
 	features/mov_ceilclip.cpp
 	features/mov_ducktap.cpp
@@ -168,6 +169,7 @@ set(SVENINT_SOURCE_FILES
 	features/player_spinner.cpp
 	features/player_stick.cpp
 	features/player_thirdperson.cpp
+	features/r_bobbing.cpp
 	features/r_bsp.cpp
 	features/r_chams.cpp
 	features/r_drawing.cpp
@@ -178,6 +180,7 @@ set(SVENINT_SOURCE_FILES
 	features/r_lightmap.cpp
 	features/r_models_replacement.cpp
 	features/r_skybox.cpp
+	features/r_smoke_simulation.cpp
 	features/r_viewmodel_tweaks.cpp
 	features/r_wallhack.cpp
 	features/shader_bloom.cpp
@@ -205,7 +208,9 @@ set(SVENINT_SOURCE_FILES
 	features/visual_esp.cpp
 	features/visual_friends.cpp
 	features/visual_hitmarkers.cpp
+	features/visual_inputs.cpp
 	features/visual_nofade.cpp
+	features/visual_nomotd.cpp
 	features/visual_noshake.cpp
 	features/visual_noviewentity.cpp
 	features/visual_player_push_direction.cpp

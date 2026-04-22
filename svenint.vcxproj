@@ -111,6 +111,7 @@
     <ClInclude Include="features\misc_antisoundspam.h" />
     <ClInclude Include="features\misc_bypass_cvar_query.h" />
     <ClInclude Include="features\misc_chatsounds.h" />
+    <ClInclude Include="features\misc_chat_logger.h" />
     <ClInclude Include="features\misc_clientmenu.h" />
     <ClInclude Include="features\misc_demo_capture.h" />
     <ClInclude Include="features\misc_demo_message.h" />
@@ -127,6 +128,7 @@
     <ClInclude Include="features\misc_soundcache.h" />
     <ClInclude Include="features\misc_votebot.h" />
     <ClInclude Include="features\mov_airrun.h" />
+    <ClInclude Include="features\mov_autoclimb.h" />
     <ClInclude Include="features\mov_autojump.h" />
     <ClInclude Include="features\mov_ceilclip.h" />
     <ClInclude Include="features\mov_ducktap.h" />
@@ -157,6 +159,7 @@
     <ClInclude Include="features\player_spinner.h" />
     <ClInclude Include="features\player_stick.h" />
     <ClInclude Include="features\player_thirdperson.h" />
+    <ClInclude Include="features\r_bobbing.h" />
     <ClInclude Include="features\r_bsp.h" />
     <ClInclude Include="features\r_chams.h" />
     <ClInclude Include="features\r_drawing.h" />
@@ -167,6 +170,7 @@
     <ClInclude Include="features\r_lightmap.h" />
     <ClInclude Include="features\r_models_replacement.h" />
     <ClInclude Include="features\r_skybox.h" />
+    <ClInclude Include="features\r_smoke_simulation.h" />
     <ClInclude Include="features\r_viewmodel_tweaks.h" />
     <ClInclude Include="features\r_wallhack.h" />
     <ClInclude Include="features\shader_bloom.h" />
@@ -195,7 +199,9 @@
     <ClInclude Include="features\visual_friends.h" />
     <ClInclude Include="features\visual_hitmarkers.h" />
     <ClInclude Include="features\visual_ignore_unicode.h" />
+    <ClInclude Include="features\visual_inputs.h" />
     <ClInclude Include="features\visual_nofade.h" />
+    <ClInclude Include="features\visual_nomotd.h" />
     <ClInclude Include="features\visual_noshake.h" />
     <ClInclude Include="features\visual_noviewentity.h" />
     <ClInclude Include="features\visual_player_push_direction.h" />
@@ -343,6 +349,7 @@
     <ClCompile Include="features\misc_antisoundspam.cpp" />
     <ClCompile Include="features\misc_bypass_cvar_query.cpp" />
     <ClCompile Include="features\misc_chatsounds.cpp" />
+    <ClCompile Include="features\misc_chat_logger.cpp" />
     <ClCompile Include="features\misc_clientmenu.cpp" />
     <ClCompile Include="features\misc_demo_capture.cpp" />
     <ClCompile Include="features\misc_demo_message.cpp" />
@@ -359,6 +366,7 @@
     <ClCompile Include="features\misc_soundcache.cpp" />
     <ClCompile Include="features\misc_votebot.cpp" />
     <ClCompile Include="features\mov_airrun.cpp" />
+    <ClCompile Include="features\mov_autoclimb.cpp" />
     <ClCompile Include="features\mov_autojump.cpp" />
     <ClCompile Include="features\mov_ceilclip.cpp" />
     <ClCompile Include="features\mov_ducktap.cpp" />
@@ -389,6 +397,7 @@
     <ClCompile Include="features\player_spinner.cpp" />
     <ClCompile Include="features\player_stick.cpp" />
     <ClCompile Include="features\player_thirdperson.cpp" />
+    <ClCompile Include="features\r_bobbing.cpp" />
     <ClCompile Include="features\r_bsp.cpp" />
     <ClCompile Include="features\r_chams.cpp" />
     <ClCompile Include="features\r_drawing.cpp" />
@@ -399,6 +408,7 @@
     <ClCompile Include="features\r_lightmap.cpp" />
     <ClCompile Include="features\r_models_replacement.cpp" />
     <ClCompile Include="features\r_skybox.cpp" />
+    <ClCompile Include="features\r_smoke_simulation.cpp" />
     <ClCompile Include="features\r_viewmodel_tweaks.cpp" />
     <ClCompile Include="features\r_wallhack.cpp" />
     <ClCompile Include="features\shader_bloom.cpp" />
@@ -427,7 +437,9 @@
     <ClCompile Include="features\visual_friends.cpp" />
     <ClCompile Include="features\visual_hitmarkers.cpp" />
     <ClCompile Include="features\visual_ignore_unicode.cpp" />
+    <ClCompile Include="features\visual_inputs.cpp" />
     <ClCompile Include="features\visual_nofade.cpp" />
+    <ClCompile Include="features\visual_nomotd.cpp" />
     <ClCompile Include="features\visual_noshake.cpp" />
     <ClCompile Include="features\visual_noviewentity.cpp" />
     <ClCompile Include="features\visual_player_push_direction.cpp" />

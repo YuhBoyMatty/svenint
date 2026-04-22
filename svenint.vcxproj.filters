@@ -604,6 +604,24 @@
     <ClCompile Include="features\misc_antislowhack.cpp">
       <Filter>features\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="features\misc_chat_logger.cpp">
+      <Filter>features\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="features\mov_autoclimb.cpp">
+      <Filter>features\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_nomotd.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_bobbing.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="features\visual_inputs.cpp">
+      <Filter>features\Visual</Filter>
+    </ClCompile>
+    <ClCompile Include="features\r_smoke_simulation.cpp">
+      <Filter>features\Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1286,6 +1304,24 @@
     </ClInclude>
     <ClInclude Include="features\misc_antislowhack.h">
       <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\misc_chat_logger.h">
+      <Filter>features\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="features\mov_autoclimb.h">
+      <Filter>features\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_nomotd.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_bobbing.h">
+      <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\visual_inputs.h">
+      <Filter>features\Visual</Filter>
+    </ClInclude>
+    <ClInclude Include="features\r_smoke_simulation.h">
+      <Filter>features\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
