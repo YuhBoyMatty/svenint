@@ -47,7 +47,8 @@
 #define REG_GETTER( ) { "__index", ScriptFunc_MetaMethod_index },
 #define REG_SETTER( ) { "__newindex", ScriptFunc_MetaMethod_newindex },
 
-#define VLuaTypeOf(s, m) VLuaDeduceValueFieldType(((s*)0)->m)
+//#define VLuaTypeOf(s, m) VLuaDeduceValueFieldType(((s*)0)->m)
+#define VLuaTypeOf(s, m) __VLuaTypeOf(&s::m)
 #define VLuaOffsetOf(s, m) ((int)&reinterpret_cast<char const volatile&>((((s*)0)->m)))
 #define VLuaSizeOf(s, m) (int)sizeof(s::m)
 #define VLuaPropertyDesc(s, m) { VLuaTypeOf(s, m), VLuaOffsetOf(s, m), VLuaSizeOf(s, m), false }
@@ -62,6 +63,7 @@
 
 template <typename T> struct VLuaFieldTypeDeducer { };
 template <typename T> inline constexpr int VLuaDeduceValueFieldType( T value ) { return VLuaFieldTypeDeducer<T>::VLUA_FIELD_TYPE; }
+template <typename T> inline constexpr int VLuaDeduceValueFieldType( void ) { return VLuaFieldTypeDeducer<T>::VLUA_FIELD_TYPE; }
 
 //-----------------------------------------------------------------------------
 // Types
@@ -151,6 +153,16 @@ VLUA_DECLARE_DEDUCE_FIELDTYPE( VLUA_FIELD_TYPE_PLAYERMOVE, playermove_t * );
 VLUA_DECLARE_DEDUCE_FIELDTYPE( VLUA_FIELD_TYPE_EDICT, edict_t * );
 VLUA_DECLARE_DEDUCE_FIELDTYPE( VLUA_FIELD_TYPE_ENTVARS, entvars_t * );
 VLUA_DECLARE_DEDUCE_FIELDTYPE( VLUA_FIELD_TYPE_GLOBALVARS, globalvars_t * );
+
+//-----------------------------------------------------------------------------
+// Type of class' member
+//-----------------------------------------------------------------------------
+
+template <typename T, typename MemberType>
+inline constexpr int __VLuaTypeOf( MemberType T:: *member )
+{
+	return VLuaDeduceValueFieldType<MemberType>();
+}
 
 //-----------------------------------------------------------------------------
 // Structures

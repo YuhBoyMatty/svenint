@@ -35,7 +35,7 @@ static const Color clr_print( 80, 186, 255, 255 );
 //-----------------------------------------------------------------------------
 
 ConVar sc_enable_scripts( "sc_enable_scripts",
-					  #if defined(_DEBUG) || !defined(WIN32) // FIXME: game crash at VM startup
+					  #if !defined(WIN32) // FIXME: game crash at VM startup
 						  "0",
 					  #else
 						  "1",
