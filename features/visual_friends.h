@@ -38,6 +38,6 @@ private:
 	std::vector<uint64> m_friends;
 };
 
-EXTERN_FEATURE( CFriends, crosshair );
+EXTERN_FEATURE( CFriends, friends );
 
 #endif // SINT_FEATURE_FRIENDS_H
