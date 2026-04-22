@@ -298,6 +298,8 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_V_CalcRefdef, ref_params_t *pparams )
 
 DECLARE_FUNC( int, CALLCONV_CDECL, HOOKED_HUD_AddEntity, int type, cl_entity_t *ent, const char *modelname )
 {
+	PROF( "HUD_AddEntity" );
+
 	int visible = 0;
 
 	CREATE_HOOK_EVENT( kHUD_AddEntity_HookEvent );
@@ -361,8 +363,6 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_PostRunCmd, local_state_t *from, 
 	Modules::scripts->Callbacks()->OnGameFrame( Globals::cls->state, *Globals::host_frametime, true );
 
 	HOOK_EVENT_POST_CALL_CHAIN();
-
-	Features::inputmanager->GameFrame( true );
 }
 
 DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Demo_ReadBuffer, int size, unsigned const char *buffer )
@@ -380,6 +380,8 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_Demo_ReadBuffer, int size, unsigned c
 
 DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_HUD_Frame, double time )
 {
+	Features::inputmanager->GameFrame( true );
+
 	CREATE_HOOK_EVENT( kHUD_Frame_HookEvent );
 	HOOK_EVENT_PUSH_ARG( time );
 	HOOK_EVENT_CALL_CHAIN( HOOK_EVENT_NO_RETURN() )
@@ -535,8 +537,7 @@ DECLARE_FUNC( BOOL, WINAPI, HOOKED_SetCursorPos, int X, int Y )
 // wglSwapBuffers hook
 //-----------------------------------------------------------------------------
 
-#ifdef WIN32
-#ifndef IMGUI_USE_SDL
+#if defined(WIN32) && !defined(IMGUI_USE_SDL)
 DECLARE_FUNC( BOOL, APIENTRY, HOOKED_wglSwapBuffers, HDC hdc )
 {
 	PROF_SCOPE_BEGIN( "glSwapBuffers" );
@@ -551,7 +552,6 @@ DECLARE_FUNC( BOOL, APIENTRY, HOOKED_wglSwapBuffers, HDC hdc )
 
 	return ORIG_wglSwapBuffers( hdc );
 }
-#endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -644,7 +644,7 @@ DECLARE_FUNC( qboolean, CALLCONV_CDECL, HOOKED_Host_FilterTime, float time )
 	static bool bInitOnce = true;
 	if ( bInitOnce )
 	{
-		if ( !Globals::commandline->HasParm("-sint_noshaders") )
+		if ( !Globals::commandline->HasParm( "-sint_noshaders" ) )
 		{
 			Modules::opengl->Init();
 			LoadShaderFeatures();
