@@ -54,6 +54,7 @@ ConVar sc_im_autoplay( "sc_im_autoplay", "0", FCVAR_EXTDLL, "Automatically play 
 ConVar sc_im_exact( "sc_im_exact", "0", FCVAR_EXTDLL, "Set origin & velocity" );
 ConVar sc_im_goto_exact( "sc_im_goto_exact", "1", FCVAR_EXTDLL, "Set origin & velocity when forwarding / backwarding / goto" );
 ConVar sc_im_experimental( "sc_im_experimental", "0", FCVAR_EXTDLL, "Experimental recording" );
+ConVar sc_im_experimental_play_save( "sc_im_experimental_play_save", "0", FCVAR_EXTDLL, "Experimental recording, save into file all inputs during playback" );
 
 static void sc_im_record( const CCommand &args );
 static void command_wrapper__sc_im_record() { CCommand args( CVar()->ArgC(), CVar()->ArgV() ); sc_im_record( args ); } \
@@ -623,8 +624,6 @@ void CInputContext::RecordInput( float frametime, usercmd_t *cmd, int active )
 
 	if ( sc_im_experimental.GetBool() && m_pExperimental != NULL )
 	{
-		static char buffar[ 2048 ];
-
 		edict_t *pPlayer;
 
 		if ( Modules::server->Host_IsServerActive() &&
@@ -669,6 +668,18 @@ void CInputContext::PlaybackInput( float frametime, usercmd_t *cmd, int active )
 	cl_enginefuncs->SetViewAngles( va );
 
 	Modules::scripts->Callbacks()->OnPlayInput( m_sFileName.c_str(), m_iCurrentFrame + 1, cmd );
+
+	if ( sc_im_experimental_play_save.GetBool() && m_pExperimental != NULL )
+	{
+		edict_t *pPlayer;
+
+		if ( Modules::server->Host_IsServerActive() &&
+			 ( pPlayer = sv_enginefuncs->pfnPEntityOfEntIndex( playermove->player_index() + 1 ) ) != NULL )
+		{
+			fprintf( m_pExperimental, "%d:%.3f %.3f %.3f:%.3f %.3f %.3f:%.3f %.3f %.3f\n",
+					 cmd->buttons, VectorExpand( va ), VectorExpand( pPlayer->v.origin ), VectorExpand( pPlayer->v.velocity ) );
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -740,6 +751,9 @@ bool CInputManager::Playback( const char *pszFilename )
 	{
 		cl_enginefuncs->pfnClientCmd( m_InputContext.Frames()[ 0 ].commands );
 	}
+
+	if ( sc_im_experimental_play_save.GetBool() )
+		m_pExperimental = fopen( SVENINT_FOLDER_NAME "/input_manager/experimental.txt", "w" );
 
 	return true;
 }
@@ -1311,6 +1325,7 @@ void CInputManager::PostLoad( void )
 	FEATURE_REGISTER_CVAR( sc_im_exact );
 	FEATURE_REGISTER_CVAR( sc_im_goto_exact );
 	FEATURE_REGISTER_CVAR( sc_im_experimental );
+	FEATURE_REGISTER_CVAR( sc_im_experimental_play_save );
 	FEATURE_REGISTER_CCMD( sc_im_record_ );
 	FEATURE_REGISTER_CCMD( sc_im_play );
 	FEATURE_REGISTER_CCMD( sc_im_split );
@@ -1334,6 +1349,7 @@ void CInputManager::Unload( void )
 	FEATURE_UNREGISTER_CVAR( sc_im_exact );
 	FEATURE_UNREGISTER_CVAR( sc_im_goto_exact );
 	FEATURE_UNREGISTER_CVAR( sc_im_experimental );
+	FEATURE_UNREGISTER_CVAR( sc_im_experimental_play_save );
 	FEATURE_UNREGISTER_CCMD( sc_im_record_ );
 	FEATURE_UNREGISTER_CCMD( sc_im_play );
 	FEATURE_UNREGISTER_CCMD( sc_im_split );
