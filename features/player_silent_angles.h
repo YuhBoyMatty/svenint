@@ -35,22 +35,51 @@ public:
 	virtual void Unload( void ) override;
 
 public:
-	inline void SetAngles( const Vector &angles, int fAbortFlags = -1 )
+	inline bool SetAngles( const Vector &angles, int fAbortFlags = -1 )
 	{
+		if ( m_bLockAngles )
+			return false;
+
 		m_bSetAngles = true;
 		m_fAbortFlags = fAbortFlags;
 		m_vecAngles = angles;
+		return true;
 	}
 
+	inline void LockAngles( void ) // Lock angles so they can't be changed until next frame or you cancel them
+	{
+		m_bLockAngles = true;
+	}
+	
 	inline void Cancel( void )
 	{
 		m_bSetAngles = false;
+		m_bLockAngles = false;
 		m_fAbortFlags = -1;
 	}
 
 	inline bool IsSet( void ) const { return m_bSetAngles; }
-	inline void AddAngles( const Vector &angles ) { m_vecAngles += angles; }
-	inline void SubtractAngles( const Vector &angles ) { m_vecAngles -= angles; }
+	inline bool IsLocked( void ) const { return m_bLockAngles; }
+
+	inline bool AddAngles( const Vector &angles )
+	{
+		if ( m_bLockAngles )
+			return false;
+
+		m_vecAngles += angles;
+		return true;
+	}
+
+	inline bool SubtractAngles( const Vector &angles )
+	{
+		if ( m_bLockAngles )
+			return false;
+
+		m_vecAngles -= angles;
+		return true;
+	}
+
+	inline QAngle GetAngles( void ) { return m_vecAngles; }
 
 	bool CanSetAngles( usercmd_t *cmd, int fAbortFlags );
 	void Process( usercmd_t *cmd );
@@ -63,6 +92,7 @@ private:
 
 private:
 	bool m_bSetAngles;
+	bool m_bLockAngles;
 	int m_fAbortFlags;
 	float m_flPlayerModelPitch;
 	Vector m_vecAngles;

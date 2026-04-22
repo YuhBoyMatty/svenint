@@ -190,6 +190,7 @@ void CSilentAngles::Process( usercmd_t *cmd )
 	if ( !CanSetAngles( cmd, m_fAbortFlags ) )
 	{
 		m_bSetAngles = false;
+		m_bLockAngles = false;
 		m_bOverrideVirtualVA = false;
 		return;
 	}
@@ -294,7 +295,7 @@ bool CSilentAngles::CanSetAngles( usercmd_t *cmd, int fAbortFlags )
 		}
 	}
 
-	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_IN_WATER ) && localplayer->GetWaterLevel() > WL_FEET )
+	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_IN_WATER ) && localplayer->GetWaterLevel() > WL_FEET && !localplayer->GetVelocity().IsZeroFast() )
 		return false;
 
 	if ( ( fAbortFlags & SILENT_ANGLES_ABORT_USE ) && cmd->buttons & IN_USE )
@@ -320,6 +321,7 @@ CSilentAngles::CSilentAngles( const char *pszCategoryName, const char *pszName )
 {
 	m_bOverrideVirtualVA = false;
 	m_bSetAngles = false;
+	m_bLockAngles = false;
 	m_fAbortFlags = -1;
 	m_flPlayerModelPitch = 0.f;
 
