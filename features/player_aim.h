@@ -31,7 +31,7 @@ public:
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
 public:
-	void NoRecoil( usercmd_t *cmd );
+	bool NoRecoil( usercmd_t *cmd );
 	bool Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAnglesChanged );
 
 private:
@@ -66,11 +66,17 @@ private:
 	CMenuValueBool *m_pConsiderFOV;
 	CMenuValueFloat *m_pFOV;
 	CMenuValueFloat *m_pDistance;
+	CMenuValueFloat *m_pLimitFireRate;
 
 	CMenuValueBool *m_pNoRecoil;
 	CMenuValueBool *m_pNoRecoilVisual;
 
+	CMenuValueBool *m_pVisualizeFireDirection;
+	CMenuValueBool *m_pVisualizeAimbotTarget;
+
 	bool m_bChangeAnglesBack;
+	bool m_bAimbotFired;
+	float m_flAimbotLastFired;
 
 	Vector m_vecChangeAnglesTarget;
 	Vector m_vecTargetPoint;

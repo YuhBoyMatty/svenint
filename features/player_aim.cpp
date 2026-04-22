@@ -5,6 +5,7 @@
 #include "modules/scripts.h"
 #include "player_aim.h"
 #include "player_silent_angles.h"
+#include "r_draw_context.h"
 
 using namespace Globals;
 
@@ -51,7 +52,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 
 	bAnglesChanged = false;
 
-	if ( iMode == 0 || iMode >= 2 && !Features::silentangles->CanSetAngles( cmd, fAbortFlags ) )
+	if ( iMode == 0 || iMode >= 2 && !Features::silentangles->CanSetAngles( cmd, fAbortFlags ) && !Features::silentangles->IsLocked() )
 		return false;
 
 	WEAPON *pWeapon;
@@ -60,6 +61,9 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 
 	// We're dead
 	if ( localplayer->IsDead() )
+		return false;
+
+	if ( m_pLimitFireRate->GetFloat() > 0.f && m_flAimbotLastFired + m_pLimitFireRate->GetFloat() > cl_enginefuncs->GetClientTime() )
 		return false;
 
 	if ( !bUsingMountedGun )
@@ -99,7 +103,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 			if ( pTarget == NULL )
 				return false;
 
-			Vector vecTargetPoint = m_vecTargetPoint + pTarget->m_vecVelocity;
+			Vector vecTargetPoint = m_vecTargetPoint;
 			Vector vecDir = vecTargetPoint - localplayer->GetEyePosition();
 
 			Vector vAngles;
@@ -128,7 +132,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 			if ( pTarget == NULL || !IsTargetCanBeHurted( (EEntityClassID)pTarget->m_classInfo.id, iWeaponID ) )
 				return false;
 			
-			Vector vecTargetPoint = m_vecTargetPoint + pTarget->m_vecVelocity;
+			Vector vecTargetPoint = m_vecTargetPoint;
 			Vector vecDir = vecTargetPoint - localplayer->GetEyePosition();
 
 			if ( bStillFiring )
@@ -179,7 +183,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 			if ( pTarget == NULL )
 				return false;
 			
-			Vector vecTargetPoint = m_vecTargetPoint + pTarget->m_vecVelocity;
+			Vector vecTargetPoint = m_vecTargetPoint;
 			Vector vecDir = vecTargetPoint - localplayer->GetEyePosition();
 
 			Vector vAngles;
@@ -210,7 +214,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 			if ( pTarget == NULL || !IsTargetCanBeHurted( (EEntityClassID)pTarget->m_classInfo.id, iWeaponID ) )
 				return false;
 			
-			Vector vecTargetPoint = m_vecTargetPoint + pTarget->m_vecVelocity;
+			Vector vecTargetPoint = m_vecTargetPoint;
 			Vector vecDir = vecTargetPoint - localplayer->GetEyePosition();
 
 			float flDistance = vecDir.Length();
@@ -248,47 +252,50 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 // No recoil
 //-----------------------------------------------------------------------------
 
-void CAim::NoRecoil( usercmd_t *cmd )
+bool CAim::NoRecoil( usercmd_t *cmd )
 {
 	if ( !m_pNoRecoil->GetBool() )
-		return;
+		return false;
 
-	if ( localplayer->IsDead() )
-		return;
-
-	if ( !localplayer->HasWeapon() )
-		return;
-
-	if ( !localplayer->CanAttack() )
-		return;
-
-	if ( clientweapon->IsReloading() )
-		return;
-
-	if ( cmd->buttons & IN_ATTACK )
+	if ( !m_bAimbotFired )
 	{
-		if ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanPrimaryAttack() ) )
-		{
-			Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
+		if ( localplayer->IsDead() )
+			return false;
 
-			if ( Features::silentangles->IsSet() )
-				Features::silentangles->SubtractAngles( vecNoRecoil );
-			else
-				cmd->viewangles -= vecNoRecoil;
-		}
+		if ( !localplayer->HasWeapon() )
+			return false;
+
+		if ( !localplayer->CanAttack() )
+			return false;
+
+		if ( clientweapon->IsReloading() )
+			return false;
 	}
-	else if ( cmd->buttons & IN_ATTACK2 )
+
+	if ( m_bAimbotFired || ( cmd->buttons & IN_ATTACK ) && ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanPrimaryAttack() ) ) )
 	{
-		if ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanSecondaryAttack() ) )
-		{
-			Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
+		Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
 
-			if ( Features::silentangles->IsSet() )
-				Features::silentangles->SubtractAngles( vecNoRecoil );
-			else
-				cmd->viewangles -= vecNoRecoil;
-		}
+		if ( Features::silentangles->IsSet() )
+			Features::silentangles->SubtractAngles( vecNoRecoil );
+		else
+			cmd->viewangles -= vecNoRecoil;
+
+		return true;
 	}
+	else if ( m_bAimbotFired || ( cmd->buttons & IN_ATTACK2 ) && ( clientweapon->IsCustom() || ( !clientweapon->IsCustom() && clientweapon->CanSecondaryAttack() ) ) )
+	{
+		Vector vecNoRecoil = m_vecPunchAngle + m_vecEvPunchAngle;
+
+		if ( Features::silentangles->IsSet() )
+			Features::silentangles->SubtractAngles( vecNoRecoil );
+		else
+			cmd->viewangles -= vecNoRecoil;
+
+		return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -589,7 +596,7 @@ bool CAim::IsStillFiring( int iWeaponID, usercmd_t *cmd )
 CEntity *CAim::FindBestTarget( void )
 {
 	Vector va;
-	Vector vForward;
+	Vector vecForward;
 
 	std::vector<unsigned char> vHitboxes;
 
@@ -605,7 +612,7 @@ CEntity *CAim::FindBestTarget( void )
 	if ( m_pConsiderFOV->GetBool() )
 	{
 		cl_enginefuncs->GetViewAngles( va );
-		AngleVectors( va, &vForward, NULL, NULL );
+		AngleVectors( va, &vecForward, NULL, NULL );
 	}
 
 	for ( register int i = 1; i <= Features::entitylist->GetMaxEntities(); i++ )
@@ -645,7 +652,7 @@ CEntity *CAim::FindBestTarget( void )
 
 		if ( m_pConsiderFOV->GetBool() )
 		{
-			const float angle = VEC_RAD2DEG( acosf( vForward.Dot( ( vecTargetPoint - vecEyes ).Normalize() ) ) );
+			const float angle = VEC_RAD2DEG( acosf( vecForward.Dot( ( vecTargetPoint - vecEyes ).Normalize() ) ) );
 
 			if ( angle > m_pFOV->GetFloat() )
 				continue;
@@ -653,8 +660,11 @@ CEntity *CAim::FindBestTarget( void )
 
 		extra_class_info_t &extra_info = Features::entitylist->GetExtraEntityClassInfo( (EEntityClassID)ent.m_classInfo.id );
 
-		if ( std::binary_search( extra_info.sequence_dead.begin(), extra_info.sequence_dead.end(), (unsigned char)ent.m_pEntity->curstate.sequence ) )
+		if ( !extra_info.sequence_dead.empty() &&
+			 std::binary_search( extra_info.sequence_dead.begin(), extra_info.sequence_dead.end(), (unsigned char)ent.m_pEntity->curstate.sequence ) )
+		{
 			continue;
+		}
 
 		vHitboxes.clear();
 
@@ -745,7 +755,12 @@ void CAim::DirectionToAngles( Vector &vecDir, Vector &vecAngles )
 
 EHookResult CAim::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
-	if ( pEvent->GetType() == kV_CalcRefdef_HookEvent )
+	if ( pEvent->GetType() == kHUD_VidInit_HookEvent )
+	{
+		m_flAimbotLastFired = -1.f;
+		return kHookContinue;
+	}
+	else if ( pEvent->GetType() == kV_CalcRefdef_HookEvent )
 	{
 		auto pparams = pEvent->GetArg<ref_params_t *>( "pparams" );
 		if ( bPostCall )
@@ -768,6 +783,8 @@ EHookResult CAim::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		return kHookContinue;
 	}
 
+	m_bAimbotFired = false;
+
 	bool bAnglesChanged = false;
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
 
@@ -779,8 +796,43 @@ EHookResult CAim::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		m_bChangeAnglesBack = false;
 	}
 
-	Aimbot( cmd, m_pAimbotMode->GetInt(), m_pAimChangeCameraBack->GetBool(), bAnglesChanged);
-	NoRecoil( cmd );
+	m_bAimbotFired = Aimbot( cmd, m_pAimbotMode->GetInt(), m_pAimChangeCameraBack->GetBool(), bAnglesChanged );
+	if ( m_bAimbotFired )
+	{
+		m_flAimbotLastFired = cl_enginefuncs->GetClientTime();
+	}
+
+	const bool bRecoilCompensated = NoRecoil( cmd );
+
+	if ( m_bAimbotFired || bRecoilCompensated )
+	{
+		if ( m_pVisualizeFireDirection->GetBool() )
+		{
+			Color clr( 1.f, 1.f, 0.f, 1.f );
+
+			Vector vecStart = localplayer->GetEyePosition();
+			QAngle vecAngles = Features::silentangles->IsSet() ? Features::silentangles->GetAngles() : static_cast<QAngle>( cmd->viewangles );
+
+			pmtrace_s *trace = cl_enginefuncs->PM_TraceLine( vecStart,
+															 vecStart + vecAngles.GetForward() * 8192.f,
+															 PM_NORMAL,
+															 PM_HULL_POINT,
+															 -1 );
+
+			CDrawBoxNoDepthBuffer *pDrawContext = new CDrawBoxNoDepthBuffer( trace->endpos, Vector( -4.f, -4.f, -4.f ), Vector( 4.f, 4.f, 4.f ), clr );
+			Features::drawcontext->AddDrawContext( pDrawContext, 0.1f );
+
+			Features::drawcontext->DrawLine( vecStart, trace->endpos, clr, 12.f, 0.1f );
+		}
+
+		if ( m_bAimbotFired && m_pVisualizeAimbotTarget->GetBool() )
+		{
+			Color clr( 0.f, 1.f, 0.f, 1.f );
+
+			CDrawBoxNoDepthBuffer *pDrawContext = new CDrawBoxNoDepthBuffer( m_vecTargetPoint, Vector( -4.f, -4.f, -4.f ), Vector( 4.f, 4.f, 4.f ), clr );
+			Features::drawcontext->AddDrawContext( pDrawContext, 0.1f );
+		}
+	}
 
 	return kHookContinue;
 }
@@ -805,11 +857,18 @@ CAim::CAim( const char *pszCategoryName, const char *pszName ) : CBaseFeature( p
 	m_pConsiderFOV = NULL;
 	m_pFOV = NULL;
 	m_pDistance = NULL;
+	m_pLimitFireRate = NULL;
 
 	m_pNoRecoil = NULL;
 	m_pNoRecoilVisual = NULL;
 
+	m_pVisualizeFireDirection = NULL;
+	m_pVisualizeAimbotTarget = NULL;
+
 	m_bChangeAnglesBack = false;
+	m_bAimbotFired = false;
+	m_flAimbotLastFired = -1.f;
+
 	ev_punchangle = NULL;
 }
 
@@ -820,6 +879,7 @@ CAim::CAim( const char *pszCategoryName, const char *pszName ) : CBaseFeature( p
 void CAim::OnEnable( void )
 {
 	hookevents->RegisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall, kHookPriorityLow );
+	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->RegisterListener( this, kV_CalcRefdef_HookEvent );
 	hookevents->RegisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 }
@@ -831,6 +891,7 @@ void CAim::OnEnable( void )
 void CAim::OnDisable( void )
 {
 	hookevents->UnregisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
+	hookevents->UnregisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->UnregisterListener( this, kV_CalcRefdef_HookEvent );
 	hookevents->UnregisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 }
@@ -857,11 +918,17 @@ bool CAim::Load( void )
 	m_pConsiderFOV = Modules::menu->AddParamBool( this, "ConsiderFOV", NULL, false );
 	m_pFOV = Modules::menu->AddParamFloat( this, "FOV", NULL, 90.f, 0.f, 180.f );
 	m_pDistance = Modules::menu->AddParamFloat( this, "Distance", NULL, 2048.f, 1.f, 8192.f );
+	m_pLimitFireRate = Modules::menu->AddParamFloat( this, "LimitFireRate", NULL, 0.f, 0.f, 0.5f );
 
 	Modules::menu->AddElementSeparator( this, "Recoil" );
 
 	m_pNoRecoil = Modules::menu->AddParamBool( this, "NoRecoil", NULL, true );
 	m_pNoRecoilVisual = Modules::menu->AddParamBool( this, "NoRecoilVisual", NULL, false );
+
+	Modules::menu->AddElementSeparator( this, "Visualization" );
+
+	m_pVisualizeFireDirection = Modules::menu->AddParamBool( this, "FireDirection", NULL, false );
+	m_pVisualizeAimbotTarget = Modules::menu->AddParamBool( this, "AimbotTarget", NULL, false );
 
 	bool bOK = true;
 
