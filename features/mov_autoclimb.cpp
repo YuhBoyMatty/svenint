@@ -48,7 +48,7 @@ EHookResult CAutoLadderClimb::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	Vector va, vecClimbAngles;
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
 
-	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT | IN_RUN ) )
+	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT | IN_USE ) )
 		return kHookContinue;
 
 	cl_enginefuncs->GetViewAngles( va );
