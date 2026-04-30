@@ -4,6 +4,7 @@ A mod for Sven Co-op that improves gameplay.
 Supported versions of the game: 5.26, 5.25 and 5.11
 
 Power of Speedrun Tools provided by that mod:
+
 https://youtu.be/QTiYMgazPjE?si=bmS2X2IYqXBer270
 
 https://youtu.be/XsKlNMPGTls?si=Z-0XybjmiOnNJvV8
@@ -25,14 +26,17 @@ Note: sometimes load of SvenInt may fail because of incorrect reading of file `g
 
 **Important:** by default, in Linux enabled the feature named `Ignore Unicode` (category Visual), it replaces all Unicode/UTF characters with spaces, it's needed if your game does support ASCII only, disable the feature if you can see Unicode characters not using SvenInt
 
+5. Press Insert
+
 ## Gamedata
 SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `./svenint/gamedata.txt`, any update of this mod means that you should consider updating your `gamedata.txt`
 
 ## Fixing possible issues
 * Disable shaders (via launch option or menu) in case your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
 * If you have bugged sounds on a specified server, go to this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of a server
-* On Linux, consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected or some features fail to load (i.e. Wallhack & Chams)
-* When parsing of some .txt files fails (i.e. gamedata.txt) on Linux, change their new lines sequence to LF
+* (Windows) If menu doesn't react to your actions, try to inject `svenint-sdl2.dll`
+* (Linux) Consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected or some features fail to load (i.e. Wallhack & Chams)
+* (Linux) When parsing of some .txt files fails (i.e. gamedata.txt), change their new lines sequence to LF
 
 ## Features
 * **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
