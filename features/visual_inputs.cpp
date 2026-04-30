@@ -25,7 +25,7 @@ EXPOSE_FEATURE_SINGLETON( CInputs, inputs, "Visual", "Inputs" );
 EHookResult CInputs::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
 	// VGuiClientPanelPaint event
-	if ( refparams->cmd == NULL || Features::camhack->IsEnabled() )
+	if ( refparams->cmd == NULL || Features::camhack->IsEnabled() || localplayer->IsSpectating() )
 		return kHookContinue;
 
 	int width, height;
