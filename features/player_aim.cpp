@@ -52,7 +52,7 @@ bool CAim::Aimbot( usercmd_t *cmd, int iMode, bool bChangeAnglesBack, bool &bAng
 
 	bAnglesChanged = false;
 
-	if ( iMode == 0 || iMode >= 2 && !Features::silentangles->CanSetAngles( cmd, fAbortFlags ) && !Features::silentangles->IsLocked() )
+	if ( iMode == 0 || iMode >= 2 && ( !Features::silentangles->CanSetAngles( cmd, fAbortFlags ) || Features::silentangles->IsLocked() ) )
 		return false;
 
 	WEAPON *pWeapon;
