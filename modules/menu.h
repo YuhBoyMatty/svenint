@@ -11,7 +11,7 @@
 #include "config.h"
 
 #ifdef WIN32
-#define IMGUI_USE_SDL
+//#define IMGUI_USE_SDL
 #endif
 #define IMGUI_USE_GL3 ( 1 )
 
@@ -348,6 +348,7 @@ public:
 	bool							m_bShaderFeature;
 	CBaseFeature					*m_pFeature;
 	CConfigProperty					*m_pCfgEnabled;
+	CConfigProperty					*m_pCfgShowDiscoveryHint;
 	std::string						m_sInternalName;
 	std::vector<CBaseMenuElement *> m_elements;
 };
@@ -504,7 +505,7 @@ private:
 	void			OnOpen( void );
 	void			OnClose( void );
 	void			Draw( void );
-	void			DrawFeatures( CMenuCategory &category );
+	void			DrawFeatures( CMenuCategory &category, int *plFeaturesToDiscover );
 	void			DrawFeatureElements( CMenuFeature &feature );
 	void			DrawPrivateCategories( void );
 	void			DrawConfigs( void );

@@ -260,6 +260,7 @@ CMenuFeature::CMenuFeature()
 	m_bPopupOpened = false;
 	m_pFeature = NULL;
 	m_pCfgEnabled = NULL;
+	m_pCfgShowDiscoveryHint = NULL;
 }
 
 CMenuFeature::CMenuFeature( CBaseFeature *pFeature, bool bToggleable, bool bShaderFeature )
@@ -271,6 +272,9 @@ CMenuFeature::CMenuFeature( CBaseFeature *pFeature, bool bToggleable, bool bShad
 	m_pCfgEnabled = NULL;
 	m_sInternalName = "params##";
 	m_sInternalName += pFeature->GetName();
+
+	m_pCfgShowDiscoveryHint = !bShaderFeature ? Modules::config->AddProperty( pFeature->GetName(), "ShowDiscoveryHint", true ) :
+		Modules::config->AddShadersProperty( pFeature->GetName(), "ShowDiscoveryHint", true );
 
 	if ( bToggleable )
 	{
@@ -1128,11 +1132,32 @@ void CMenuModule::Draw( void )
 		for ( CMenuCategory &category : m_categories )
 		{
 			if ( !ImGui::BeginMenu( category.m_pszName, m_bOpened ) )
-				continue;
+			{
+				bool bShowDiscoveryHint = false;
 
-			DrawFeatures( category );
+				for ( CMenuFeature &feature : category.m_features )
+				{
+					const bool bLoaded = feature.m_pFeature->IsLoaded();
+					if ( bLoaded && feature.m_pCfgShowDiscoveryHint->GetBool() )
+					{
+						bShowDiscoveryHint = true;
+						break;
+					}
+				}
+
+				if ( bShowDiscoveryHint )
+					DrawIndicatingDot( 1.f, 0.1f, 4.5f, 232, 232, 48, 255 );
+
+				continue;
+			}
+
+			int iFeaturesToDiscover = 0;
+			DrawFeatures( category, &iFeaturesToDiscover );
 
 			ImGui::EndMenu();
+
+			if ( iFeaturesToDiscover > 0 )
+				DrawIndicatingDot( 1.f, 0.1f, 4.5f, 232, 232, 48, 255 );
 		}
 
 		DrawPrivateCategories();
@@ -1154,7 +1179,7 @@ void CMenuModule::Draw( void )
 // Draw features from the menu category
 //-----------------------------------------------------------------------------
 
-void CMenuModule::DrawFeatures( CMenuCategory &category )
+void CMenuModule::DrawFeatures( CMenuCategory &category, int *plFeaturesToDiscover )
 {
 	if ( category.m_features.empty() )
 		return;
@@ -1164,7 +1189,8 @@ void CMenuModule::DrawFeatures( CMenuCategory &category )
 
 	for ( CMenuFeature &feature : category.m_features )
 	{
-		if ( !feature.m_pFeature->IsLoaded() )
+		const bool bLoaded = feature.m_pFeature->IsLoaded();
+		if ( !bLoaded )
 		{
 			ImGui::BeginDisabled();
 		}
@@ -1184,7 +1210,7 @@ void CMenuModule::DrawFeatures( CMenuCategory &category )
 		}
 		ImGui::PopStyleColor();
 
-		if ( !feature.m_pFeature->IsLoaded() )
+		if ( !bLoaded )
 		{
 			ImGui::EndDisabled();
 		}
@@ -1193,8 +1219,21 @@ void CMenuModule::DrawFeatures( CMenuCategory &category )
 			ImGui::PopStyleColor( 2 );
 		}
 
-		if ( !feature.m_elements.empty() && ImGui::IsItemHovered() && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
-			feature.m_bPopupOpened = true;
+		if ( ImGui::IsItemHovered() )
+		{
+			if ( !feature.m_elements.empty() && ImGui::IsMouseClicked( ImGuiMouseButton_Right ) )
+				feature.m_bPopupOpened = true;
+
+			*feature.m_pCfgShowDiscoveryHint->GetBoolRef() = false;
+		}
+
+		if ( bLoaded && feature.m_pCfgShowDiscoveryHint->GetBool() )
+		{
+			if ( plFeaturesToDiscover != NULL )
+				*plFeaturesToDiscover += 1;
+
+			DrawIndicatingDot( 1.f, 0.2f, 4.5f, 232, 232, 48, 255 );
+		}
 
 		if ( feature.m_bPopupOpened )
 			ImGui::OpenPopup( feature.m_sInternalName.c_str() );
