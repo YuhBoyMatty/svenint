@@ -593,23 +593,6 @@ CON_COMMAND( sc_find_cmd, "Find a cmd" )
 	}
 }
 
-CON_COMMAND( sc_drop_empty_weapon, "Drop an empty weapon from your inventory" )
-{
-	for ( int i = 0; i < Inventory()->GetMaxWeaponSlots(); i++ )
-	{
-		for ( int j = 0; j < Inventory()->GetMaxWeaponPositions(); j++ )
-		{
-			WEAPON *pWeapon = Inventory()->GetWeapon( i, j );
-
-			if ( pWeapon && !Inventory()->HasAmmo( pWeapon ) )
-			{
-				Inventory()->DropWeapon( pWeapon );
-				return;
-			}
-		}
-	}
-}
-
 CON_COMMAND( getpos, "Prints current origin" )
 {
 	Vector vecOrigin;
@@ -740,7 +723,6 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_find_model_prefix ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_find_cvar ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_find_cmd ) );
-	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_drop_empty_weapon ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( getpos ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( getpos_exact ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( getang ) );
@@ -792,7 +774,6 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_find_model_prefix ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_find_cvar ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_find_cmd ) );
-	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_drop_empty_weapon ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( getpos ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( getpos_exact ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( getang ) );

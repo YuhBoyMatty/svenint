@@ -622,6 +622,9 @@
     <ClCompile Include="features\r_smoke_simulation.cpp">
       <Filter>features\Render</Filter>
     </ClCompile>
+    <ClCompile Include="features\player_drop_empty_weapon.cpp">
+      <Filter>features\Player</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -1322,6 +1325,9 @@
     </ClInclude>
     <ClInclude Include="features\r_smoke_simulation.h">
       <Filter>features\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="features\player_drop_empty_weapon.h">
+      <Filter>features\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

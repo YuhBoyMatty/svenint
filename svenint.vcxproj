@@ -146,6 +146,7 @@
     <ClInclude Include="features\player_autoreload.h" />
     <ClInclude Include="features\player_camhack.h" />
     <ClInclude Include="features\player_color_pulsator.h" />
+    <ClInclude Include="features\player_drop_empty_weapon.h" />
     <ClInclude Include="features\player_dynamic_glow.h" />
     <ClInclude Include="features\player_firstperson_roaming.h" />
     <ClInclude Include="features\player_flashlight.h" />
@@ -384,6 +385,7 @@
     <ClCompile Include="features\player_autoreload.cpp" />
     <ClCompile Include="features\player_camhack.cpp" />
     <ClCompile Include="features\player_color_pulsator.cpp" />
+    <ClCompile Include="features\player_drop_empty_weapon.cpp" />
     <ClCompile Include="features\player_dynamic_glow.cpp" />
     <ClCompile Include="features\player_firstperson_roaming.cpp" />
     <ClCompile Include="features\player_flashlight.cpp" />

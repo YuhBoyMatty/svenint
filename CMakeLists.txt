@@ -156,6 +156,7 @@ set(SVENINT_SOURCE_FILES
 	features/player_autoreload.cpp
 	features/player_camhack.cpp
 	features/player_color_pulsator.cpp
+	features/player_drop_empty_weapon.cpp
 	features/player_dynamic_glow.cpp
 	features/player_firstperson_roaming.cpp
 	features/player_flashlight.cpp
