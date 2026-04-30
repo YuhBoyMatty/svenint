@@ -65,6 +65,7 @@ private:
 	void AddMessage( const char *pszMessage, const char *pszClientName, float *pflClientColor );
 
 private:
+	CMenuValueBool *m_pHideWhenCamhacking;
 	CMenuValueList *m_pAlignmentMode;
 	CMenuValueInteger *m_pMaxHistory;
 	CMenuValueFloat *m_pStayTime;

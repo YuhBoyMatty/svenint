@@ -104,6 +104,7 @@ DECLARE_CLASS_FUNC( int, HOOKED_CHudTextMessage__MsgFunc_TextMsg, void *thisptr,
 	if ( message.ReadByte() == HUD_PRINTTALK )
 	{
 		char buffer[ 256 ];
+		buffer[ 0 ] = '\0';
 
 		const char *str;
 		std::vector<std::string> formattingStrings;
@@ -444,7 +445,7 @@ EHookResult CChatHistory::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	if ( m_textHistory.size() > (size_t)m_pMaxHistory->GetInt() )
 		m_textHistory.erase( m_textHistory.begin() + m_pMaxHistory->GetInt(), m_textHistory.end() );
 
-	if ( Features::camhack->IsEnabled() )
+	if ( Features::camhack->IsEnabled() && m_pHideWhenCamhacking->GetBool() )
 		return kHookContinue;
 
 	const bool bShowHistory = !!( *key_dest );
@@ -496,6 +497,7 @@ EHookResult CChatHistory::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 CChatHistory::CChatHistory( const char *pszCategoryName, const char *pszName ) : CBaseFeature( pszCategoryName, pszName )
 {
+	m_pHideWhenCamhacking = NULL;
 	m_pAlignmentMode = NULL;
 	m_pMaxHistory = NULL;
 	m_pStayTime = NULL;
@@ -547,6 +549,7 @@ bool CChatHistory::Load( void )
 	ud_t inst;
 	Modules::menu->BindFeature( this );
 
+	m_pHideWhenCamhacking = Modules::menu->AddParamBool( this, "HideWhenCamhacking", NULL, true );
 	m_pAlignmentMode = Modules::menu->AddParamList( this, "AlignmentMode", NULL, 0, " 0 - Draw from bottom to top\0 1 - Draw from top to bottom\0\0" );
 	m_pMaxHistory = Modules::menu->AddParamInteger( this, "MaxHistory", NULL, 6, 1, 30 );
 	m_pStayTime = Modules::menu->AddParamFloat( this, "StayTime", NULL, 5.f, 0.f, 120.f );
