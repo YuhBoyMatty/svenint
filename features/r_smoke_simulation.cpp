@@ -686,7 +686,8 @@ void CSmokeSimulation::OnPlayerShoot( int iWeaponID, const Vector &vecStart, con
 
 void CSmokeSimulation::OnFlash( const Vector &vecOrigin, const Vector &vecColor, float flRadius, float flIntensity )
 {
-	m_SmokeFlashes.push_back( { vecOrigin, vecColor, flRadius, flIntensity, cl_enginefuncs->GetClientTime() + 0.1f } );
+	if ( m_pDynamicLighting->GetBool() && !m_SmokeClouds.empty() )
+		m_SmokeFlashes.push_back( { vecOrigin, vecColor, flRadius, flIntensity, cl_enginefuncs->GetClientTime() + 0.1f } );
 }
 
 //-----------------------------------------------------------------------------
@@ -1322,7 +1323,7 @@ EHookResult CSmokeSimulation::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		if ( type != ET_PLAYER || ent->index == localplayer->GetPlayerIndex() )
 			return kHookContinue;
 
-		if ( ent->curstate.effects & EF_MUZZLEFLASH )
+		if ( ent->curstate.effects & ( EF_MUZZLEFLASH | EF_NOINTERP ) )
 		{
 			Vector va;
 			Vector vecEyes = ent->origin + Vector( 0.f, 0.f, ent->curstate.usehull ? 12.5f : 28.5f /* VEC_DUCK_VIEW.z : VEC_VIEW.z */ );

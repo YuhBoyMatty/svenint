@@ -101,9 +101,7 @@ public:
 		}
 
 		case kSmokeParticleShot:
-		#ifdef DEBUG
 			Assert( m_flFadeTime <= 1.f );
-		#endif
 			return m_flFadeTime * m_flFadeTime;
 		}
 
