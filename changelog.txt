@@ -1,5 +1,15 @@
 SvenInt v3 Changelog
 
+01/05/2026 - Version 3.2.3:
+- [Menu Module] Added discovery hints near each new feature, whenever you hover a feature button the hint will disappear;
+save your current config (same for shaders) to preserve disappeared hints!
+- [Chat History] Added config parameter to disallow to hide the chat when CamHack is enabled
+- [Auto Climb] Added ignore condition when the input '+use' is pressed
+- [Aim] Added extra condition when silent aimbot cannot be used
+- [Smoke Simulation] Fixed possible memory overflow
+- [Inputs] Not drawn anymore when spectating
+- <NEW FEATURE> [Drop Empty Weapon] Use SvenInt's menu to drop an empty weapon (Player)
+
 22/04/2026 - Version 3.2.2:
 - [Update Checking] When a newer version is available, the changelog will be dumped into the console and a certain bar will appear in the menu
 - [Scripts Module] Fix crash on Linux during scripts binding

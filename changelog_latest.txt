@@ -1,30 +1,9 @@
-22/04/2026 - Version 3.2.2:
-- [Update Checking] When a newer version is available, the changelog will be dumped into the console and a certain bar will appear in the menu
-- [Scripts Module] Fix crash on Linux during scripts binding
-- [Hooks Module] Added profiling node to function 'HUD_AddEntity'
-- [Hooks Module] Fixed Input Manager's callback 'GameFrame' not being called
-- [Menu Module] Added config field to customize unload button on Windows, you can find it in 'config.ini -> Settings -> UnloadButton', pass a virtual key code to change the button
-- [Menu Module] Added tab 'What's New?' when an update is available
-- [Client Module] Added ConVar 'sc_print_chat_feature_toggle_notification'
-- [Client Module] Renamed ConCommand 'help' to 'sc_help'
-- [Client Module] Renamed ConCommand 'append' to 'sc_append'
-- [Features] ConCommand 'sc_print_features' counts then dumps all features that are running, not active or failed to load
-- [HL SDK] Fixed incorrect signature for function pointer 'playermove_funcs_s::PM_TraceModel'
-- [Game Utils] Added functions 'UTIL_GetPlayerMoveLadder' and 'UTIL_IsRayIntersectingSphere'
-- [Input Manager] Added ConVar 'sc_im_experimental_play_save'
-- [Drawing] Fixed color rendering artifacts in method 'DrawCircle'
-- [Stick] Now player correctly climbs on ladders
-- [NPC Abuse] Added map 'hl_c04'. Credits to @frizzy and @xWhitey for found spot
-- [Silent Angles] Allow lock angles until next frame. Allow set angles when not moving under water
-- [Aim] Allow limit fire rate, added visualization parameters, slightly enhanced No Recoil
-- [Strafer] Added perfect Anti-Strafer bypass & strafing towards movement buttons
-- [Fast Run] Added perfect Anti-Strafer bypass
-- [Mute Manager] Changed detour priority
-- [Entity List] Now velocity of an entity is correctly calculated
-- [Action Burst] Added method to check if that feature is in use right now
-- [Client Menu] Fixed typos
-- <NEW FEATURE> [No MOTD] Disables MOTD and Mission Briefing window pop up (Visual)
-- <NEW FEATURE> [Inputs] Added cool feature from my private project l4dst that displays your movement inputs (Visual)
-- <NEW FEATURE> [Smoke Simulation] CS2-like smoke simulation from explosions. Credits to @Admer456 for the source code (Render)
-- <NEW FEATURE> [Bobbing] HL2-like viewmodel bobbing (Render)
-- <NEW FEATURE> [Auto Clim] Fast Ladder trick but you just look in the direction you want to climb automatically (Movement)
+01/05/2026 - Version 3.2.3:
+- [Menu Module] Added discovery hints near each new feature, whenever you hover a feature button the hint will disappear;
+save your current config (same for shaders) to preserve disappeared hints!
+- [Chat History] Added config parameter to disallow to hide the chat when CamHack is enabled
+- [Auto Climb] Added ignore condition when the input '+use' is pressed
+- [Aim] Added extra condition when silent aimbot cannot be used
+- [Smoke Simulation] Fixed possible memory overflow
+- [Inputs] Not drawn anymore when spectating
+- <NEW FEATURE> [Drop Empty Weapon] Use SvenInt's menu to drop an empty weapon (Player)
