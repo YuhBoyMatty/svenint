@@ -33,13 +33,16 @@ SvenInt uses patterns, offsets, RVA offsets to lookup any gamedata using file `.
 
 ## Fixing possible issues
 * Disable shaders (via launch option or menu) in case your screen appear black, but when you open the main menu it disappears, also, disable it if your game crashes everytime you enter a map
-* If you have bugged sounds on a specified server, go to this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of a server
+* If you do have bugged sounds on a server, go to this path `Sven Co-op/svencoop_downloads/maps/soundcache/`, remove folder that contains IP and Port of a server
+* If your CPU doesn't support instruction set of SSE/MMX/etc.. you need to manually build the mod, since the Release is built with these exact instructions
+* If your GPU doesn't support OpenGL 3.0, you need to build the mod on your own, again. In the file './modules/menu.h' change value of the macro 'IMGUI_USE_GL3' to '0'
+* (Windows) Install latest version of vcredist_x86 if injection of the mod fails
 * (Windows) If menu doesn't react to your actions, try to inject `svenint-sdl2.dll`
 * (Linux) Consider launching the game with launch option `-nosteamruntime` in case you experience a crash right after SvenInt is injected or some features fail to load (i.e. Wallhack & Chams)
 * (Linux) When parsing of some .txt files fails (i.e. gamedata.txt), change their new lines sequence to LF
 
 ## Features
-* **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
+* **Player:** Aim (Aimbot / Ragebot / No Recoil), Anti-AFK, Auto Reload, Cam Hack, Color Pulsator, Drop Empty Weapon, Dynamic Glow, First Person Roaming, Custom Flashlight, Freeze, Gib Abuse (Fly when you have huge amount of HP), Key Spam, NPC Abuse, Speedhack, Spinner, Stick, Third Person
 * **Movement:** Air Run, Auto Climb, Auto Jump, Auto Ceil-Clipping, Auto Edgejump, Fastrun, Auto Jumpbug, Auto Selfsink, Auto Strafer, Auto Wallstrafe, Use Key (Change the slowdown cap when holding +use input)
 * **HUD:** Chat Colors, Chat History (Source-like), Grenade Timer, Remap Colors, Speedometer (BXT), Custom Vote Popup
 * **Visual:** Crosshair, ESP, Friends List, Hit Markers, Ignore Unicode (Linux-only), Inputs, No Fade, No MOTD, No Shake, No View Entity, Player Push Direction, Player Sight Direction, Projectile Prediction, Radar
