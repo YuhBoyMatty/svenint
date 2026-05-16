@@ -3,7 +3,9 @@
 
 #include "stdafx.h"
 #include "config.h"
+#include "menu.h"
 #include "svenint.h"
+#include "features/base_feature.h"
 
 #ifndef WIN32
 #include <algorithm>
@@ -37,14 +39,14 @@ typedef enum
 	kCfgParseErrorSectionEmpty,
 	kCfgParseErrorEmptyKey,
 	kCfgParseErrorEmptyValue
-} eCfgParseState;
+} ECfgParseState;
 
 typedef enum
 {
 	kCfgNone = 0,
 	kCfgExport,
 	kCfgImport
-} eCfgState;
+} ECfgState;
 
 //-----------------------------------------------------------------------------
 // Radix conversion
@@ -210,7 +212,7 @@ CON_COMMAND( sc_save_shader_config, "Save a shader config file" )
 	}
 }
 
-CON_COMMAND( sc_set_config_param, "Sets a config parameter" )
+CON_COMMAND( sc_config_set_param, "Sets a config parameter" )
 {
 	if ( args.ArgC() > 3 )
 	{
@@ -223,24 +225,23 @@ CON_COMMAND( sc_set_config_param, "Sets a config parameter" )
 	}
 	else
 	{
-		ConMsg( "Usage:  sc_set_config_param <section> <param> <value>\n" );
+		ConMsg( "Usage:  sc_config_set_param <section> <param> <value>\n" );
 	}
 }
 
-CON_COMMAND( sc_toggle_config_param, "Toggles a config parameter" )
+CON_COMMAND( sc_config_toggle_param, "Toggles a config parameter" )
 {
-	if ( args.ArgC() > 3 )
+	if ( args.ArgC() > 2 )
 	{
 		const char *pszSection = args[ 1 ];
 		const char *pszProperty = args[ 2 ];
-		const char *pszValue = args[ 3 ];
 
-		if ( !Modules::config->SetParam( pszSection, pszProperty, pszValue, true ) )
+		if ( !Modules::config->SetParam( pszSection, pszProperty, NULL, true ) )
 			Warning( "[SvenInt::Config] Specified parameter \"%s\" in section \"%s\" doesn't exist\n", pszProperty, pszSection );
 	}
 	else
 	{
-		ConMsg( "Usage:  sc_toggle_config_param <section> <param> <value>\n" );
+		ConMsg( "Usage:  sc_config_toggle_param <section> <param>\n" );
 	}
 }
 
@@ -830,9 +831,28 @@ bool CConfigModule::SaveEx( CHashDict<std::vector<CConfigProperty *>> &cfg, cons
 
 bool CConfigModule::SetParam( const char *pszSection, const char *pszProperty, const char *pszValue, bool bToggle )
 {
+	if ( pszSection != NULL )
+	{
+		pszSection = MemStrdup( pszSection );
+
+		char *c = (char *)pszSection;
+		while ( *c )
+		{
+			if ( *c == '_' ) // 'Key_Spam' -> 'Key Spam'
+				*c = ' ';
+
+			c++;
+		}
+	}
+
 	std::vector<CConfigProperty *> *props = m_Config.Find( pszSection );
-	if ( props == NULL )
+	if ( props == NULL || !bToggle && pszValue == NULL )
+	{
+		if ( pszSection != NULL )
+			MemFree( (void *)pszSection );
+
 		return false;
+	}
 
 	for ( size_t i = 0; i < props->size(); i++ )
 	{
@@ -843,28 +863,67 @@ bool CConfigModule::SetParam( const char *pszSection, const char *pszProperty, c
 		switch ( prop->GetType() )
 		{
 		case kCfgPropertyInteger:
-			*prop = bToggle ? !bool( !!atoi( pszValue ) ) : atoi( pszValue );
+			*prop = bToggle ? ( prop->GetInt() ? 0 : 1 ) : atoi( pszValue );
 			break;
 
 		case kCfgPropertyUInteger:
 		{
 			unsigned int val = (unsigned int)strtoul( pszValue, NULL, prop->GetRadix() );
-			*prop = bToggle ? !bool( !!val ) : val;
+			*prop = bToggle ? ( prop->GetInt() ? 0 : 1 ) : val;
 			break;
 		}
 
 		case kCfgPropertyFloat:
-			*prop = bToggle ? ( (float)atof( pszValue ) ? 1.f : 0.f ) : (float)atof( pszValue );
+			*prop = bToggle ? ( prop->GetFloat() == 0.f ? 1.f : 0.f ) : (float)atof( pszValue );
 			break;
 
 		case kCfgPropertyBoolean:
-			if ( !stricmp( pszValue, "true" ) )
-				*prop = bToggle ? false : true;
-			else if ( !stricmp( pszValue, "false" ) )
-				*prop = bToggle ? true : false;
+		{
+			const bool bPrevValue = prop->GetBool();
+
+			if ( !bToggle )
+			{
+				if ( !stricmp( pszValue, "true" ) )
+					*prop = true;
+				else if ( !stricmp( pszValue, "false" ) )
+					*prop = false;
+				else
+					*prop = bool( !!atoi( pszValue ) );
+			}
 			else
-				*prop = bToggle ? !bool( !!atoi( pszValue ) ) : bool( !!atoi( pszValue ) );
+			{
+				*prop = !prop->GetBool();
+			}
+
+			if ( bPrevValue == prop->GetBool() )
+				break;
+
+			if ( !stricmp( prop->GetName(), "Enable" ) )
+			{
+				for ( CMenuCategory &category : Modules::menu->m_categories )
+				{
+					bool bFoundCategory = false;
+
+					for ( CMenuFeature &feature : category.m_features )
+					{
+						if ( !feature.m_bToggleable ||
+							 feature.m_pCfgEnabled == NULL ||
+							 stricmp( feature.m_pFeature->GetName(), pszSection ) )
+						{
+							continue;
+						}
+
+						feature.m_pFeature->Toggle();
+						bFoundCategory = true;
+					}
+
+					if ( bFoundCategory )
+						break;
+				}
+			}
+
 			break;
+		}
 
 		case kCfgPropertyCString:
 			if ( bToggle )
@@ -935,8 +994,14 @@ bool CConfigModule::SetParam( const char *pszSection, const char *pszProperty, c
 		}
 		}
 
+		if ( pszSection != NULL )
+			MemFree( (void *)pszSection );
+
 		return true;
 	}
+
+	if ( pszSection != NULL )
+		MemFree( (void *)pszSection );
 
 	return false;
 }
@@ -2094,8 +2159,8 @@ bool CConfigModule::Init( void )
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_load_shader_config ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_save_config ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_save_shader_config ) );
-	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_set_config_param ) );
-	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_toggle_config_param ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_config_set_param ) );
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_config_toggle_param ) );
 
 	return true;
 }
@@ -2110,8 +2175,8 @@ void CConfigModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_load_shader_config ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_save_config ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_save_shader_config ) );
-	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_set_config_param ) );
-	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_toggle_config_param ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_config_set_param ) );
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_config_toggle_param ) );
 
 	Clear();
 	m_listeners.clear();

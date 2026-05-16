@@ -11,7 +11,7 @@
 #include "config.h"
 
 #ifdef WIN32
-//#define IMGUI_USE_SDL
+#define IMGUI_USE_SDL
 #endif
 #define IMGUI_USE_GL3 ( 1 )
 
@@ -370,6 +370,8 @@ public:
 
 class CMenuModule : public IConfigListener
 {
+	friend class CConfigModule;
+
 public:
 	CMenuModule();
 
