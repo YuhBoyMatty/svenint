@@ -625,6 +625,7 @@
     <ClCompile Include="features\player_drop_empty_weapon.cpp">
       <Filter>features\Player</Filter>
     </ClCompile>
+    <ClCompile Include="svenmod_emulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />

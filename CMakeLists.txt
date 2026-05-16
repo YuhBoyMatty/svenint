@@ -228,7 +228,7 @@ add_library(${SVENINT_DLL} SHARED ${SVENINT_SOURCE_FILES})
 
 if (MSVC)
 	target_link_libraries(${SVENINT_DLL} OpenGL32)
-	target_sources(${SVENINT_DLL} PRIVATE imgui/backends/imgui_impl_win32.cpp)
+	target_sources(${SVENINT_DLL} PRIVATE imgui/backends/imgui_impl_win32.cpp svenmod_emulation.cpp)
 else()
 	# find_library(SDL2_LIB
 	# 	NAMES SDL2

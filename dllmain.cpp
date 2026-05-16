@@ -222,6 +222,9 @@ void *MainThread( void *arg )
 #ifdef WIN32
     Globals::commandline->CreateCmdLine( GetCommandLine() );
 
+    if ( GetModuleHandle( "svenmod.dll" ) != NULL )
+        Sleep( 5000 );
+
     // Allocate debug console
 #if SHOW_DEBUG_CONSOLE
     const bool bNoConsole = Globals::commandline->HasParm( "-sint_noconsole" );
