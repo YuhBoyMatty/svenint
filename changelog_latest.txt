@@ -1,9 +1,7 @@
-01/05/2026 - Version 3.2.3:
-- [Menu Module] Added discovery hints near each new feature, whenever you hover a feature button the hint will disappear;
-save your current config (same for shaders) to preserve disappeared hints!
-- [Chat History] Added config parameter to disallow to hide the chat when CamHack is enabled
-- [Auto Climb] Added ignore condition when the input '+use' is pressed
-- [Aim] Added extra condition when silent aimbot cannot be used
-- [Smoke Simulation] Fixed possible memory overflow
-- [Inputs] Not drawn anymore when spectating
-- <NEW FEATURE> [Drop Empty Weapon] Use SvenInt's menu to drop an empty weapon (Player)
+17/05/2026 - Version 3.2.4:
+- Added SvenMod emulation with 5 seconds injection delay
+- [Config Module] Fixed ConCommand 'sc_config_toggle_param' not able to toggle any feature;
+Example of usage: bind m "sc_config_toggle_param Action_Burst ManualBurst" (replace spaces of the feature's name with underscore!)
+- [Auto Climb] Added config parameter that let you auto climb when a movement button is being hold
+- [Key Spam] Fixed sticky keys when the feature is disabled
+- [ESP] Added ConCommand 'sc_esp' to toggle the feature
