@@ -10,6 +10,7 @@
 #include "modules/opengl.h"
 #include "features/base_feature.h"
 #include "features/player_silent_angles.h"
+#include "features/exploit_action_burst.h"
 #include "features/st_input_manager.h"
 #include "game/hook_events.h"
 #include "game/messagebuffer.h"
@@ -236,6 +237,7 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_CL_CreateMove, float frametime, userc
 		cmd->viewangles = Modules::menu->GetFrozenCameraAngles();
 
 	Features::silentangles->Cancel();
+	Features::actionburst->SetInUse( false );
 
 	CREATE_HOOK_EVENT( kCL_CreateMove_HookEvent );
 	HOOK_EVENT_PUSH_ARG( frametime );
