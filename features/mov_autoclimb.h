@@ -30,6 +30,7 @@ public:
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
 private:
+	CMenuValueBool *m_pTriggerWhenPressingMovementButtons;
 	CMenuValueFloat *m_pThresholdAngle;
 
 	bool m_bForcePitch;

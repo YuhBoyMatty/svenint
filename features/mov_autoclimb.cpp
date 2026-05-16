@@ -48,10 +48,34 @@ EHookResult CAutoLadderClimb::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	Vector va, vecClimbAngles;
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
 
-	if ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT | IN_USE ) )
+	const bool bTriggerWhenPressingMovementButtons = m_pTriggerWhenPressingMovementButtons->GetBool();
+	const bool bPressedAnyMovementButton = ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) );
+
+	if ( bTriggerWhenPressingMovementButtons ^ bPressedAnyMovementButton )
+		return kHookContinue;
+
+	if ( !bTriggerWhenPressingMovementButtons && ( cmd->buttons & IN_USE ) )
 		return kHookContinue;
 
 	cl_enginefuncs->GetViewAngles( va );
+
+	if ( bTriggerWhenPressingMovementButtons )
+	{
+		Vector2D vecMove;
+
+		if ( cmd->buttons & IN_FORWARD )
+			vecMove.x += 1.f;
+		if ( cmd->buttons & IN_BACK )
+			vecMove.x += -1.f;
+
+		if ( vecMove.x == 0.f )
+			return kHookContinue;
+
+		if ( vecMove.x < 0.f )
+			va.x *= -1.f;
+
+		cmd->buttons &= ~( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT );
+	}
 
 	if ( Features::stick->IsEnabled() ||
 		 va.x <= m_pThresholdAngle->GetFloat() && va.x >= -m_pThresholdAngle->GetFloat() ||
@@ -67,7 +91,7 @@ EHookResult CAutoLadderClimb::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	cmd->viewangles = vecClimbAngles;
 
 	m_bForcePitch = true;
-	m_flSavedPitchAngle = NormalizeAngle( cmd->viewangles.x ) / -3.0f;
+	m_flSavedPitchAngle = cmd->viewangles.x / -3.f;
 
 	cmd->forwardmove = 0.f;
 	cmd->sidemove = 0.f;
@@ -99,7 +123,9 @@ CAutoLadderClimb::CAutoLadderClimb( const char *pszCategoryName, const char *psz
 {
 	SetInitiallyDisabled();
 
+	m_pTriggerWhenPressingMovementButtons = NULL;
 	m_pThresholdAngle = NULL;
+
 	m_bForcePitch = false;
 	m_flSavedPitchAngle = 0.f;
 }
@@ -131,6 +157,8 @@ void CAutoLadderClimb::OnDisable( void )
 bool CAutoLadderClimb::Load( void )
 {
 	Modules::menu->BindFeature( this );
+
+	m_pTriggerWhenPressingMovementButtons = Modules::menu->AddParamBool( this, "TriggerWhenPressingMovementButtons", NULL, false );
 	m_pThresholdAngle = Modules::menu->AddParamFloat( this, "ThresholdAngle", "Threshold pitch angle to trigger auto climb", 15.f, 0.1f, 89.f);
 
 	return true;
