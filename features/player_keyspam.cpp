@@ -168,6 +168,8 @@ void CKeySpam::OnEnable( void )
 void CKeySpam::OnDisable( void )
 {
 	hookevents->UnregisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
+
+	cl_enginefuncs->pfnClientCmd( "-duck;-forward;-back;-use" );
 }
 
 //-----------------------------------------------------------------------------
