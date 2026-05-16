@@ -61,6 +61,12 @@ DECLARE_CLASS_HOOK( void, CClient_SoundEngine__PlayFMODSound_511, void *thisptr,
 EXPOSE_FEATURE_SINGLETON( CESP, esp, "Visual", "ESP" );
 
 //-----------------------------------------------------------------------------
+// ConVars / ConCommands
+//-----------------------------------------------------------------------------
+
+FEATURE_CON_COMMAND_TOGGLE( sc_esp, "Toggle ESP" );
+
+//-----------------------------------------------------------------------------
 // Client sound engine hook
 //-----------------------------------------------------------------------------
 
@@ -1507,6 +1513,8 @@ bool CESP::Load( void )
 
 void CESP::PostLoad( void )
 {
+	FEATURE_REGISTER_CCMD( sc_esp );
+
 	if ( m_pfnCClient_SoundEngine__PlayFMODSound == NULL )
 		return;
 
@@ -1530,5 +1538,7 @@ void CESP::PostLoad( void )
 
 void CESP::Unload( void )
 {
+	FEATURE_UNREGISTER_CCMD( sc_esp );
+
 	Detours()->RemoveDetour( m_hCClient_SoundEngine__PlayFMODSound );
 }
