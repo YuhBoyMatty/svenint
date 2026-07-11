@@ -223,7 +223,16 @@ void *MainThread( void *arg )
     Globals::commandline->CreateCmdLine( GetCommandLine() );
 
     if ( GetModuleHandle( "svenmod.dll" ) != NULL )
-        Sleep( 5000 );
+    {
+        int iSvenModSleepTime = 3000;
+        if ( Globals::commandline->HasParm( "-sint_svenmod_sleep_time" ) )
+            iSvenModSleepTime = atoi( Globals::commandline->ParmValue( "-sint_svenmod_sleep_time" ) );
+
+        if ( iSvenModSleepTime < 0 )
+            iSvenModSleepTime = 3000;
+
+        Sleep( iSvenModSleepTime );
+    }
 
     // Allocate debug console
 #if SHOW_DEBUG_CONSOLE
