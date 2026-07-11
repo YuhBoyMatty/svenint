@@ -28,6 +28,8 @@ public:
 	virtual char			*GetTeamName( int i ) { return 0; }
 	virtual float			GetHealth( int i ) { return 0.f; }
 	virtual float			GetArmor( int i ) { return 0.f; }
+	virtual int				GetExtrasLevel( int i ) { return 0; }
+	virtual int				GetAdminLevel( int i ) { return 0; }
 
 	virtual void			SetHealth( int i, float health ) { }
 };

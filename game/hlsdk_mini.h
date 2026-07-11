@@ -2374,7 +2374,7 @@ public:
 
 #define MAX_PLAYERS_HUD 32 // 64 for HL
 #define MAX_TEAMS		5 // 64 for HL
-#define MAX_TEAM_NAME	64 // 16 for HL
+#define MAX_TEAM_NAME	64 // since 5.23, 16 in original HL1
 #define MAX_TEAM_NAME_5_11 16
 
 struct extra_player_info_t // sizeof 88 * 33 = 2904
@@ -2388,7 +2388,8 @@ struct extra_player_info_t // sizeof 88 * 33 = 2904
 	float armor;
 
 	// Sven Co-op specific
-	char pad_1[ 4 ];
+	short extraslevel;
+	short adminlevel;
 };
 
 struct extra_player_info_5_26_t // sizeof 92 * 33 = 3036
@@ -2402,12 +2403,13 @@ struct extra_player_info_5_26_t // sizeof 92 * 33 = 3036
 	float armor;
 
 	// Sven Co-op specific
-	char pad_1[ 4 ];
+	short extraslevel;
+	short adminlevel;
+
 	char pad_2[ 4 ];
 };
 
-// FIXME: reverse it properly
-struct extra_player_info_5_11_t
+struct extra_player_info_5_11_t // till 5.22
 {
 	float frags;
 	int deaths;
@@ -2418,20 +2420,8 @@ struct extra_player_info_5_11_t
 	float armor;
 
 	// Sven Co-op specific
-	char pad_1[ 4 ];
-
-	/*
-	short frags;
-	short deaths;
-	short playerclass;
-	//short health; // UNUSED currently, spectator UI would like this
-	bool dead; // UNUSED currently, spectator UI would like this
-	short teamnumber;
-	char teamname[ MAX_TEAM_NAME_5_11 ];
-	float health;
-	float armor;
-	char pad_1[ 4 ];
-	*/
+	short extraslevel;
+	short adminlevel;
 };
 
 struct team_info_t
@@ -4355,7 +4345,8 @@ typedef struct netadr_s
 {
 	netadrtype_t	type;
 	unsigned char	ip[ 4 ];
-	unsigned char	ipx[ 26 ]; // @Sw1ft: Sven Co-op specific. 10 for HL
+	unsigned char	ipx[ 10 ];
+	unsigned char	p2pid[ 16 ]; // @Sw1ft: Sven Co-op specific
 	unsigned short	port;
 } netadr_t;
 
