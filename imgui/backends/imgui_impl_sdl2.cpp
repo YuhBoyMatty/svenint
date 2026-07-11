@@ -533,7 +533,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
 #ifdef __EMSCRIPTEN__
     platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplSDL2_EmscriptenOpenURL(url); return true; };
 #elif SDL_HAS_OPEN_URL
-    platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url) { return SDL_OpenURL(url) == 0; };
+    platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url) { return false; /* SDL_OpenURL(url) == 0; */ };
 #endif
 
     // Gamepad handling
