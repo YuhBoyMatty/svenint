@@ -87,7 +87,7 @@ void CProjectilePrediction::PredictGrenadeTrajectory( void )
 		Vector vecMove = vecVelocity * flFrametime;
 
 		// Trace forward
-		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_NORMAL, -1 );
+		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_WORLD_ONLY, -1 );
 
 		pTrajectoryRenderer->AddLine( vecOrigin, trace.endpos );
 
@@ -222,7 +222,7 @@ void CProjectilePrediction::PredictARGrenadeTrajectory( void )
 		Vector vecMove = vecVelocity * flFrametime;
 
 		// Trace forward
-		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_NORMAL, -1 );
+		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_WORLD_ONLY, -1 );
 
 		pTrajectoryRenderer->AddLine( vecOrigin, trace.endpos );
 
@@ -292,7 +292,7 @@ void CProjectilePrediction::PredictSporeTrajectory( void )
 		Vector vecMove = vecVelocity * flFrametime;
 
 		// Trace forward
-		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_NORMAL, -1 );
+		pmtrace_t trace = playermove->funcs()->PM_PlayerTrace( vecOrigin, vecOrigin + vecMove, PM_WORLD_ONLY, -1 );
 
 		pTrajectoryRenderer->AddLine( vecOrigin, trace.endpos );
 
