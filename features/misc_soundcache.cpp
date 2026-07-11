@@ -32,11 +32,11 @@ namespace FeaturesGameData
 		{
 			DEFINE_PATTERN( CClient_SoundEngine__LoadSoundList, "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 08 00 00" );
 
-			DEFINE_PATTERNS_2( CClient_SoundEngine__FlushCache,
-							   "5.25",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 54 03 00 00",
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 5C 04 00 00" );
+			DEFINE_PATTERNS( CClient_SoundEngine__FlushCache,
+							 "5.25",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 54 03 00 00",
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 5C 04 00 00" );
 		}
 	}
 }
@@ -49,9 +49,7 @@ EXPOSE_FEATURE_SINGLETON( CSoundcache, soundcache, "Misc", "Soundcache" );
 
 static NetMsgHookFn ORIG_NetMsgHook_ResourceList = NULL;
 
-static char mapname_buffer[ MAX_PATH ];
 static char szMapName[ MAX_PATH ];
-
 static char szSoundcacheDir[ MAX_PATH ];
 static char szServerSoundcacheDir[ MAX_PATH ];
 static char szServerSoundcacheFolder[ MAX_PATH ];
@@ -358,9 +356,9 @@ EHookResult CSoundcache::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 	static int sleep_frames = 0;
 #ifdef WIN32
-	static char szSoundcacheDirectory[ MAX_PATH ] = { 0 };
+	char szSoundcacheDirectory[ MAX_PATH ] = { 0 };
 #else
-	static char szSoundcacheDirectory[ PATH_MAX ] = { 0 };
+	char szSoundcacheDirectory[ PATH_MAX ] = { 0 };
 #endif
 
 	if ( !*szSoundcacheDirectory )

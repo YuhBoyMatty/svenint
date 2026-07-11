@@ -20,13 +20,13 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_3( CClient_SoundEngine__PlayFMODSound,
-							   "5.26",
-							   "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 94 00 00 00",
-							   "5.25",
-							   "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 B4 00 00 00 8B 45 18",
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 A8 00 00 00 8B 84 24 B8 00 00 00" );
+			DEFINE_PATTERNS( CClient_SoundEngine__PlayFMODSound,
+							 "5.26",
+							 "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 94 00 00 00",
+							 "5.25",
+							 "55 8B EC 83 E4 ? 81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 B4 00 00 00 8B 45 18",
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 A8 00 00 00 8B 84 24 B8 00 00 00" );
 		}
 	}
 }
@@ -769,7 +769,7 @@ void CESP::DrawPlayerInfo_Default( int index, int iHealth, bool bIsEntityFriend,
 
 	if ( m_pShowPlayerName->GetBool() || m_pShowEntityIndex->GetBool() )
 	{
-		static char szIndex[ 16 ];
+		char szIndex[ 16 ];
 		player_info_t *pPlayer = NULL;
 
 		if ( m_pShowEntityIndex->GetBool() )
@@ -883,7 +883,7 @@ void CESP::DrawPlayerInfo_SAMP( int index, int iHealth, bool bDucking, bool bIsE
 
 	if ( m_pShowPlayerName->GetBool() || m_pShowEntityIndex->GetBool() )
 	{
-		static char szIndex[ 16 ];
+		char szIndex[ 16 ];
 		player_info_t *pPlayer = NULL;
 
 		if ( m_pShowEntityIndex->GetBool() )
@@ -933,7 +933,7 @@ void CESP::DrawPlayerInfo_L4D( int index, int iHealth, bool bDucking, bool bIsEn
 	if ( m_pShowPlayerName->GetBool() || m_pShowPlayerHealth->GetBool() || m_pShowPlayerArmor->GetBool() )
 	{
 		const char *szFormatString;
-		static char szInfo[ 16 ];
+		char szInfo[ 16 ];
 
 		player_info_t *pPlayer;
 
@@ -1012,7 +1012,7 @@ void CESP::DrawEntityInfo_Default( int index, class_info_t classInfo, float bott
 {
 	if ( m_pShowEntityName->GetBool() || m_pShowEntityIndex->GetBool() )
 	{
-		static char szIndex[ 16 ];
+		char szIndex[ 16 ];
 
 		if ( m_pShowEntityIndex->GetBool() )
 			snprintf( szIndex, sizeof( szIndex ), m_pShowEntityName->GetBool() ? " (%d)" : "(%d)", index );
@@ -1043,7 +1043,7 @@ void CESP::DrawEntityInfo_SAMP( int index, class_info_t classInfo, Vector vecTop
 		int x = int( vecScreen[ 0 ] );
 		int y = int( vecScreen[ 1 ] );
 
-		static char szIndex[ 16 ];
+		char szIndex[ 16 ];
 
 		if ( m_pShowEntityIndex->GetBool() )
 			snprintf( szIndex, sizeof( szIndex ), m_pShowEntityName->GetBool() ? " (%d)" : "(%d)", index );
@@ -1074,7 +1074,7 @@ void CESP::DrawEntityInfo_L4D( int index, class_info_t classInfo, Vector vecTop,
 		int x = int( vecScreen[ 0 ] );
 		int y = int( vecScreen[ 1 ] );
 
-		static char szIndex[ 16 ];
+		char szIndex[ 16 ];
 
 		if ( m_pShowEntityIndex->GetBool() )
 			snprintf( szIndex, sizeof( szIndex ), m_pShowEntityName->GetBool() ? " (%d)" : "(%d)", index );

@@ -99,6 +99,9 @@ bool CUseKey::Load( void )
 
 	bool bOK = true;
 
+	if ( SVEN_VERSION() < SVENINT_VERSION_CHECK( 5, 23, 0 ) )
+		return false;
+
 	if ( SVEN_VERSION() >= SVENINT_VERSION_CHECK( 5, 26, 0 ) )
 	{
 		cmd_function_t *speed = cvar->FindCmd( "+speed" ); // thank you devs for removing g_kbkeys

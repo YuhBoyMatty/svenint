@@ -22,11 +22,11 @@ namespace FeaturesGameData
 	{
 		namespace Engine
 		{
-			DEFINE_PATTERNS_2( V_FadeAlpha,
-							   "5.25",
-							   "51 D9 ? ? ? ? ? DD ? ? ? ? ? 8A 0D",
-							   "5.11",
-							   "51 D9 ? ? ? ? ? 8A 0D ? ? ? ? DD 05" );
+			DEFINE_PATTERNS( V_FadeAlpha,
+							 "5.25",
+							 "51 D9 ? ? ? ? ? DD ? ? ? ? ? 8A 0D",
+							 "5.11",
+							 "51 D9 ? ? ? ? ? 8A 0D ? ? ? ? DD 05" );
 		}
 	}
 }

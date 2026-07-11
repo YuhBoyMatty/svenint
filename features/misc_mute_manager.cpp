@@ -30,49 +30,49 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_3( CVoiceBanMgr__SetPlayerBan,
-							   "5.25",
-							   "56 FF 74 24 08 8B F1 E8 ? ? ? ? 80 7C 24 0C 00 74 13 85 C0 75 32 FF 74 24 08 8B CE E8",
-							   "5.26",
-							   "56 FF 74 24 08 8B F1 E8 ? ? ? ? 80 7C 24 0C",
-							   "5.11",
-							   "80 7C 24 08 ? 56 8B F1 74 ? 57 8B" );
+			DEFINE_PATTERNS( CVoiceBanMgr__SetPlayerBan,
+							 "5.25",
+							 "56 FF 74 24 08 8B F1 E8 ? ? ? ? 80 7C 24 0C 00 74 13 85 C0 75 32 FF 74 24 08 8B CE E8",
+							 "5.26",
+							 "56 FF 74 24 08 8B F1 E8 ? ? ? ? 80 7C 24 0C",
+							 "5.11",
+							 "80 7C 24 08 ? 56 8B F1 74 ? 57 8B" );
 
-			DEFINE_PATTERNS_2( CVoiceBanMgr__InternalFindPlayerSquelch,
-							   "5.25",
-							   "53 55 8B 6C 24 0C 56 57 0F 10 4D 00 0F 28 C1 66 0F 73 D8 08 66 0F FC C8 0F 10 C1 66 0F 73 D8 04",
-							   "5.26",
-							   "53 55 8B 6C 24 0C 56" );
+			DEFINE_PATTERNS( CVoiceBanMgr__InternalFindPlayerSquelch,
+							 "5.25",
+							 "53 55 8B 6C 24 0C 56 57 0F 10 4D 00 0F 28 C1 66 0F 73 D8 08 66 0F FC C8 0F 10 C1 66 0F 73 D8 04",
+							 "5.26",
+							 "53 55 8B 6C 24 0C 56" );
 
-			DEFINE_PATTERNS_3( CVoiceStatus__IsPlayerBlocked,
-							   "5.25",
-							   "83 EC 14 A1 ? ? ? ? 33 C4 89 44 24 10 56 8D 44 24 04 8B F1 50 FF 74 24 20 FF 15",
-							   "5.26",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 10 A1 ? ? ? ? 56",
-							   "5.11",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 10 56 8D" );
+			DEFINE_PATTERNS( CVoiceStatus__IsPlayerBlocked,
+							 "5.25",
+							 "83 EC 14 A1 ? ? ? ? 33 C4 89 44 24 10 56 8D 44 24 04 8B F1 50 FF 74 24 20 FF 15",
+							 "5.26",
+							 "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 10 A1 ? ? ? ? 56",
+							 "5.11",
+							 "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 10 56 8D" );
 
-			DEFINE_PATTERNS_2( CVoiceStatus__SetPlayerBlockedState,
-							   "5.25",
-							   "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 68 ? ? ? ? 8B D9 FF 15 ? ? ? ? D9 5C 24 08",
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 14 01 00 00" );
+			DEFINE_PATTERNS( CVoiceStatus__SetPlayerBlockedState,
+							 "5.25",
+							 "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 68 ? ? ? ? 8B D9 FF 15 ? ? ? ? D9 5C 24 08",
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 14 01 00 00" );
 
-			DEFINE_PATTERNS_3( CVoiceStatus__UpdateServerState,
-							   "5.25",
-							   "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 8B D9 89 5C 24 08",
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 18 0B 00 00",
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 1C 0B 00 00" );
+			DEFINE_PATTERNS( CVoiceStatus__UpdateServerState,
+							 "5.25",
+							 "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 8B D9 89 5C 24 08",
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 18 0B 00 00",
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 1C 0B 00 00" );
 
-			DEFINE_PATTERNS_3( HACK_GetPlayerUniqueID,
-							   "5.25",
-							   "FF 74 24 08 FF 74 24 08 FF 15 ? ? ? ? 83 C4 08 85 C0 0F 95 C0 C3",
-							   "5.26",
-							   "FF 74 24 08 A1",
-							   "5.11",
-							   "8B 44 24 08 8B 4C 24 04 50 51 FF 15 ? ? ? ? 83 C4 ? F7" );
+			DEFINE_PATTERNS( HACK_GetPlayerUniqueID,
+							 "5.25",
+							 "FF 74 24 08 FF 74 24 08 FF 15 ? ? ? ? 83 C4 08 85 C0 0F 95 C0 C3",
+							 "5.26",
+							 "FF 74 24 08 A1",
+							 "5.11",
+							 "8B 44 24 08 8B 4C 24 04 50 51 FF 15 ? ? ? ? 83 C4 ? F7" );
 		}
 	}
 }
@@ -506,8 +506,8 @@ void CMuteManager::UpdateServerState( void *thisptr, bool bForce )
 		return;
 
 	static float flForceBanMaskTime = 0.f;
-	static char command_buffer[ 128 ];
 
+	char rgszBuffer[ 128 ];
 	char const *pLevelName = cl_enginefuncs->pfnGetLevelName();
 	bool bClientDebug = bool( voice_clientdebug->value );
 
@@ -531,13 +531,11 @@ void CMuteManager::UpdateServerState( void *thisptr, bool bForce )
 	{
 		*m_bServerModEnable = static_cast<int>( bVoiceModEnable );
 
-		snprintf( command_buffer, sizeof( command_buffer ), "VModEnable %d", bVoiceModEnable );
-		cl_enginefuncs->pfnClientCmd( command_buffer );
-
-		command_buffer[ sizeof( command_buffer ) - 1 ] = 0;
+		snprintf( rgszBuffer, sizeof( rgszBuffer ), "VModEnable %d", bVoiceModEnable );
+		cl_enginefuncs->pfnClientCmd( rgszBuffer );
 
 		if ( bClientDebug )
-			Msg( "CVoiceStatus::UpdateServerState: Sending '%s'\n", command_buffer );
+			Msg( "CVoiceStatus::UpdateServerState: Sending '%s'\n", rgszBuffer );
 	}
 
 	// build ban mask
@@ -561,12 +559,12 @@ void CMuteManager::UpdateServerState( void *thisptr, bool bForce )
 
 	if ( m_BanMask != banMask || ( cl_enginefuncs->GetClientTime() - flForceBanMaskTime >= 5.0f ) )
 	{
-		snprintf( command_buffer, sizeof( command_buffer ), "vban %X", banMask ); // vban [ban_mask]
+		snprintf( rgszBuffer, Q_ARRAYSIZE( rgszBuffer ), "vban %X", banMask ); // vban [ban_mask]
 
 		if ( bClientDebug )
-			Msg( "CVoiceStatus::UpdateServerState: Sending '%s'\n", command_buffer );
+			Msg( "CVoiceStatus::UpdateServerState: Sending '%s'\n", rgszBuffer );
 
-		cl_enginefuncs->pfnClientCmd( command_buffer );
+		cl_enginefuncs->pfnClientCmd( rgszBuffer );
 		m_BanMask = banMask;
 	}
 	else if ( bClientDebug )

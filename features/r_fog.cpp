@@ -23,17 +23,17 @@ namespace FeaturesGameData
 	{
 		namespace Engine
 		{
-			DEFINE_PATTERNS_2( R_SetupFrame,
-							   "5.26",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 20 D9 ? ? ? ? ? D9 ? ? ? ? ? DA",
-							   "5.25",
-							   "83 EC 24 A1 ? ? ? ? 33 C4 89 44 24 20 33 C0 83 3D ? ? ? ? 01 0F 9F C0 50 E8 ? ? ? ? E8" );
+			DEFINE_PATTERNS( R_SetupFrame,
+							 "5.26",
+							 "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 20 D9 ? ? ? ? ? D9 ? ? ? ? ? DA",
+							 "5.25",
+							 "83 EC 24 A1 ? ? ? ? 33 C4 89 44 24 20 33 C0 83 3D ? ? ? ? 01 0F 9F C0 50 E8 ? ? ? ? E8" );
 
-			DEFINE_PATTERNS_2( V_RenderView,
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 F0 01 00 00",
-							   "5.25",
-							   "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 D9 EE D9 15" );
+			DEFINE_PATTERNS( V_RenderView,
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 F0 01 00 00",
+							 "5.25",
+							 "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 D9 EE D9 15" );
 		}
 	}
 }

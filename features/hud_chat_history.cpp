@@ -20,23 +20,23 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_2( CHudTextMessage__MsgFunc_TextMsg,
-							   "5.25",
-							   "53 55 56 57 FF 74 24 18 FF 74 24 20",
-							   "5.11",
-							   "8B 44 24 08 8B 4C 24 0C 53" );
+			DEFINE_PATTERNS( CHudTextMessage__MsgFunc_TextMsg,
+							 "5.25",
+							 "53 55 56 57 FF 74 24 18 FF 74 24 20",
+							 "5.11",
+							 "8B 44 24 08 8B 4C 24 0C 53" );
 
-			DEFINE_PATTERNS_2( m_pSoundEngine,
-							   "5.25",
-							   "A1 ? ? ? ? 85 C0 0F 85 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 8B F0",
-							   "5.11",
-							   "A1 ? ? ? ? 85 C0 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B C8 E8 ? ? ? ? EB ? 33 C0 A3 ? ? ? ? 8B 88 04 20 00 00" );
+			DEFINE_PATTERNS( m_pSoundEngine,
+							 "5.25",
+							 "A1 ? ? ? ? 85 C0 0F 85 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 8B F0",
+							 "5.11",
+							 "A1 ? ? ? ? 85 C0 75 ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? 85 C0 74 ? 8B C8 E8 ? ? ? ? EB ? 33 C0 A3 ? ? ? ? 8B 88 04 20 00 00" );
 
-			DEFINE_PATTERNS_2( CClient_SoundEngine__Play2DSound,
-							   "5.25",
-							   "83 EC ? F3 0F 10 44 24 14",
-							   "5.11",
-							   "83 EC ? D9 ? 8B 44 24 10" );
+			DEFINE_PATTERNS( CClient_SoundEngine__Play2DSound,
+							 "5.25",
+							 "83 EC ? F3 0F 10 44 24 14",
+							 "5.11",
+							 "83 EC ? D9 ? 8B 44 24 10" );
 		}
 	}
 }

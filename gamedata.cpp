@@ -688,137 +688,137 @@ namespace GameData
 			DEFINE_PATTERN( Mem_Free, "8B FF 55 8B EC 83 7D 08 ? 74 ? FF 75 08 6A" );
 			DEFINE_PATTERN( Cmd_AddCommand, "57 8B 7C 24 08 57 E8 ? ? ? ? 83 C4 ? 80 38" );
 
-			DEFINE_PATTERNS_2( Cvar_RemoveClientDLLCvars,
-							   "5.22",
-							   "56 8B 35 ? ? ? ? 57 33 FF 85 F6 74 ? 53",
-							   "5.11",
-							   "55 56 8B 35 ? ? ? ? 33 ED" );
-			DEFINE_PATTERNS_2( Cvar_DirectSet,
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 53 8B 9C 24 ? 04 00 00 57 8B BC 24",
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 56 8B B4 24 ? 04 00 00 57 8B BC 24" );
-			DEFINE_PATTERNS_2( LoadInsecureClient,
-							   "5.22",
-							   "FF 74 24 04 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0 75",
-							   "5.11",
-							   "56 8B 74 24 08 56 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0" );
-			DEFINE_PATTERNS_2( MSG_WriteUsercmd,
-							   "5.25",
-							   "56 68 ? ? ? ? E8 ? ? ? ? 8B 74 24 0C",
-							   "5.11",
-							   "56 68 ? ? ? ? E8 ? ? ? ? 8B 4C 24 0C" );
-			DEFINE_PATTERNS_2( SCR_UpdateScreen,
-							   "5.25",
-							   "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 83 3D ? ? ? ? ? 0F 85 ? ? ? ? C7 05",
-							   "5.11",
-							   "83 EC ? 56 33 F6 39 35 ? ? ? ? 0F 85" );
-			DEFINE_PATTERNS_2( SCR_EndLoadingPlaque,
-							   "5.22",
-							   "C7 05 ? ? ? ? ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? C7 05",
-							   "5.11",
-							   "33 C0 A3 ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 68" );
-			DEFINE_PATTERNS_3( V_VideoMode_Create,
-							   "5.25",
-							   "A3 ? ? ? ? 8B 4D F4 64 89 0D 00 00 00 00 59 5E 5B 8B E5 5D C3",
-							   "5.22",
-							   "A3 ? ? ? ? 8B 4D F4",
-							   "5.11",
-							   "A3 ? ? ? ? 59 C3 33 C0" );
-			DEFINE_PATTERNS_3( Host_FilterTime,
-							   "5.25",
-							   "D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1",
-							   "5.22",
-							   "51 D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1",
-							   "5.11",
-							   "51 D9 ? 8B 0D ? ? ? ? D9 05" );
-			DEFINE_PATTERNS_2( MSG_ReadByte,
-							   "5.22",
-							   "8B 0D ? ? ? ? 8D 51 01 3B 15 ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 A1 ? ? ? ? 0F B6 04 08",
-							   "5.11",
-							   "A1 ? ? ? ? 8D 48 01 3B 0D ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 8B 15 ? ? ? ? 0F B6 04 02" );
-			DEFINE_PATTERNS_1( Key_Event,
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 04 00 00 56 8B B4 24 0C 04 00 00 81 FE" );
+			DEFINE_PATTERNS( Cvar_RemoveClientDLLCvars,
+							 "5.22",
+							 "56 8B 35 ? ? ? ? 57 33 FF 85 F6 74 ? 53",
+							 "5.11",
+							 "55 56 8B 35 ? ? ? ? 33 ED" );
+			DEFINE_PATTERNS( Cvar_DirectSet,
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 53 8B 9C 24 ? 04 00 00 57 8B BC 24",
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 ? 04 00 00 56 8B B4 24 ? 04 00 00 57 8B BC 24" );
+			DEFINE_PATTERNS( LoadInsecureClient,
+							 "5.22",
+							 "FF 74 24 04 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0 75",
+							 "5.11",
+							 "56 8B 74 24 08 56 E8 ? ? ? ? 83 C4 ? A3 ? ? ? ? 85 C0" );
+			DEFINE_PATTERNS( MSG_WriteUsercmd,
+							 "5.25",
+							 "56 68 ? ? ? ? E8 ? ? ? ? 8B 74 24 0C",
+							 "5.11",
+							 "56 68 ? ? ? ? E8 ? ? ? ? 8B 4C 24 0C" );
+			DEFINE_PATTERNS( SCR_UpdateScreen,
+							 "5.25",
+							 "83 EC ? A1 ? ? ? ? 33 C4 89 44 24 40 83 3D ? ? ? ? ? 0F 85 ? ? ? ? C7 05",
+							 "5.11",
+							 "83 EC ? 56 33 F6 39 35 ? ? ? ? 0F 85" );
+			DEFINE_PATTERNS( SCR_EndLoadingPlaque,
+							 "5.22",
+							 "C7 05 ? ? ? ? ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 83 C4 ? C7 05",
+							 "5.11",
+							 "33 C0 A3 ? ? ? ? A3 ? ? ? ? E8 ? ? ? ? 68" );
+			DEFINE_PATTERNS( V_VideoMode_Create,
+							 "5.25",
+							 "A3 ? ? ? ? 8B 4D F4 64 89 0D 00 00 00 00 59 5E 5B 8B E5 5D C3",
+							 "5.22",
+							 "A3 ? ? ? ? 8B 4D F4",
+							 "5.11",
+							 "A3 ? ? ? ? 59 C3 33 C0" );
+			DEFINE_PATTERNS( Host_FilterTime,
+							 "5.25",
+							 "D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1",
+							 "5.22",
+							 "51 D9 ? D9 ? ? ? ? ? 8B 0D ? ? ? ? D8 D1",
+							 "5.11",
+							 "51 D9 ? 8B 0D ? ? ? ? D9 05" );
+			DEFINE_PATTERNS( MSG_ReadByte,
+							 "5.22",
+							 "8B 0D ? ? ? ? 8D 51 01 3B 15 ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 A1 ? ? ? ? 0F B6 04 08",
+							 "5.11",
+							 "A1 ? ? ? ? 8D 48 01 3B 0D ? ? ? ? 7E ? C7 05 ? ? ? ? ? ? ? ? 83 C8 ? C3 8B 15 ? ? ? ? 0F B6 04 02" );
+			DEFINE_PATTERNS( Key_Event,
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 04 00 00 56 8B B4 24 0C 04 00 00 81 FE" );
 		}
 
 		namespace Client
 		{
-			DEFINE_PATTERNS_2( IN_Move,
-							   "5.25",
-							   "83 3D ? ? ? ? ? 75 ? 83 3D ? ? ? ? ? 74 ? FF 74 24 08",
-							   "5.11",
-							   "83 3D ? ? ? ? ? 56 8B 74 24 0C 75 1A" );
-			DEFINE_PATTERNS_2( GetClientColor,
-							   "5.23",
-							   "8B 4C 24 04 85 C9 7E",
-							   "5.11",
-							   "8B 44 24 04 85 C0 7E" );
-			DEFINE_PATTERNS_3( CHudAmmo__VidInit,
-							   "5.26",
-							   "81 FE ? ? ? ? 7C ? 5E B0 ? C3",
-							   "5.22",
-							   "81 FE ? ? ? ? 7C ? B0 ? 5E C3",
-							   "5.11",
-							   "81 FE ? ? ? ? 7C ? 81 3D ? ? ? ? ? ? ? ? 5E" );
-			DEFINE_PATTERNS_2( __MsgFunc_ServerVer,
-							   "5.23",
-							   "8D 44 24 40 C6 44 24 3C 00 68 ? ? ? ? 50 0F 11 44 24 48",
-							   "5.11",
-							   "8D 54 24 1C 68 ? ? ? ? 52 89 44 24 24" );
+			DEFINE_PATTERNS( IN_Move,
+							 "5.25",
+							 "83 3D ? ? ? ? ? 75 ? 83 3D ? ? ? ? ? 74 ? FF 74 24 08",
+							 "5.11",
+							 "83 3D ? ? ? ? ? 56 8B 74 24 0C 75 1A" );
+			DEFINE_PATTERNS( GetClientColor,
+							 "5.23",
+							 "8B 4C 24 04 85 C9 7E",
+							 "5.11",
+							 "8B 44 24 04 85 C0 7E" );
+			DEFINE_PATTERNS( CHudAmmo__VidInit,
+							 "5.26",
+							 "81 FE ? ? ? ? 7C ? 5E B0 ? C3",
+							 "5.22",
+							 "81 FE ? ? ? ? 7C ? B0 ? 5E C3",
+							 "5.11",
+							 "81 FE ? ? ? ? 7C ? 81 3D ? ? ? ? ? ? ? ? 5E" );
+			DEFINE_PATTERNS( __MsgFunc_ServerVer,
+							 "5.23",
+							 "8D 44 24 40 C6 44 24 3C 00 68 ? ? ? ? 50 0F 11 44 24 48",
+							 "5.11",
+							 "8D 54 24 1C 68 ? ? ? ? 52 89 44 24 24" );
 		}
 
 		namespace Server
 		{
-			DEFINE_PATTERNS_2( PlayerSpawns,
-							   "5.26",
-							   "56 8B 74 24 0C 57 8B 7C 24 0C 85 FF 0F 84 ? ? ? ? 83 3F",
-							   "5.11",
-							   "57 8B 7C 24 08 85 FF 0F 84 ? ? ? ? 83 3F ? 0F" );
-			DEFINE_PATTERNS_3( FixPlayerStuck,
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 03 00 00",
-							   "5.25",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 FC 02 00 00",
-							   "5.11",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 0C 03 00 00 56" );
-			DEFINE_PATTERNS_3( CBaseEntity__FireBullets,
-							   "5.26",
-							   "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F1",
-							   "5.25",
-							   "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F9 89 7D F0",
-							   "5.11",
-							   "6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 55 56 57 A1 ? ? ? ? 33 C4 50 8D 84 24 BC 00 00 00" );
-			DEFINE_PATTERNS_3( UTIL_GetCircularGaussianSpread,
-							   "5.26",
-							   "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00",
-							   "5.25",
-							   "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00",
-							   "5.11",
-							   "55 8B EC 83 E4 ? 83 EC ? 56 8B 75 08 57 8B 7D 0C" );
-			DEFINE_PATTERNS_3( FireTargets,
-							   "5.26",
-							   "51 53 8B 5C 24 0C 57 8B 7C 24 14",
-							   "5.25",
-							   "53 8B 5C 24 08 85 DB 0F 84 ? ? ? ? 80 3B ? 0F 84 ? ? ? ? 55",
-							   "5.11",
-							   "8B 44 24 04 56 33 F6 3B C6" );
-			DEFINE_PATTERNS_3( CopyPEntityVars,
-							   "5.26",
-							   "E8 ? ? ? ? F3 0F 10 84 24 90 01 00 00",
-							   "5.25",
-							   "E8 ? ? ? ? F3 0F 10 84 24 8C 01 00 00",
-							   "5.11",
-							   "E8 ? ? ? ? D9 ? D9 ? ? ? ? ? ? D8 ? DF E0 DD ? F6 C4 ? 74" );
+			DEFINE_PATTERNS( PlayerSpawns,
+							 "5.26",
+							 "56 8B 74 24 0C 57 8B 7C 24 0C 85 FF 0F 84 ? ? ? ? 83 3F",
+							 "5.11",
+							 "57 8B 7C 24 08 85 FF 0F 84 ? ? ? ? 83 3F ? 0F" );
+			DEFINE_PATTERNS( FixPlayerStuck,
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 00 03 00 00",
+							 "5.25",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 FC 02 00 00",
+							 "5.11",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 0C 03 00 00 56" );
+			DEFINE_PATTERNS( CBaseEntity__FireBullets,
+							 "5.26",
+							 "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F1",
+							 "5.25",
+							 "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B F9 89 7D F0",
+							 "5.11",
+							 "6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 81 EC ? ? ? ? 53 55 56 57 A1 ? ? ? ? 33 C4 50 8D 84 24 BC 00 00 00" );
+			DEFINE_PATTERNS( UTIL_GetCircularGaussianSpread,
+							 "5.26",
+							 "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00",
+							 "5.25",
+							 "56 8B 74 24 08 57 8B 7C 24 10 66 0F 1F 44 00 00",
+							 "5.11",
+							 "55 8B EC 83 E4 ? 83 EC ? 56 8B 75 08 57 8B 7D 0C" );
+			DEFINE_PATTERNS( FireTargets,
+							 "5.26",
+							 "51 53 8B 5C 24 0C 57 8B 7C 24 14",
+							 "5.25",
+							 "53 8B 5C 24 08 85 DB 0F 84 ? ? ? ? 80 3B ? 0F 84 ? ? ? ? 55",
+							 "5.11",
+							 "8B 44 24 04 56 33 F6 3B C6" );
+			DEFINE_PATTERNS( CopyPEntityVars,
+							 "5.26",
+							 "E8 ? ? ? ? F3 0F 10 84 24 90 01 00 00",
+							 "5.25",
+							 "E8 ? ? ? ? F3 0F 10 84 24 8C 01 00 00",
+							 "5.11",
+							 "E8 ? ? ? ? D9 ? D9 ? ? ? ? ? ? D8 ? DF E0 DD ? F6 C4 ? 74" );
 		}
 
 		namespace GameUI
 		{
-			DEFINE_PATTERNS_2( CGameConsoleDialog__DPrint,
-							   "5.22",
-							   "55 8B EC 56 8B F1 FF B6 2C 01 00 00",
-							   "5.11",
-							   "56 8B F1 8B 86 2C 01 00 00 8B 8E 18 01 00 00" );
+			DEFINE_PATTERNS( CGameConsoleDialog__DPrint,
+							 "5.22",
+							 "55 8B EC 56 8B F1 FF B6 2C 01 00 00",
+							 "5.11",
+							 "56 8B F1 8B 86 2C 01 00 00 8B 8E 18 01 00 00" );
 		}
 	#endif
 	}

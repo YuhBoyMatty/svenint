@@ -22,11 +22,11 @@ namespace FeaturesGameData
 	{
 		namespace Engine
 		{
-			DEFINE_PATTERNS_2( R_LoadSkyboxInt,
-							   "5.26",
-							   "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 20 01 00 00 53 8B 9C 24 2C 01 00 00",
-							   "5.25",
-							   "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 8B 9C 24 ? ? 00 00 55 56 57 89 5C 24 24" );
+			DEFINE_PATTERNS( R_LoadSkyboxInt,
+							 "5.26",
+							 "81 EC ? ? ? ? A1 ? ? ? ? 33 C4 89 84 24 20 01 00 00 53 8B 9C 24 2C 01 00 00",
+							 "5.25",
+							 "81 EC ? ? 00 00 A1 ? ? ? ? 33 C4 89 84 24 ? ? 00 00 53 8B 9C 24 ? ? 00 00 55 56 57 89 5C 24 24" );
 		}
 	}
 }
