@@ -9,6 +9,7 @@
 #include "player_silent_angles.h"
 
 using namespace Globals;
+extern bool gbStrafedRight;
 
 //-----------------------------------------------------------------------------
 // Vars
@@ -24,7 +25,7 @@ FEATURE_CON_COMMAND_TOGGLE( sc_strafe, "BunnymodXT's Strafer" );
 
 ConVar sc_strafe_point_x( "sc_strafe_point_x", "0", FCVAR_EXTDLL, "Coordinate X to point strafe" );
 ConVar sc_strafe_point_y( "sc_strafe_point_y", "0", FCVAR_EXTDLL, "Coordinate Y to point strafe" );
-
+ConVar sc_strafe_buttons( "sc_strafe_buttons", "2 6 2 6", FCVAR_EXTDLL, "Sets the strafing buttons. The format is 4 digits: \"<AirLeft> <AirRight> <GroundLeft> <GroundRight>\". The default (auto-detect) is empty string: \"\".\nTable of buttons:\n\t0 - W\n\t1 - WA\n\t2 - A\n\t3 - SA\n\t4 - S\n\t5 - SD\n\t6 - D\n\t7 - WD\n" );
 ConVar sc_strafe_ignore_ground( "sc_strafe_ignore_ground", "1", FCVAR_EXTDLL, "Don't strafe when on ground" );
 ConVar sc_strafe_dir( "sc_strafe_dir", "3", FCVAR_EXTDLL, "Strafing direction. Directions:\n\t0 - to the left\n\t1 - to the right\n\t2 - best strafe\n\t3 - to view angles\n\t4 - to the point", true, 0.f, true, 4.f );
 ConVar sc_strafe_type( "sc_strafe_type", "0", FCVAR_EXTDLL, "Strafing type. Types:\n\t0 - Max acceleration strafing\n\t1 - Max angle strafing\n\t2 - Max deceleration strafing\n\t3 - Const speed strafing", true, 0.f, true, 3.f );
@@ -69,7 +70,7 @@ static void CvarChangeHook_sc_strafe_dir( cvar_t *pCvar, const char *pszOldValue
 		break;
 
 	case 3:
-		pszDir = "To given yaw";
+		pszDir = "To yaw";
 		break;
 
 	case 4:
@@ -119,49 +120,92 @@ static void CvarChangeHook_sc_strafe_type( cvar_t *pCvar, const char *pszOldValu
 // Hook event
 //-----------------------------------------------------------------------------
 
-void CStrafer::UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY )
+Strafe::Frame &CStrafer::GetStrafeFrame( usercmd_t *cmd, float frametime, bool bStrafe, bool bStrafeVectorial, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY )
 {
-	*reinterpret_cast<Vector *>( strafedata.player.Velocity ) = *playermove->velocity();
-	*reinterpret_cast<Vector *>( strafedata.player.Origin ) = *playermove->origin();
+	const char *pszValueSLJ = Globals::cl_enginefuncs->PhysInfo_ValueForKey( "slj" );
+	const bool bCanSuperJump = ( pszValueSLJ != NULL && *pszValueSLJ == '1' );
 
-	strafedata.vars.OnGround = playermove->onground() != -1;
-	strafedata.vars.EntFriction = playermove->friction();
-	strafedata.vars.Maxspeed = playermove->maxspeed();
-	strafedata.vars.ReduceWishspeed = strafedata.vars.OnGround && ( playermove->flags() & FL_DUCKING );
+	m_strafeFrame.player.WaterLevel = playermove->waterlevel();
+	m_strafeFrame.player.WaterType = playermove->watertype();
 
-	if ( playermove->movevars() != NULL )
+	m_strafeFrame.player.WaterJumpTime = (short)playermove->waterjumptime();
+	m_strafeFrame.player.DuckTime = (short)playermove->flDuckTime();
+
+	if ( cmd != NULL )
 	{
-		strafedata.vars.Maxspeed = playermove->movevars()->maxspeed;
-		strafedata.vars.Stopspeed = playermove->movevars()->stopspeed;
-		strafedata.vars.Friction = playermove->movevars()->friction;
-		strafedata.vars.Accelerate = playermove->movevars()->accelerate;
-		strafedata.vars.Airaccelerate = playermove->movevars()->airaccelerate;
+		m_strafeFrame.player.Jump = !!( cmd->buttons & IN_JUMP );
+		m_strafeFrame.player.Duck = !!( cmd->buttons & IN_DUCK );
+		m_strafeFrame.player.Use = !!( cmd->buttons & IN_USE );
+		m_strafeFrame.player.Walk = false;
+	}
+
+	m_strafeFrame.player.HasLongJumpModule = bCanSuperJump;
+	m_strafeFrame.player.ReduceWishspeed = !!( playermove->flags() & FL_DUCKING );
+	m_strafeFrame.player.Ducking = playermove->flags() & FL_DUCKING;
+	m_strafeFrame.player.InDuck = playermove->bInDuck();
+	m_strafeFrame.player.WaterJump = playermove->flags() & FL_WATERJUMP;
+
+	m_strafeFrame.player.vecVelocity = *playermove->velocity();
+	m_strafeFrame.player.vecOrigin = *playermove->origin();
+	m_strafeFrame.player.vecBaseVelocity = *playermove->basevelocity();
+
+	m_strafeFrame.player.PosType = ( playermove->onground() != -1 ? Strafe::PositionType::GROUND : Strafe::PositionType::AIR );
+	m_strafeFrame.player.ViewHeight = playermove->view_ofs()->z;
+	m_strafeFrame.player.EntGravity = playermove->gravity();
+	m_strafeFrame.player.EntFriction = playermove->friction();
+	m_strafeFrame.player.ClientMaxspeed = playermove->clientmaxspeed();
+
+	const movevars_t *mv = playermove->movevars();
+	if ( mv != NULL )
+	{
+		m_strafeFrame.vars.Gravity = mv->gravity;
+		m_strafeFrame.vars.Maxvelocity = mv->maxvelocity;
+		m_strafeFrame.vars.Maxspeed = mv->maxspeed;
+		m_strafeFrame.vars.Stopspeed = mv->stopspeed;
+		m_strafeFrame.vars.Stepsize = mv->stepsize;
+		m_strafeFrame.vars.Bounce = mv->bounce;
+		m_strafeFrame.vars.Friction = mv->friction;
+		m_strafeFrame.vars.Edgefriction = mv->edgefriction;
+		m_strafeFrame.vars.Accelerate = mv->accelerate;
+		m_strafeFrame.vars.Airaccelerate = mv->airaccelerate;
 	}
 	else
 	{
-		strafedata.vars.Stopspeed = sv_stopspeed->value;
-		strafedata.vars.Friction = sv_friction->value;
-		strafedata.vars.Accelerate = sv_accelerate->value;
-		strafedata.vars.Airaccelerate = sv_airaccelerate->value;
+		m_strafeFrame.vars.Gravity = 800.f;
+		m_strafeFrame.vars.Maxvelocity = 4096.f;
+		m_strafeFrame.vars.Maxspeed = 320.f;
+		m_strafeFrame.vars.Stopspeed = 100.f;
+		m_strafeFrame.vars.Stepsize = 18.f;
+		m_strafeFrame.vars.Bounce = 1.f;
+		m_strafeFrame.vars.Friction = 4.f;
+		m_strafeFrame.vars.Edgefriction = 2.f;
+		m_strafeFrame.vars.Accelerate = 10.f;
+		m_strafeFrame.vars.Airaccelerate = 10.f;
 	}
 
-	//strafedata.vars.Frametime = 1.f / CVar()->FindCvar("fps_max")->value;
-	//strafedata.vars.Frametime = playermove->frametime(); // 1.0f / 200.0f (1.0f / fps_max)
-	strafedata.vars.Frametime = frametime; // 1.0f / 200.0f (1.0f / fps_max)
+	//m_strafeFrame.vars.Frametime = 1.f / CVar()->FindCvar("fps_max")->value;
+	//m_strafeFrame.vars.Frametime = playermove->frametime(); // 1.0f / 200.0f (1.0f / fps_max)
+	m_strafeFrame.vars.Frametime = frametime; // 1.0f / 200.0f (1.0f / fps_max)
 
-	strafedata.frame.Strafe = bStrafe;
-	strafedata.frame.SetDir( dir );
-	strafedata.frame.SetType( type );
+	m_strafeFrame.Strafe = bStrafe;
+	m_strafeFrame.StrafeVectorial = bStrafeVectorial;
+	m_strafeFrame.AutoJump = false;
+	m_strafeFrame.SetDir( dir );
+	m_strafeFrame.SetType( type );
 
-	strafedata.frame.SetX( flPointX );
-	strafedata.frame.SetY( flPointY );
+	m_strafeFrame.UseGivenButtons = false;
 
-	strafedata.frame.SetYaw( static_cast<double>( flYaw ) );
+	m_strafeFrame.SetX( flPointX );
+	m_strafeFrame.SetY( flPointY );
 
-	strafedata.frame.VectorialIncrement = sc_strafe_vectorial_increment.GetFloat();
-	strafedata.frame.VectorialIncrementInvert = sc_strafe_vectorial_increment_invert.GetBool();
-	strafedata.frame.VectorialOffset = sc_strafe_vectorial_offset.GetFloat();
-	strafedata.frame.VectorialSnap = sc_strafe_vectorial_snap.GetFloat();
+	m_strafeFrame.SetYaw( static_cast<double>( flYaw ) );
+
+	m_strafeFrame.VectorialIncrement = sc_strafe_vectorial_increment.GetFloat();
+	m_strafeFrame.VectorialIncrementInvert = sc_strafe_vectorial_increment_invert.GetBool();
+	m_strafeFrame.VectorialOffset = sc_strafe_vectorial_offset.GetFloat();
+	m_strafeFrame.VectorialSnap = sc_strafe_vectorial_snap.GetFloat();
+
+	return m_strafeFrame;
 }
 
 //-----------------------------------------------------------------------------
@@ -170,15 +214,10 @@ void CStrafer::UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime
 
 EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
-	// CL_CreateMove post event
-	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
-
 	m_bStrafed = false;
 
-	extern bool g_bStrafedRight;
-	static bool s_bLastStrafedRight = g_bStrafedRight;
-	static bool s_bFlip = false;
-	static bool s_bSkipFlip = false;
+	// CL_CreateMove post event
+	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
 
 	const bool bStrafeTowardsMovementButtons = m_pStrafeTowardsMovementButtons->GetBool();
 	const bool bPressedAnyMovementButton = ( cmd->buttons & ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT ) );
@@ -188,8 +227,7 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 	if ( Features::antiafk->IsEnabled() ||
 		 Features::stick->IsEnabled() ||
-		 playermove->dead() ||
-		 playermove->iuser1() != 0 ||
+		 localplayer->IsDead() ||
 		 playermove->movetype() != MOVETYPE_WALK ||
 		 playermove->waterlevel() > WL_FEET )
 	{
@@ -206,12 +244,7 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 	NormalizeAngles( va );
 
-	if ( sc_strafe_yaw.GetString()[ 0 ] != '\0' )
-	{
-		targetYaw = sc_strafe_yaw.GetFloat();
-		m_strafeData.frame.StrafeToViewAngles = false;
-	}
-	else
+	if ( sc_strafe_yaw.GetString()[ 0 ] == '\0' )
 	{
 		if ( sc_strafe_vectorial.GetBool() )
 		{
@@ -244,114 +277,135 @@ EHookResult CStrafer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 		{
 			targetYaw = 0.f;
 		}
-
-		m_strafeData.frame.StrafeToViewAngles = true;
 	}
-
-	UpdateStrafeData( m_strafeData,
-					  pEvent->GetArg<float>( "frametime" ),
-					  true,
-					  strafeDir,
-					  strafeType,
-					  targetYaw,
-					  sc_strafe_point_x.GetFloat(),
-					  sc_strafe_point_y.GetFloat() );
-
-	if ( m_strafeData.frame.Strafe )
+	else
 	{
-		Strafe::ProcessedFrame out;
-		out.Yaw = va[ 1 ];
-		bool bWasStandingOnGround = m_strafeData.vars.OnGround;
-
-		// L4DST kicks in
-		if ( m_strafeData.vars.OnGround && Features::autojump->IsEnabled() && cmd->buttons & IN_JUMP )
-		{
-			m_strafeData.vars.OnGround = false;
-			m_strafeData.vars.ReduceWishspeed = false;
-		}
-		else if ( sc_strafe_ignore_ground.GetBool() && m_strafeData.vars.OnGround )
-		{
-			return kHookContinue;
-		}
-
-		Strafe::Friction( m_strafeData );
-
-		if ( sc_strafe_vectorial.GetBool() )
-			Strafe::StrafeVectorial( m_strafeData, out, false /* g_bYawChanged */ );
-		else if ( true /* !g_bYawChanged */ )
-			Strafe::Strafe( m_strafeData, out );
-
-		if ( out.Processed )
-		{
-			const bool bLastStrafedRightOld = s_bLastStrafedRight;
-			s_bLastStrafedRight = g_bStrafedRight;
-
-			if ( m_pBypassAntiStrafer->GetBool() )
-			{
-				// Mimic human inputs
-				if ( m_pBypassMode->GetInt() == 0 )
-				{
-					if ( bLastStrafedRightOld != g_bStrafedRight )
-					{
-						// L4DST kicks in.. AGAIN
-						float thetaMove = atan2f( out.Sidespeed, out.Forwardspeed );
-						//float flSpeed = sqrtf( out.Sidespeed * out.Sidespeed + out.Forwardspeed * out.Forwardspeed );
-						float moveDirDeg = NormalizeAngle( va[ 1 ] - VEC_RAD2DEG( thetaMove ) );
-
-						/*
-						if ( g_bStrafedRight )
-							cmd->viewangles[1] = NormalizeAngle( moveDirDeg + 90.0f );
-						else
-							cmd->viewangles[1] = NormalizeAngle( moveDirDeg - 90.0f );
-
-						RotateMoveInputs( cmd, va[ 1 ] );
-
-						cmd->forwardmove = 0.0f;
-						*/
-
-						float flNewYaw;
-						if ( g_bStrafedRight )
-							flNewYaw = NormalizeAngle( moveDirDeg + 90.0f );
-						else
-							flNewYaw = NormalizeAngle( moveDirDeg - 90.0f );
-
-						Vector vecNewAngles = cmd->viewangles;
-						vecNewAngles.y = flNewYaw;
-
-						Features::silentangles->SetAngles( vecNewAngles );
-						Features::silentangles->LockAngles(); // no change allowed anymore
-					}
-				}
-				// Skip flip
-				else if ( m_pBypassMode->GetInt() == 1 &&
-						  s_bSkipFlip &&
-						  bLastStrafedRightOld != g_bStrafedRight &&
-						  ( !bWasStandingOnGround || m_strafeData.vars.OnGround ) )
-				{
-					s_bSkipFlip = false;
-					return kHookContinue;
-				}
-			}
-
-			s_bSkipFlip = true;
-
-			cmd->forwardmove = out.Forwardspeed;
-			cmd->sidemove = out.Sidespeed;
-
-			cmd->viewangles[ 1 ] = va[ 1 ] = out.Yaw;
-
-			m_bStrafed = true;
-
-			if ( bLastStrafedRightOld == g_bStrafedRight )
-				s_bFlip = false;
-			else
-				s_bFlip = !s_bFlip;
-		}
+		targetYaw = sc_strafe_yaw.GetFloat();
 	}
+
+	GetStrafeFrame( cmd,
+					pEvent->GetArg<float>( "frametime" ),
+					true,
+					sc_strafe_vectorial.GetBool(),
+					strafeDir,
+					strafeType,
+					targetYaw,
+					sc_strafe_point_x.GetFloat(),
+					sc_strafe_point_y.GetFloat() );
+
+	if ( !m_strafeFrame.Strafe )
+		return kHookContinue;
+	
+	Strafe::ProcessedFrame out;
+	out.Yaw = va[ 1 ];
+	const bool bWasStandingOnGround = ( m_strafeFrame.player.PosType == Strafe::PositionType::GROUND );
+
+	// L4DST kicks in
+	if ( Features::autojump->IsEnabled() && cmd->buttons & IN_JUMP )
+	{
+		m_strafeFrame.AutoJump = true;
+		PredictJump( m_strafeFrame );
+	}
+	
+	if ( sc_strafe_ignore_ground.GetBool() && m_strafeFrame.player.PosType == Strafe::PositionType::GROUND )
+		return kHookContinue;
+
+	Strafe::Friction( m_strafeFrame );
+
+	if ( m_strafeFrame.StrafeVectorial )
+	{
+		Strafe::StrafeVectorial( m_strafeFrame, out, false /* gbYawChanged */ );
+	}
+	else if ( true /* !gbYawChanged */ )
+	{
+		auto btns = Strafe::StrafeButtons();
+		bool usingButtons = sscanf( sc_strafe_buttons.GetString(), "%hhu %hhu %hhu %hhu", &btns.AirLeft, &btns.AirRight, &btns.GroundLeft, &btns.GroundRight );
+
+		m_strafeFrame.UseGivenButtons = usingButtons;
+		m_strafeFrame.buttons = btns;
+
+		Strafe::Strafe( m_strafeFrame, out );
+	}
+
+	if ( !out.Processed )
+		return kHookContinue;
+	
+	const bool bLastStrafedRightOld = m_bLastStrafedRight;
+	m_bLastStrafedRight = gbStrafedRight;
+
+	if ( BypassAntiStrafer( cmd, out, va, bLastStrafedRightOld, bWasStandingOnGround ) )
+		return kHookContinue; // Skip flip
+
+	m_bSkipFlip = true;
+	m_bStrafed = true;
+
+	cmd->forwardmove = out.Forwardspeed;
+	cmd->sidemove = out.Sidespeed;
+	cmd->viewangles[ 1 ] = va[ 1 ] = out.Yaw;
+
+	if ( bLastStrafedRightOld == gbStrafedRight )
+		m_bFlip = false;
+	else
+		m_bFlip = !m_bFlip;
 
 	cl_enginefuncs->SetViewAngles( va );
-
 	return kHookContinue;
+}
+
+//-----------------------------------------------------------------------------
+// BypassAntiStrafer
+//-----------------------------------------------------------------------------
+
+bool CStrafer::BypassAntiStrafer( usercmd_t *cmd, Strafe::ProcessedFrame out, float *va, const bool bLastStrafedRightOld, const bool bWasStandingOnGround )
+{
+	if ( !m_pBypassAntiStrafer->GetBool() )
+		return false;
+	
+	// Mimic human inputs
+	if ( m_pBypassMode->GetInt() == 0 )
+	{
+		if ( bLastStrafedRightOld != gbStrafedRight )
+		{
+			// L4DST kicks in.. AGAIN
+			float thetaMove = atan2f( out.Sidespeed, out.Forwardspeed );
+			//float flSpeed = sqrtf( out.Sidespeed * out.Sidespeed + out.Forwardspeed * out.Forwardspeed );
+			float moveDirDeg = NormalizeAngle( va[ 1 ] - VEC_RAD2DEG( thetaMove ) );
+
+			/*
+			if ( g_bStrafedRight )
+				cmd->viewangles[1] = NormalizeAngle( moveDirDeg + 90.0f );
+			else
+				cmd->viewangles[1] = NormalizeAngle( moveDirDeg - 90.0f );
+
+			RotateMoveInputs( cmd, va[ 1 ] );
+
+			cmd->forwardmove = 0.0f;
+			*/
+
+			float flNewYaw;
+			if ( gbStrafedRight )
+				flNewYaw = NormalizeAngle( moveDirDeg + 90.0f );
+			else
+				flNewYaw = NormalizeAngle( moveDirDeg - 90.0f );
+
+			Vector vecNewAngles = cmd->viewangles;
+			vecNewAngles.y = flNewYaw;
+
+			Features::silentangles->SetAngles( vecNewAngles );
+			Features::silentangles->LockAngles(); // no change allowed anymore
+		}
+	}
+	// Skip flip
+	else if ( m_pBypassMode->GetInt() == 1 &&
+				m_bSkipFlip &&
+				bLastStrafedRightOld != gbStrafedRight &&
+				( !bWasStandingOnGround || ( m_strafeFrame.player.PosType == Strafe::PositionType::GROUND ) ) )
+	{
+		m_bSkipFlip = false;
+		return true;
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -371,12 +425,10 @@ CStrafer::CStrafer( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	m_pStrafeDir = NULL;
 	m_pStrafeType = NULL;
 
-	sv_friction = NULL;
-	sv_accelerate = NULL;
-	sv_airaccelerate = NULL;
-	sv_stopspeed = NULL;
-
 	m_bStrafed = false;
+	m_bFlip = false;
+	m_bSkipFlip = false;
+	m_bLastStrafedRight = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -407,7 +459,6 @@ bool CStrafer::Load( void )
 {
 	Modules::menu->BindFeature( this );
 
-	Modules::menu->AddElementSeparator( this );
 	m_pVectorialStrafer = Modules::menu->AddParamBool( this, "VectorialStrafer", NULL, true );
 	m_pIgnoreGround = Modules::menu->AddParamBool( this, "IgnoreGround", NULL, true );
 
@@ -423,20 +474,12 @@ bool CStrafer::Load( void )
 	m_pStrafeDir = Modules::menu->AddParamList( this, "StrafeDir", NULL, 3, " 0 - Left\0 1 - Right\0 2 - Best\0 3 - Viewangles\0 4 - Point\0\0" );
 	m_pStrafeType = Modules::menu->AddParamList( this, "StrafeType", NULL, 0, " 0 - Max Acceleration\0 1 - Max Angle\0 2 - Max Deceleration\0 3 - Const Speed\0\0" );
 
-	sv_friction = CVar()->FindCvar( "sv_friction" );
-	sv_accelerate = CVar()->FindCvar( "sv_accelerate" );
-	sv_airaccelerate = CVar()->FindCvar( "sv_airaccelerate" );
-	sv_stopspeed = CVar()->FindCvar( "sv_stopspeed" );
-
-	FEATURE_CHECK_SYMBOL( sv_friction, "sv_friction" );
-	FEATURE_CHECK_SYMBOL( sv_accelerate, "sv_accelerate" );
-	FEATURE_CHECK_SYMBOL( sv_airaccelerate, "sv_airaccelerate" );
-	FEATURE_CHECK_SYMBOL( sv_stopspeed, "sv_stopspeed" );
-
-	m_strafeData.frame.UseGivenButtons = true;
-	m_strafeData.frame.buttons = Strafe::StrafeButtons();
-	m_strafeData.frame.buttons.AirLeft = Strafe::Button::LEFT;
-	m_strafeData.frame.buttons.AirRight = Strafe::Button::RIGHT;
+	m_strafeFrame.UseGivenButtons = true;
+	m_strafeFrame.buttons = Strafe::StrafeButtons();
+	m_strafeFrame.buttons.AirLeft = Strafe::Button::LEFT;
+	m_strafeFrame.buttons.AirRight = Strafe::Button::RIGHT;
+	m_strafeFrame.buttons.GroundLeft = Strafe::Button::LEFT;
+	m_strafeFrame.buttons.GroundRight = Strafe::Button::RIGHT;
 
 	Modules::menu->BindConVar( m_pVectorialStrafer, &sc_strafe_vectorial );
 	Modules::menu->BindConVar( m_pIgnoreGround, &sc_strafe_ignore_ground );
@@ -455,6 +498,7 @@ void CStrafer::PostLoad( void )
 	FEATURE_REGISTER_CCMD( sc_strafe );
 	FEATURE_REGISTER_CVAR( sc_strafe_point_x );
 	FEATURE_REGISTER_CVAR( sc_strafe_point_y );
+	FEATURE_REGISTER_CVAR( sc_strafe_buttons );
 	FEATURE_REGISTER_CVAR( sc_strafe_ignore_ground );
 	FEATURE_REGISTER_CVAR( sc_strafe_dir );
 	FEATURE_REGISTER_CVAR( sc_strafe_type );
@@ -485,6 +529,7 @@ void CStrafer::Unload( void )
 	FEATURE_UNREGISTER_CCMD( sc_strafe );
 	FEATURE_UNREGISTER_CVAR( sc_strafe_point_x );
 	FEATURE_UNREGISTER_CVAR( sc_strafe_point_y );
+	FEATURE_UNREGISTER_CVAR( sc_strafe_buttons );
 	FEATURE_UNREGISTER_CVAR( sc_strafe_ignore_ground );
 	FEATURE_UNREGISTER_CVAR( sc_strafe_dir );
 	FEATURE_UNREGISTER_CVAR( sc_strafe_type );

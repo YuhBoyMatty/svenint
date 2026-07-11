@@ -73,8 +73,6 @@ private:
 	bool m_bForcePitch;
 	float m_flSavedPitchAngle;
 
-	Strafe::StrafeData m_strafeData;
-
 	DetourHandle_t m_hUserMsgHook_SayText;
 };
 

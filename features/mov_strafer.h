@@ -31,9 +31,14 @@ public:
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
 public:
-	void UpdateStrafeData( Strafe::StrafeData &strafedata, float frametime, bool bStrafe, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY );
+	Strafe::Frame			&GetStrafeFrame( usercmd_t *cmd, float frametime, bool bStrafe, bool bStrafeVectorial, Strafe::StrafeDir dir, Strafe::StrafeType type, float flYaw, float flPointX, float flPointY );
+	inline Strafe::Frame	&GetStrafeFrame( void ) { return m_strafeFrame; }
+
 	inline bool IsStrafed( void ) const { return m_bStrafed; }
 	inline bool IsBypassEnabled( void ) const { return m_pBypassAntiStrafer->GetBool(); }
+
+private:
+	bool BypassAntiStrafer( usercmd_t *cmd, Strafe::ProcessedFrame out, float *va, const bool bLastStrafedRightOld, const bool bWasStandingOnGround );
 
 private:
 	CMenuValueBool *m_pVectorialStrafer;
@@ -45,14 +50,12 @@ private:
 	CMenuValueList *m_pStrafeDir;
 	CMenuValueList *m_pStrafeType;
 
-	Strafe::StrafeData m_strafeData;
-
-	struct cvar_s *sv_friction;
-	struct cvar_s *sv_accelerate;
-	struct cvar_s *sv_airaccelerate;
-	struct cvar_s *sv_stopspeed;
+	Strafe::Frame m_strafeFrame;
 
 	bool m_bStrafed;
+	bool m_bFlip;
+	bool m_bSkipFlip;
+	bool m_bLastStrafedRight;
 };
 
 EXTERN_FEATURE( CStrafer, strafer );

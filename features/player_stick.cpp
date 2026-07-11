@@ -580,37 +580,38 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, float frametime, Vec
 	}
 	else
 	{
-		extern bool g_bStrafedRight;
-		static bool s_bLastStrafedRight = g_bStrafedRight;
+		extern bool gbStrafedRight;
+		static bool s_bLastStrafedRight = gbStrafedRight;
 		static bool s_bFlip = false;
 		static bool s_bSkipFlip = false;
 
 		//Vector va;
 		//cl_enginefuncs->GetViewAngles( va );
 
-		Features::strafer->UpdateStrafeData( m_strafeData,
-											 frametime,
-											 true,
-											 Strafe::StrafeDir::POINT,
-											 Strafe::StrafeType::MAXACCEL,
-											 cmd->viewangles.y,
-											 vecFollowPoint.x,
-											 vecFollowPoint.y );
+		Strafe::Frame &strafeFrame = Features::strafer->GetStrafeFrame( cmd,
+																		frametime,
+																		true,
+																		true,
+																		Strafe::StrafeDir::POINT,
+																		Strafe::StrafeType::MAXACCEL,
+																		cmd->viewangles.y,
+																		vecFollowPoint.x,
+																		vecFollowPoint.y );
 
 		Strafe::ProcessedFrame out;
 		out.Yaw = cmd->viewangles.y;
 
-		Strafe::Friction( m_strafeData );
-		Strafe::StrafeVectorial( m_strafeData, out, false );
+		Strafe::Friction( strafeFrame );
+		Strafe::StrafeVectorial( strafeFrame, out, false );
 
 		if ( out.Processed )
 		{
 			bool bOldLastStrafedRight = s_bLastStrafedRight;
-			s_bLastStrafedRight = g_bStrafedRight;
+			s_bLastStrafedRight = gbStrafedRight;
 
 			if ( Features::strafer->IsBypassEnabled() &&
 				 s_bSkipFlip &&
-				 bOldLastStrafedRight != g_bStrafedRight )
+				 bOldLastStrafedRight != gbStrafedRight )
 			{
 				s_bSkipFlip = false;
 			}
@@ -621,7 +622,7 @@ void CStick::TryMove( cl_entity_t *pPlayer, usercmd_t *cmd, float frametime, Vec
 				cmd->forwardmove = out.Forwardspeed;
 				cmd->sidemove = out.Sidespeed;
 
-				if ( bOldLastStrafedRight == g_bStrafedRight )
+				if ( bOldLastStrafedRight == gbStrafedRight )
 					s_bFlip = false;
 				else
 					s_bFlip = !s_bFlip;
