@@ -22,7 +22,7 @@ EXPOSE_FEATURE_SINGLETON( CFriends, friends, "Visual", "Friends" );
 
 void CFriends::LoadFriendsFromFile( void )
 {
-	static char szBuffer[ 512 ];
+	char szBuffer[ 512 ];
 	FILE *file = fopen( SVENINT_FOLDER_NAME "/friends.txt", "r" );
 
 	if ( file != NULL )

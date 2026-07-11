@@ -36,7 +36,7 @@ static const char *g_szVoteCommands[] =
 
 static inline void VoteAgainstPlayer( int iVoteCommand, int iPlayerIndex )
 {
-	static char s_szVoteBuffer[ 512 ];
+	char s_szVoteBuffer[ 512 ];
 	player_info_t *pPlayerInfo;
 
 	if ( pPlayerInfo = enginestudio->PlayerInfo( iPlayerIndex - 1 ) )
@@ -52,7 +52,7 @@ static inline void VoteAgainstPlayer( int iVoteCommand, int iPlayerIndex )
 
 void CVoteBot::ReloadTargets( void )
 {
-	static char szBuffer[ 512 ];
+	char szBuffer[ 512 ];
 	FILE *file = fopen( SVENINT_FOLDER_NAME "/votebot/targets.txt", "r" );
 
 	if ( file != NULL )
@@ -93,7 +93,7 @@ void CVoteBot::ReloadTargets( void )
 
 void CVoteBot::ReloadFriends( void )
 {
-	static char szBuffer[ 512 ];
+	char szBuffer[ 512 ];
 	FILE *file = fopen( SVENINT_FOLDER_NAME "/votebot/friends.txt", "r" );
 
 	if ( file != NULL )
@@ -181,7 +181,7 @@ void CVoteBot::TextMsgEvent( const char *pszUserMsg, int iSize, void *pBuffer )
 				}
 
 				netadr_t addr;
-				static char buffer[ 128 ];
+				char buffer[ 128 ];
 
 			#if 0
 				engineclient->GetServerAddress( &addr );

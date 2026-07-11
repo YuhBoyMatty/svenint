@@ -229,8 +229,8 @@ void CGameUtils::PrintChatText( const char *pszMessage, ... )
 {
 	size_t len;
 
-	static char buffer[ 1024 ];
-	static char szFormattedMsg[ 1024 ];
+	char rgszBuffer[ 1024 ];
+	char rgszFormattedMsg[ 1024 ];
 	static const usermsg_t *pSayText = NULL;
 
 	if ( Globals::cls->state < ca_uninitialized || pszMessage == NULL || ( len = strlen( pszMessage ) ) == 0 )
@@ -241,17 +241,17 @@ void CGameUtils::PrintChatText( const char *pszMessage, ... )
 
 	va_list args;
 	va_start( args, pszMessage );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessage, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessage, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
-	CMessageBuffer msgbuffer( buffer, Q_ARRAYSIZE( buffer ) );
+	CMessageBuffer msgbuffer( rgszBuffer, Q_ARRAYSIZE( rgszBuffer ) );
 
 	msgbuffer.WriteByte( 0 );
-	msgbuffer.WriteString( szFormattedMsg );
+	msgbuffer.WriteString( rgszFormattedMsg );
 
-	buffer[ Q_ARRAYSIZE( buffer ) - 1 ] = 0;
+	rgszBuffer[ Q_ARRAYSIZE( rgszBuffer ) - 1 ] = 0;
 
 	//Msg( pszMessage );
 	pSayText->function( "SayText", msgbuffer.GetBuffer()->cursize, msgbuffer.GetBuffer()->data );
@@ -268,16 +268,16 @@ void CGameUtils::DrawSetTextColor( float r, float g, float b )
 
 int CGameUtils::DrawConsoleString( int x, int y, const char *pszFormat, ... )
 {
-	static char szFormattedMsg[ 4096 ] = { 0 };
+	char rgszFormattedMsg[ 4096 ];
 
 	va_list args;
 	va_start( args, pszFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
-	return Globals::cl_enginefuncs->pfnDrawConsoleString( x, y, szFormattedMsg );
+	return Globals::cl_enginefuncs->pfnDrawConsoleString( x, y, rgszFormattedMsg );
 }
 
 CGameUtils gGameUtils;

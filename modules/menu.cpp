@@ -1492,7 +1492,7 @@ void CMenuModule::DrawPrivateCategories( void )
 
 void CMenuModule::DrawMiscInfo( void )
 {
-	static char buffer[ 128 ];
+	char rgszBuffer[ 128 ];
 	float flLastTextWidth = 0.f, flTextWidth;
 
 	// FPS
@@ -1509,11 +1509,11 @@ void CMenuModule::DrawMiscInfo( void )
 	else if ( fps < 60 )
 		clrFps = IM_COL32( 255, 255, 60, 255 );
 
-	snprintf( buffer, Q_ARRAYSIZE( buffer ), "%d", fps );
-	flTextWidth = ImGui::CalcTextSize( buffer ).x;
+	snprintf( rgszBuffer, Q_ARRAYSIZE( rgszBuffer ), "%d", fps );
+	flTextWidth = ImGui::CalcTextSize( rgszBuffer ).x;
 	ImGui::SetCursorPosX( ImGui::GetWindowWidth() - flLastTextWidth - flTextWidth - ImGui::GetStyle().ItemSpacing.x * 1.5f );
 	ImGui::PushStyleColor( ImGuiCol_Text, clrFps );
-	ImGui::TextUnformatted( buffer );
+	ImGui::TextUnformatted( rgszBuffer );
 	ImGui::PopStyleColor();
 
 	flLastTextWidth = ImGui::CalcTextSize( "1000" ).x + flLastTextWidth;
@@ -1903,7 +1903,7 @@ void CMenuModule::UpdateConfigs( void )
 	HANDLE hFile;
 	WIN32_FIND_DATAA FileInformation;
 
-	static char szFolderInitialPath[ MAX_PATH ] = { 0 };
+	char szFolderInitialPath[ MAX_PATH ] = { 0 };
 	snprintf( szFolderInitialPath, Q_ARRAYSIZE( szFolderInitialPath ), "%s*.*", m_sConfigsFullPath.c_str() );
 
 	hFile = ::FindFirstFile( szFolderInitialPath, &FileInformation );
@@ -1992,7 +1992,7 @@ void CMenuModule::UpdateShaderConfigs( void )
 	HANDLE hFile;
 	WIN32_FIND_DATAA FileInformation;
 
-	static char szFolderInitialPath[ MAX_PATH ] = { 0 };
+	char szFolderInitialPath[ MAX_PATH ] = { 0 };
 	snprintf( szFolderInitialPath, Q_ARRAYSIZE( szFolderInitialPath ), "%s*.*", m_sShaderConfigsFullPath.c_str() );
 
 	hFile = ::FindFirstFile( szFolderInitialPath, &FileInformation );

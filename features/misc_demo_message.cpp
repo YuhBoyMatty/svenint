@@ -15,7 +15,6 @@ using namespace Globals;
 EXPOSE_FEATURE_SINGLETON( CDemoMessage, demomessage, "Misc", "Demo Message" );
 
 static CMessageBuffer demoMsg;
-static char demobuffer[ 2048 ];
 
 //-----------------------------------------------------------------------------
 // WriteSegmentInfo
@@ -26,7 +25,9 @@ void CDemoMessage::WriteSegmentInfo( float flTime, const char *pszFormattedTimer
 	if ( demoplayback )
 		return;
 
-	demoMsg.Init( "SegmentInfo", demobuffer, Q_ARRAYSIZE( demobuffer ) );
+	char rgszBuffer[ 2048 ];
+
+	demoMsg.Init( "SegmentInfo", rgszBuffer, Q_ARRAYSIZE( rgszBuffer ) );
 
 	demoMsg.WriteLong( TYPE_USER_DEMOMSG );
 	demoMsg.WriteShort( kDemoMsgSegmentInfo );
@@ -34,7 +35,7 @@ void CDemoMessage::WriteSegmentInfo( float flTime, const char *pszFormattedTimer
 	demoMsg.WriteString( (char *)pszFormattedTimer );
 	demoMsg.WriteString( (char *)pszMapname );
 
-	demobuffer[ Q_ARRAYSIZE( demobuffer ) - 1 ] = 0;
+	rgszBuffer[ Q_ARRAYSIZE( rgszBuffer ) - 1 ] = 0;
 
 	cl_enginefuncs->pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );
 }
@@ -58,7 +59,9 @@ void CDemoMessage::WriteEdgePixelsPlayer( const char *pszFilename, double width,
 		} m_llu;
 	} dbl;
 
-	demoMsg.Init( "Edge-Pixels Player", demobuffer, Q_ARRAYSIZE( demobuffer ) );
+	char rgszBuffer[ 2048 ];
+
+	demoMsg.Init( "Edge-Pixels Player", rgszBuffer, Q_ARRAYSIZE( rgszBuffer ) );
 
 	demoMsg.WriteLong( TYPE_USER_DEMOMSG );
 	demoMsg.WriteShort( kDemoMsgEdgePixelsPlayer );
@@ -84,7 +87,7 @@ void CDemoMessage::WriteEdgePixelsPlayer( const char *pszFilename, double width,
 
 	demoMsg.WriteLong( iDrawCalls );
 
-	demobuffer[ Q_ARRAYSIZE( demobuffer ) - 1 ] = 0;
+	rgszBuffer[ Q_ARRAYSIZE( rgszBuffer ) - 1 ] = 0;
 
 	cl_enginefuncs->pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );
 }
@@ -98,14 +101,16 @@ void CDemoMessage::WriteEdgePixelsPlayerStop( void )
 	if ( demoplayback )
 		return;
 
-	demoMsg.Init( "Edge-Pixels Player", demobuffer, Q_ARRAYSIZE( demobuffer ) );
+	char rgszBuffer[ 2048 ];
+
+	demoMsg.Init( "Edge-Pixels Player", rgszBuffer, Q_ARRAYSIZE( rgszBuffer ) );
 
 	demoMsg.WriteLong( TYPE_USER_DEMOMSG );
 	demoMsg.WriteShort( kDemoMsgEdgePixelsPlayer );
 
 	demoMsg.WriteByte( 1 );
 
-	demobuffer[ Q_ARRAYSIZE( demobuffer ) - 1 ] = 0;
+	rgszBuffer[ Q_ARRAYSIZE( rgszBuffer ) - 1 ] = 0;
 
 	cl_enginefuncs->pDemoAPI->WriteClientDLLMessage( demoMsg.GetBuffer()->cursize, demoMsg.GetBuffer()->data );
 }

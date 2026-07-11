@@ -51,9 +51,7 @@ static const Color s_Warning2PrintColor = { 255, 255, 90, 255 };
 //-----------------------------------------------------------------------------
 
 void *gpDbgConsoleFile = NULL;
-
 static std::mutex print_mutex;
-static char szFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ] = { 0 };
 
 //-----------------------------------------------------------------------------
 // Auto lock access to the called function when doing multithreading
@@ -320,23 +318,25 @@ void Msg( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.Print( szFormattedMsg );
+		gConsolePrinting.Print( rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kPrint, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kPrint, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "%s", szFormattedMsg );
+	printf( "%s", rgszFormattedMsg );
 #endif
 }
 
@@ -344,23 +344,25 @@ void Warning( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.ColorPrint( s_WarningPrintColor, szFormattedMsg );
+		gConsolePrinting.ColorPrint( s_WarningPrintColor, rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kColorPrint, s_WarningPrintColor, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kColorPrint, s_WarningPrintColor, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "WARNING: %s", szFormattedMsg );
+	printf( "WARNING: %s", rgszFormattedMsg );
 #endif
 }
 
@@ -368,23 +370,25 @@ void Warning2( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.ColorPrint( s_Warning2PrintColor, szFormattedMsg );
+		gConsolePrinting.ColorPrint( s_Warning2PrintColor, rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kColorPrint, s_Warning2PrintColor, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kColorPrint, s_Warning2PrintColor, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, "WARNING: %s", rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "WARNING: %s", szFormattedMsg );
+	printf( "WARNING: %s", rgszFormattedMsg );
 #endif
 }
 
@@ -392,23 +396,25 @@ void DevMsg( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.DPrint( szFormattedMsg );
+		gConsolePrinting.DPrint( rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kDevPrint, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kDevPrint, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "DEV: %s", szFormattedMsg );
+	printf( "DEV: %s", rgszFormattedMsg );
 #endif
 }
 
@@ -416,23 +422,25 @@ void DevWarning( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.DColorPrint( s_WarningPrintColor, szFormattedMsg );
+		gConsolePrinting.DColorPrint( s_WarningPrintColor, rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kDevColorPrint, s_WarningPrintColor, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kDevColorPrint, s_WarningPrintColor, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, "DEV WARNING: %s", szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, "DEV WARNING: %s", rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "DEV WARNING: %s", szFormattedMsg );
+	printf( "DEV WARNING: %s", rgszFormattedMsg );
 #endif
 }
 
@@ -440,23 +448,25 @@ void ConColorMsg( const Color &clr, const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.ColorPrint( clr, szFormattedMsg );
+		gConsolePrinting.ColorPrint( clr, rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kColorPrint, clr, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kColorPrint, clr, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "%s", szFormattedMsg );
+	printf( "%s", rgszFormattedMsg );
 #endif
 }
 
@@ -464,23 +474,25 @@ void ConMsg( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.Print( szFormattedMsg );
+		gConsolePrinting.Print( rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kPrint, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kPrint, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "%s", szFormattedMsg );
+	printf( "%s", rgszFormattedMsg );
 #endif
 }
 
@@ -488,23 +500,25 @@ void ConDMsg( const char *pszMessageFormat, ... )
 {
 	AUTO_LOCK( print_mutex );
 
+	char rgszFormattedMsg[ CONSOLE_PRINT_MESSAGE_LENGTH ];
+
 	va_list args;
 	va_start( args, pszMessageFormat );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessageFormat, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessageFormat, args );
 	va_end( args );
 
-	szFormattedMsg[ Q_ARRAYSIZE( szFormattedMsg ) - 1 ] = 0;
+	rgszFormattedMsg[ Q_ARRAYSIZE( rgszFormattedMsg ) - 1 ] = 0;
 
 	if ( gConsolePrinting.IsPrintAllowed() )
-		gConsolePrinting.DPrint( szFormattedMsg );
+		gConsolePrinting.DPrint( rgszFormattedMsg );
 	else
-		gConsolePrinting.AddQueuedMessage( kDevPrint, szFormattedMsg );
+		gConsolePrinting.AddQueuedMessage( kDevPrint, rgszFormattedMsg );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", szFormattedMsg );
+		fprintf( (FILE *)gpDbgConsoleFile, "DEV: %s", rgszFormattedMsg );
 
 #ifdef LINUX
-	printf( "DEV: %s", szFormattedMsg );
+	printf( "DEV: %s", rgszFormattedMsg );
 #endif
 }
 

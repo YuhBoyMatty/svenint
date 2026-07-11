@@ -18,9 +18,6 @@ using namespace Globals;
 
 EXPOSE_FEATURE_SINGLETON( CDrawing, drawing, "Render", "Drawing" );
 
-static char s_szBuffer[ 4096 ];
-static wchar_t s_wszBuffer[ 4096 ];
-
 //-----------------------------------------------------------------------------
 // Sprite handlers
 //-----------------------------------------------------------------------------
@@ -339,6 +336,9 @@ void CDrawing::DrawTexture( int id, int x0, int y0, int x1, int y1, int r, int g
 
 void CDrawing::DrawStringF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	char s_szBuffer[ 4096 ];
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 	va_list va_alist;
@@ -368,6 +368,9 @@ void CDrawing::DrawStringF( vgui::HFont font, int x, int y, int r, int g, int b,
 
 void CDrawing::DrawStringExF( vgui::HFont font, int x, int y, int r, int g, int b, int a, int &width, int &height, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	char s_szBuffer[ 4096 ];
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 	va_list va_alist;
@@ -396,6 +399,9 @@ void CDrawing::DrawStringExF( vgui::HFont font, int x, int y, int r, int g, int 
 
 void CDrawing::DrawStringACPF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString, ... )
 {
+	char s_szBuffer[ 4096 ];
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 	va_list va_alist;
@@ -425,6 +431,8 @@ void CDrawing::DrawStringACPF( vgui::HFont font, int x, int y, int r, int g, int
 
 void CDrawing::DrawWideStringF( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const wchar_t *pwszString, ... )
 {
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 	va_list va_alist;
@@ -451,6 +459,8 @@ void CDrawing::DrawWideStringF( vgui::HFont font, int x, int y, int r, int g, in
 
 void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString )
 {
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 #ifdef WIN32
@@ -458,6 +468,8 @@ void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, 
 #else
 	if ( Features::ignoreunicode->IsEnabled() )
 	{
+		char s_szBuffer[ 4096 ];
+
 		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
 		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
 	}
@@ -482,6 +494,8 @@ void CDrawing::DrawString( vgui::HFont font, int x, int y, int r, int g, int b, 
 
 void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b, int a, int &width, int &height, FontAlignFlags_t alignment, const char *pszString )
 {
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 #ifdef WIN32
@@ -489,6 +503,8 @@ void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b
 #else
 	if ( Features::ignoreunicode->IsEnabled() )
 	{
+		char s_szBuffer[ 4096 ];
+
 		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
 		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
 	}
@@ -512,6 +528,8 @@ void CDrawing::DrawStringEx( vgui::HFont font, int x, int y, int r, int g, int b
 
 void CDrawing::DrawStringACP( vgui::HFont font, int x, int y, int r, int g, int b, int a, FontAlignFlags_t alignment, const char *pszString )
 {
+	wchar_t s_wszBuffer[ 4096 ];
+
 	enginesurface->ResetViewPort();
 
 #ifdef WIN32
@@ -519,6 +537,8 @@ void CDrawing::DrawStringACP( vgui::HFont font, int x, int y, int r, int g, int 
 #else
 	if ( Features::ignoreunicode->IsEnabled() )
 	{
+		char s_szBuffer[ 4096 ];
+
 		UTIL_ReplaceUnicodeChars( pszString, s_szBuffer );
 		localize->ConvertANSIToUnicode( s_szBuffer, s_wszBuffer, Q_ARRAYSIZE( s_wszBuffer ) );
 	}
@@ -636,7 +656,7 @@ void CDrawing::DrawDotShadow( int x, int y, int r, int g, int b, int a, int iThi
 
 void CDrawing::InitSprites( void )
 {
-	static char szSpritePath[ MAX_PATH ];
+	char szSpritePath[ MAX_PATH ];
 	int iSpriteResolution = ( gameutils->GetScreenWidth() < 640 ) ? 320 : 640;
 
 	if ( m_pSpriteList != NULL )
@@ -707,6 +727,7 @@ CDrawing::CDrawing( const char *pszCategoryName, const char *pszName ) : CBaseFe
 	m_hFontFriends = 0;
 	m_hFontVotePopup = 0;
 	m_hFontChat = 0;
+	m_hFontInputs = 0;
 
 	m_iNumberWidth = 0;
 	m_iNumberHeight = 0;

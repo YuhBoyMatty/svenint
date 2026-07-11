@@ -18,11 +18,11 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_2( CHudBaseTextBlock__Print,
-							   "5.25",
-							   "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B D9 8B 0D",
-							   "5.11",
-							   "6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 53 55 56 57 A1 ? ? ? ? 33 C4 50 8D 44 24 14 64 A3 ? ? ? ? 8B F9" );
+			DEFINE_PATTERNS( CHudBaseTextBlock__Print,
+							 "5.25",
+							 "55 8B EC 6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 53 56 57 A1 ? ? ? ? 33 C5 50 8D 45 F4 64 A3 ? ? ? ? 8B D9 8B 0D",
+							 "5.11",
+							 "6A ? 68 ? ? ? ? 64 A1 ? ? ? ? 50 53 55 56 57 A1 ? ? ? ? 33 C4 50 8D 44 24 14 64 A3 ? ? ? ? 8B F9" );
 		}
 	}
 }
@@ -121,7 +121,7 @@ float *CChatColors::GetColor( int iPlayerIndex )
 
 void CChatColors::LoadPlayers( void )
 {
-	static char szBuffer[ 512 ];
+	char rgszBuffer[ 512 ];
 	FILE *file = fopen( SVENINT_FOLDER_NAME "/chat_colors_players.txt", "r" );
 
 	if ( file != NULL )
@@ -129,11 +129,11 @@ void CChatColors::LoadPlayers( void )
 		m_players.clear();
 		int nLine = 0;
 
-		while ( fgets( szBuffer, sizeof( szBuffer ), file ) )
+		while ( fgets( rgszBuffer, sizeof( rgszBuffer ), file ) )
 		{
 			nLine++;
 
-			char *buffer = UTIL_LStrip( (char *)szBuffer );
+			char *buffer = UTIL_LStrip( (char *)rgszBuffer );
 			UTIL_RemoveComment( buffer );
 			UTIL_RStrip( buffer );
 

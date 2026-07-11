@@ -77,6 +77,28 @@ CGameUtils *GameUtils();
 // Rest utilities
 //-----------------------------------------------------------------------------
 
+static const char *grgszButtons[] =
+{
+	"IN_ATTACK",
+	"IN_JUMP",
+	"IN_DUCK",
+	"IN_FORWARD",
+	"IN_BACK",
+	"IN_USE",
+	"IN_CANCEL",
+	"IN_LEFT",
+	"IN_RIGHT",
+	"IN_MOVELEFT",
+	"IN_MOVERIGHT",
+	"IN_ATTACK2",
+	"IN_RUN",
+	"IN_RELOAD",
+	"IN_ALT1",
+	"IN_SCORE",
+	"",
+	"IN_SPEED", // well, no
+};
+
 inline long FloatToLong32( float val )
 {
 	union

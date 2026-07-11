@@ -111,12 +111,12 @@ DEFINE_SCRIPTFUNC( ClientCmd )
 
 DEFINE_SCRIPTFUNC( PrintChatText )
 {
-	static char buffer[ 1024 ];
+	char rgszBuffer[ 1024 ];
 
 	const char *pszText = lua_tostring( pLuaState, 1 );
 
-	strncpy( buffer, pszText, 1023 );
-	buffer[ 1023 ] = 0;
+	strncpy( rgszBuffer, pszText, Q_ARRAYSIZE( rgszBuffer ) - 1 );
+	rgszBuffer[ Q_ARRAYSIZE( rgszBuffer ) - 1 ] = 0;
 
 	Globals::gameutils->PrintChatText( pszText );
 

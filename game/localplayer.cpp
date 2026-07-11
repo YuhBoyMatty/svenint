@@ -1721,23 +1721,24 @@ void CInventory::SelectWeapon( const char *pszWeaponName )
 	Globals::cl_enginefuncs->pfnClientCmd( const_cast<char *>( pszWeaponName ) );
 }
 
-#define CMD_BUFFER_LENGTH 140
-static char cmd[ CMD_BUFFER_LENGTH ] = { 0 };
-
 void CInventory::DropWeapon( WEAPON *pWeapon )
 {
-	snprintf( cmd, CMD_BUFFER_LENGTH, "drop %s\n", pWeapon->szName );
-	cmd[ CMD_BUFFER_LENGTH - 1 ] = '\0';
+	char rgszCmd[ 140 ];
 
-	Globals::cl_enginefuncs->pfnClientCmd( cmd );
+	snprintf( rgszCmd, Q_ARRAYSIZE( rgszCmd ), "drop %s\n", pWeapon->szName );
+	rgszCmd[ Q_ARRAYSIZE( rgszCmd ) - 1 ] = '\0';
+
+	Globals::cl_enginefuncs->pfnClientCmd( rgszCmd );
 }
 
 void CInventory::DropWeapon( const char *pszWeaponName )
 {
-	snprintf( cmd, CMD_BUFFER_LENGTH, "drop %s\n", pszWeaponName );
-	cmd[ CMD_BUFFER_LENGTH - 1 ] = '\0';
+	char rgszCmd[ 140 ];
 
-	Globals::cl_enginefuncs->pfnClientCmd( cmd );
+	snprintf( rgszCmd, Q_ARRAYSIZE( rgszCmd ), "drop %s\n", pszWeaponName );
+	rgszCmd[ Q_ARRAYSIZE( rgszCmd ) - 1 ] = '\0';
+
+	Globals::cl_enginefuncs->pfnClientCmd( rgszCmd );
 }
 
 static CInventory gInventory;

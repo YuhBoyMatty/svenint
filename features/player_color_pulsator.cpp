@@ -18,7 +18,7 @@ EXPOSE_FEATURE_SINGLETON( CColorPulsator, colorpulsator, "Player", "Color Pulsat
 
 EHookResult CColorPulsator::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
-	static char command_buffer[ 32 ];
+	char command_buffer[ 32 ];
 
 	if ( m_pTopColor->GetBool() && cl_enginefuncs->GetAbsoluteTime() - m_flTopColorDelay >= m_pUpdateDelay->GetFloat() )
 	{

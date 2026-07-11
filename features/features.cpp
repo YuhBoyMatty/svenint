@@ -12,7 +12,6 @@ CBaseFeature *CBaseFeature::s_pBaseFeaturesList = NULL;
 static CBaseFeature *s_pLastLoaded = NULL;
 static bool s_bFeaturesLoaded = false;
 static bool s_bShaderFeaturesLoaded = false;
-static char szFormattedMsg[ 2048 ];
 
 //-----------------------------------------------------------------------------
 // Implement control options for features
@@ -298,32 +297,38 @@ void CBaseFeature::PrintState( bool bCustomState /* = false */, bool bState /* =
 
 void CBaseFeature::PrintMsg( const char *pszMessage, ... )
 {
+	char rgszFormattedMsg[ 2048 ];
+
 	va_list args;
 	va_start( args, pszMessage );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessage, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessage, args );
 	va_end( args );
 
-	Msg( "<%s> %s", GetName(), szFormattedMsg );
+	Msg( "<%s> %s", GetName(), rgszFormattedMsg );
 }
 
 void CBaseFeature::PrintWarning( const char *pszMessage, ... )
 {
+	char rgszFormattedMsg[ 2048 ];
+
 	va_list args;
 	va_start( args, pszMessage );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessage, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessage, args );
 	va_end( args );
 
-	Warning( "<%s> %s", GetName(), szFormattedMsg );
+	Warning( "<%s> %s", GetName(), rgszFormattedMsg );
 }
 
 void CBaseFeature::PrintWarning2( const char *pszMessage, ... )
 {
+	char rgszFormattedMsg[ 2048 ];
+
 	va_list args;
 	va_start( args, pszMessage );
-	vsnprintf( szFormattedMsg, Q_ARRAYSIZE( szFormattedMsg ), pszMessage, args );
+	vsnprintf( rgszFormattedMsg, Q_ARRAYSIZE( rgszFormattedMsg ), pszMessage, args );
 	va_end( args );
 
-	Warning2( "<%s> %s", GetName(), szFormattedMsg );
+	Warning2( "<%s> %s", GetName(), rgszFormattedMsg );
 }
 
 void CBaseFeature::PrintFeatures( void )
