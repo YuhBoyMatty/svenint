@@ -100,14 +100,14 @@ typedef enum
 class CHookEvent
 {
 public:
-	CHookEvent( int nEventType, EHookResult &hookResult ) : m_pReturn( 0 )
+	CHookEvent( EHookEventType nEventType, EHookResult &hookResult ) : m_pReturn( 0 )
 	{
 		m_nEventType = nEventType;
 		m_pHookResult = &hookResult;
 		m_args.reserve( 2 );
 	}
 
-	inline int GetType( void ) const { return m_nEventType; }
+	inline EHookEventType GetType( void ) const { return m_nEventType; }
 	inline const EHookResult GetHookResult( void ) const { return *m_pHookResult; }
 
 	inline void SetReturn( void *ptr ) { m_pReturn = ptr; }
@@ -129,7 +129,7 @@ private:
 		void *pVar;
 	} hook_event_arg_t;
 
-	int								m_nEventType;
+	EHookEventType					m_nEventType;
 	EHookResult						*m_pHookResult;
 	void							*m_pReturn;
 	std::vector<hook_event_arg_t>	m_args;

@@ -58,9 +58,12 @@ void CIgnoreDifferentMaps::CheckMapCRC( uint32_t *ulCRC, char *pszMapName )
 
 	if ( *ulCRC != mapcrc )
 	{
-		PrintWarning( "Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n" );
-		PrintWarning( "Client's CRC of the map: %X\n", mapcrc );
-		PrintWarning( "Server's CRC of the map: %X\n", *ulCRC );
+		if ( mapcrc != 0 && *ulCRC != 0xFFFFFFFF )
+		{
+			PrintWarning( "Uh oh, your version of the map is different from the server one. Don't worry, we'll keep connecting\n" );
+			PrintWarning( "Client's CRC of the map: %X\n", mapcrc );
+			PrintWarning( "Server's CRC of the map: %X\n", *ulCRC );
+		}
 
 		*ulCRC = mapcrc;
 	}

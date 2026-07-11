@@ -626,6 +626,9 @@
       <Filter>features\Player</Filter>
     </ClCompile>
     <ClCompile Include="svenmod_emulation.cpp" />
+    <ClCompile Include="features\st_route_editor.cpp">
+      <Filter>features\Speedrun Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -767,9 +770,6 @@
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="game\game_hooks.h">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="game\commandline.h">
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="game\messagebuffer.h">
@@ -1329,6 +1329,12 @@
     </ClInclude>
     <ClInclude Include="features\player_drop_empty_weapon.h">
       <Filter>features\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="game\commandline.h">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="features\st_route_editor.h">
+      <Filter>features\Speedrun Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

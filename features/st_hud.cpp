@@ -784,17 +784,17 @@ bool CSpeedrunHUD::Load( void )
 	m_pColor = Modules::menu->AddParamColorRGB( this, "Color", NULL, Color( 180.f / 255.f, 220.f / 255.f, 255.f / 255.f, 1.f ) );
 
 	m_pShowViewAngles = Modules::menu->AddParamBool( this, "ShowViewAngles", NULL, false );
-	m_pViewAnglesWidthScreenFraction = Modules::menu->AddParamFloat( this, "ViewAnglesWidthScreenFraction", "Width", 0.895f, 0.f, 1.f );
-	m_pViewAnglesHeightScreenFraction = Modules::menu->AddParamFloat( this, "ViewAnglesHeightScreenFraction", "Height", 0.25f, 0.f, 1.f );
+	m_pViewAnglesWidthScreenFraction = Modules::menu->AddParamFloat( this, "ViewAnglesWidthScreenFraction", "Width", 0.012f, 0.f, 1.f );
+	m_pViewAnglesHeightScreenFraction = Modules::menu->AddParamFloat( this, "ViewAnglesHeightScreenFraction", "Height", 0.09f, 0.f, 1.f );
 
 	m_pShowPosition = Modules::menu->AddParamBool( this, "ShowPosition", NULL, false ); Modules::menu->AddElementSameLine( this );
 	m_pShowPositionViewOrigin = Modules::menu->AddParamBool( this, "ShowPositionViewOrigin", "View Origin", true );
-	m_pPositionWidthScreenFraction = Modules::menu->AddParamFloat( this, "PositionWidthScreenFraction", "Width", 0.009f, 0.f, 1.f );
-	m_pPositionHeightScreenFraction = Modules::menu->AddParamFloat( this, "PositionHeightScreenFraction", "Height", 0.15f, 0.f, 1.f );
+	m_pPositionWidthScreenFraction = Modules::menu->AddParamFloat( this, "PositionWidthScreenFraction", "Width", 0.012f, 0.f, 1.f );
+	m_pPositionHeightScreenFraction = Modules::menu->AddParamFloat( this, "PositionHeightScreenFraction", "Height", 0.16f, 0.f, 1.f );
 
 	m_pShowVelocity = Modules::menu->AddParamBool( this, "ShowVelocity", NULL, false );
-	m_pVelocityWidthScreenFraction = Modules::menu->AddParamFloat( this, "VelocityWidthScreenFraction", "Width", 0.895f, 0.f, 1.f );
-	m_pVelocityHeightScreenFraction = Modules::menu->AddParamFloat( this, "VelocityHeightScreenFraction", "Height", 0.09f, 0.f, 1.f );
+	m_pVelocityWidthScreenFraction = Modules::menu->AddParamFloat( this, "VelocityWidthScreenFraction", "Width", 0.012f, 0.f, 1.f );
+	m_pVelocityHeightScreenFraction = Modules::menu->AddParamFloat( this, "VelocityHeightScreenFraction", "Height", 0.25f, 0.f, 1.f );
 
 	m_pShowGaussBoostInfo = Modules::menu->AddParamBool( this, "ShowGaussBoostInfo", NULL, false );
 	m_pGaussBoostInfoWidthScreenFraction = Modules::menu->AddParamFloat( this, "GaussBoostInfoWidthScreenFraction", "Width", 0.3f, 0.f, 1.f );

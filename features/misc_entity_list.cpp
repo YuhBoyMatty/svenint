@@ -193,7 +193,7 @@ void CEntityList::UpdateHitboxes( int index )
 		Vector vecMid = ( pHitbox[ i ].bbmin + pHitbox[ i ].bbmax ) * 0.5f;
 		VectorTransform( vecMid, ( *m_pBoneTransform )[ pHitbox[ i ].bone ], vecHitbox );
 
-		m_ents[ index ].m_rgHitboxes[ i ] = vecHitbox + m_ents[ index ].m_vecVelocity;
+		m_ents[ index ].m_rgHitboxes[ i ] = vecHitbox;// +m_ents[ index ].m_vecVelocity;
 	}
 }
 

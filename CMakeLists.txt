@@ -202,6 +202,7 @@ set(SVENINT_SOURCE_FILES
 	features/st_revive_area.cpp
 	features/st_revive_boost_info.cpp
 	features/st_revive_info.cpp
+	features/st_route_editor.cpp
 	features/st_timer.cpp
 	features/st_timescale.cpp
 	features/st_usables.cpp
@@ -266,7 +267,7 @@ else()
 	set(CMAKE_STATIC_LINKER_FLAGS "-m32 -s -fpic -std=c++14 -w")
 	set(CMAKE_EXECUTABLE_LINKER_FLAGS "-m32 -s -fpic -std=c++14 -w")
 
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -s -DNDEBUG -fpic -fpermissive -Wl,--strip-all -fvisibility=hidden")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3 -s -DNDEBUG -fpic -fpermissive -Wl,--strip-all -fvisibility=hidden -Wl,--no-undefined")
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -s -DNDEBUG -fpic -fpermissive -Wl,--strip-all -fvisibility=hidden")
 	set(CMAKE_CXX_FLAGS_DEBUG "-Os -fpic -fpermissive")
 endif()

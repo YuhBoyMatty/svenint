@@ -34,14 +34,7 @@ static const Color clr_print( 80, 186, 255, 255 );
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-ConVar sc_enable_scripts( "sc_enable_scripts",
-					  #if !defined(WIN32) // FIXME: game crash at VM startup
-						  "0",
-					  #else
-						  "1",
-					  #endif
-						  FCVAR_EXTDLL,
-						  "Enable scripts virtual machine" );
+ConVar sc_enable_scripts( "sc_enable_scripts", "1", FCVAR_EXTDLL, "Enable scripts virtual machine" );
 
 CON_COMMAND( sc_script, "Execute a script line" )
 {

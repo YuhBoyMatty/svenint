@@ -192,6 +192,7 @@
     <ClInclude Include="features\st_revive_area.h" />
     <ClInclude Include="features\st_revive_boost_info.h" />
     <ClInclude Include="features\st_revive_info.h" />
+    <ClInclude Include="features\st_route_editor.h" />
     <ClInclude Include="features\st_timer.h" />
     <ClInclude Include="features\st_timescale.h" />
     <ClInclude Include="features\st_usables.h" />
@@ -431,6 +432,7 @@
     <ClCompile Include="features\st_revive_area.cpp" />
     <ClCompile Include="features\st_revive_boost_info.cpp" />
     <ClCompile Include="features\st_revive_info.cpp" />
+    <ClCompile Include="features\st_route_editor.cpp" />
     <ClCompile Include="features\st_timer.cpp" />
     <ClCompile Include="features\st_timescale.cpp" />
     <ClCompile Include="features\st_usables.cpp" />
