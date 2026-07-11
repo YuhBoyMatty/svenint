@@ -116,7 +116,7 @@ float calAO(vec2 uv, float depth, float dw, float dh)
 
 void main(void)
 {
-	vec2 uv = vec2(gl_FragCoord.xy / vec2(1920.0, 1080.0));
+	vec2 uv = vec2(gl_FragCoord.xy / res.xy);
 
 	vec2 noise = rand(uv);
 	float depth = readDepth(uv);
