@@ -19,11 +19,11 @@ namespace FeaturesGameData
 	{
 		namespace Client
 		{
-			DEFINE_PATTERNS_2( V_PunchAxis,
-							   "5.25",
-							   "8B 44 24 04 F3 0F 10 44 24 08",
-							   "5.11",
-							   "D9 ? ? ? 8B 44 24 04 D9 ? ? ? ? ? ? C3" );
+			DEFINE_PATTERNS( V_PunchAxis,
+							 "5.25",
+							 "8B 44 24 04 F3 0F 10 44 24 08",
+							 "5.11",
+							 "D9 ? ? ? 8B 44 24 04 D9 ? ? ? ? ? ? C3" );
 		}
 	}
 }
@@ -703,7 +703,7 @@ CEntity *CAim::FindBestTarget( void )
 
 			vecTargetPoint = ent.m_rgHitboxes[ vHitboxes[ j ] ];
 
-			if ( !IsCanSeeTarget( &ent, vecEyes, vecTargetPoint ) )
+			if ( vecTargetPoint.IsZeroFast() || !IsCanSeeTarget( &ent, vecEyes, vecTargetPoint ) )
 				continue;
 				
 			if ( sc_aimbot_scripts_filter_targets.GetBool() && !Modules::scripts->Callbacks()->OnFilterAimbotTarget( i ) )
@@ -735,7 +735,10 @@ bool CAim::IsCanSeeTarget( CEntity *pEntity, Vector &vecEyes, Vector &vecPoint )
 											   -1,
 											   &trace );
 
-	return m_pIgnoreBlockingEnts->GetBool() ? ( trace.fraction == 1.f ) : ( cl_enginefuncs->pEventAPI->EV_IndexFromTrace( &trace ) == pEntity->m_pEntity->index );
+	if ( trace.fraction == 1.f )
+		return true;
+
+	return !m_pIgnoreBlockingEnts->GetBool() && ( cl_enginefuncs->pEventAPI->EV_IndexFromTrace( &trace ) == pEntity->m_pEntity->index );
 }
 
 //-----------------------------------------------------------------------------
