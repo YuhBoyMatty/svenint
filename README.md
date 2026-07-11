@@ -65,6 +65,7 @@ For example, you can bind auto jump feature: 'bind F3 sc_autojump'
 * **-sint_keepconsole**: prevent debug console from closing [Windows only]
 * **-sint_noshaders**: disable shaders
 * **-sint_nocheckupdates**: disable updates checking
+* **-sint_svenmod_sleep_time**: wait delay in milliseconds to give some time to SvenMod load properly
 
 ### Building on Windows
 * Option 1: Visual Studio
