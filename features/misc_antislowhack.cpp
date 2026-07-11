@@ -338,7 +338,7 @@ bool CAntiSlowhack::Load( void )
 	Modules::menu->AddElementResetButton( this, "Reset" );
 
 	m_pMode = Modules::menu->AddParamList( this, "Mode", NULL, 1, " 0 - Block everything except gameplay important cmds\0 1 - Whitelist\0\0" );
-	m_pWhitelist = Modules::menu->AddParamText( this, "Whitelist", NULL, "speak,spk,play,mp3,stopsound,cl_stopsound,upload" );
+	m_pWhitelist = Modules::menu->AddParamText( this, "Whitelist", NULL, "speak,spk,play,mp3,stopsound,cl_stopsound,upload,httpstop" );
 	m_pNotifyPlayers = Modules::menu->AddParamBool( this, "NotifyPlayers", NULL, false );
 	m_pNotifyPlayersText = Modules::menu->AddParamText( this, "NotifyPlayersText", NULL, "Woah! Seems like the server tried to slowhack me!" );
 
