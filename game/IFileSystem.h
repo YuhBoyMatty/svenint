@@ -33,6 +33,13 @@ typedef enum
 	FILESYSTEM_SEEK_TAIL,
 } FileSystemSeek_t;
 
+typedef enum
+{
+	PATH_ADD_TO_HEAD = 0,
+	PATH_ADD_TO_TAIL,
+	PATH_ADD_TO_TAIL_ATINDEX
+} SearchPathAdd_t;
+
 enum
 {
 	FILESYSTEM_INVALID_FIND_HANDLE = -1
@@ -180,6 +187,41 @@ public:
 	virtual FileHandle_t	OpenFromCacheForRead( const char *pFileName, const char *pOptions, const char *pathID = 0L ) = 0;
 
 	virtual void			AddSearchPathNoWrite( const char *pPath, const char *pathID ) = 0;
+
+	virtual FileWarningLevel_t GetWarningLevel( void ) = 0;
+
+	virtual void			DumpPaths( void ) = 0;
+
+	virtual const char		*FindGetCurSearchPath( FileHandle_t file ) = 0;
+
+	virtual void			AddSearchPathEx( const char *pPath, const char *pathID, bool bGetPakFiles, SearchPathAdd_t addType ) = 0;
+	virtual bool			RemoveSearchPathEx( const char *pPath, const char *pathID ) = 0;
+	virtual int				GetSearchPath( const char *pathID, bool bGetPackFiles, char *pPath, int nMaxLen ) = 0;
+	virtual const char		*RelativePathToFullPath( const char *pFileName, const char *pPathID, char *pLocalPath, int localPathBufferSize ) = 0;
+	virtual bool			FullPathToRelativePathEx( const char *pFullPath, const char *pPathId, char *pRelative, int nMaxLen ) = 0;
+
+	virtual bool			FileExistsEx( const char *pFileName, const char *pPathID ) = 0;
+	virtual bool			IsDirectoryEx( const char *pFileName, const char *pathID ) = 0;
+	virtual unsigned int	SizeEx( const char *pFileName, const char *pPathID ) = 0;
+	virtual long			GetFileTimeEx( const char *pFileName, const char *pPathID ) = 0;
+
+	virtual FILE			*FS_fopen( const char *filename, const char *mode, bool something ) = 0;
+	virtual int				FS_fclose( FILE *stream ) = 0;
+	virtual int				FS_fseek( FILE *stream, long long offset, int origin ) = 0;
+	virtual long			FS_ftell( FILE *stream ) = 0;
+	virtual int				FS_feof( FILE *stream ) = 0;
+	virtual size_t			FS_fread( void *buffer, size_t size, size_t count, FILE *stream ) = 0;
+	virtual size_t			FS_fwrite( const void *buffer, size_t size, size_t count, FILE *stream ) = 0;
+	virtual int				FS_vfprintf( FILE *stream, const char *format, char *argList ) = 0;
+	virtual int				FS_ferror( FILE *stream ) = 0;
+	virtual int				FS_fflush( FILE *stream ) = 0;
+	virtual char			*FS_fgets( char *buffer, int maxLen, FILE *stream ) = 0;
+	virtual int				FS_stat( const char *path, struct stat *buffer ) = 0;
+	virtual void			*FS_FindFirstFile( char *pattern, struct FIND_DATA *findData ) = 0;
+	virtual int				FS_FindNextFile( void *handle, struct FIND_DATA *findData ) = 0;
+	virtual int				FS_FindClose( void *handle ) = 0;
+
+	virtual bool			IsThreadSafe( void ) = 0;
 };
 
 // Steam3/Src compat
