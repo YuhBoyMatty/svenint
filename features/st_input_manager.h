@@ -75,6 +75,8 @@ struct im_frame_t
 
 class CInputContext
 {
+	friend class CInputManager;
+
 public:
 	CInputContext();
 
@@ -148,12 +150,14 @@ public:
 	void			Backward( int iFrames );
 
 	void			RecordCommand( const char *pszCommand );
+	void			RecordCommandNow( const char *pszCommand );
 
 	bool			IsInAction( void ) const;
 	bool			IsRecording( void ) const;
 	bool			IsPlayingback( void ) const;
 
 	int				GetCurrentFrame( void ) const;
+	inline FILE		*GetExperimental( void ) { return m_pExperimental; }
 
 public:
 	// Callbacks
@@ -168,6 +172,7 @@ public:
 	// Callbacks for hooked functions
 	void			OnCbuf_AddText( const char *pszCommand );
 	void			OnServerCmd( const char *pszCommand );
+	void			OnCmdStart( edict_t *player, usercmd_t *cmd );
 
 public:
 	inline CInputContext &GetInputContext( void ) { return m_InputContext; };
@@ -176,6 +181,7 @@ private:
 	int					m_state;
 	bool				m_bSavedInputs;
 	bool				m_bForceViewAngles;
+	FILE				*m_pExperimental;
 
 	CInputContext		m_InputContext;
 
@@ -186,6 +192,7 @@ private:
 	void				*m_pfnServerCmd;
 	DetourHandle_t		m_hCbuf_AddText;
 	DetourHandle_t		m_hServerCmd;
+	DetourHandle_t		m_hCmdStart;
 };
 
 EXTERN_FEATURE( CInputManager, inputmanager );

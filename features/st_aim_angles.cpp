@@ -18,11 +18,11 @@ EXPOSE_FEATURE_SINGLETON( CAimAngles, aimangles, "Speedrun Tools", "Aim Angles" 
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-CON_COMMAND( sc_st_follow_point, "Set local player view angles to a point and follow it" )
+CON_COMMAND( st_follow_point, "Set local player view angles to a point and follow it" )
 {
 	if ( args.ArgC() != 5 )
 	{
-		Msg( ( "Usage: sc_st_follow_point <x> <y> <z> <lerp>\n" ) );
+		Msg( ( "Usage: st_follow_point <x> <y> <z> <lerp>\n" ) );
 		THIS_FEATURE()->StopFollowingPoint();
 		return;
 	}
@@ -30,32 +30,32 @@ CON_COMMAND( sc_st_follow_point, "Set local player view angles to a point and fo
 	THIS_FEATURE()->FollowPoint( (float)atof( args[ 1 ] ), (float)atof( args[ 2 ] ), (float)atof( args[ 3 ] ), (float)atof( args[ 4 ] ) );
 }
 
-CON_COMMAND( sc_st_follow_point_stop, "Stop following point" )
+CON_COMMAND( st_follow_point_stop, "Stop following point" )
 {
 	THIS_FEATURE()->StopFollowingPoint();
 }
 
-CON_COMMAND( sc_st_setangles, "Set local player view angles" )
+CON_COMMAND( st_setangles, "Set local player view angles" )
 {
 	if ( args.ArgC() != 4 )
 	{
-		Msg( "Usage: sc_st_setangles <pitch> <yaw> <frames>\n" );
+		Msg( "Usage: st_setangles <pitch> <yaw> <frames>\n" );
 		return;
 	}
 
 	THIS_FEATURE()->SetAngles( (float)atof( args.Arg( 1 ) ), (float)atof( args.Arg( 2 ) ), atoi( args.Arg( 3 ) ) );
 }
 
-CON_COMMAND( sc_st_setangles_stop, "Stop setting angles" )
+CON_COMMAND( st_setangles_stop, "Stop setting angles" )
 {
 	THIS_FEATURE()->StopSetAngles();
 }
 
-CON_COMMAND( sc_st_setangles2, "Set local player view angles with given interpolation" )
+CON_COMMAND( st_setangles2, "Set local player view angles with given interpolation" )
 {
 	if ( args.ArgC() != 4 )
 	{
-		Msg( "Usage: sc_st_setangles <pitch> <yaw> <lerp>\n" );
+		Msg( "Usage: st_setangles <pitch> <yaw> <lerp>\n" );
 		THIS_FEATURE()->StopSetAngles2();
 		return;
 	}
@@ -63,7 +63,7 @@ CON_COMMAND( sc_st_setangles2, "Set local player view angles with given interpol
 	THIS_FEATURE()->SetAngles2( (float)atof( args.Arg( 1 ) ), (float)atof( args.Arg( 2 ) ), (float)atof( args.Arg( 3 ) ) );
 }
 
-CON_COMMAND( sc_st_setangles2_stop, "Stop setting angles" )
+CON_COMMAND( st_setangles2_stop, "Stop setting angles" )
 {
 	THIS_FEATURE()->StopSetAngles2();
 }
@@ -133,7 +133,9 @@ EHookResult CAimAngles::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
 	if ( !( m_bSetAngles || m_bSetAngles2 || m_bFollowPoint ) ||
 		 !( !Features::inputmanager->IsInAction() || Features::inputmanager->IsRecording() ) )
+	{
 		return kHookContinue;
+	}
 	
 	Vector va;
 	auto cmd = pEvent->GetArg<usercmd_t *>( "cmd" );
@@ -234,7 +236,7 @@ EHookResult CAimAngles::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 		if ( !bPitchChanged && !bYawChanged )
 		{
-			m_bSetAngles = false;
+			m_bSetAngles2 = false;
 		}
 		else
 		{
@@ -267,12 +269,12 @@ void CAimAngles::PostLoad( void )
 {
 	hookevents->RegisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall, kHookPriorityHigh );
 
-	FEATURE_REGISTER_CCMD( sc_st_follow_point );
-	FEATURE_REGISTER_CCMD( sc_st_follow_point_stop );
-	FEATURE_REGISTER_CCMD( sc_st_setangles );
-	FEATURE_REGISTER_CCMD( sc_st_setangles_stop );
-	FEATURE_REGISTER_CCMD( sc_st_setangles2 );
-	FEATURE_REGISTER_CCMD( sc_st_setangles2_stop );
+	FEATURE_REGISTER_CCMD( st_follow_point );
+	FEATURE_REGISTER_CCMD( st_follow_point_stop );
+	FEATURE_REGISTER_CCMD( st_setangles );
+	FEATURE_REGISTER_CCMD( st_setangles_stop );
+	FEATURE_REGISTER_CCMD( st_setangles2 );
+	FEATURE_REGISTER_CCMD( st_setangles2_stop );
 }
 
 //-----------------------------------------------------------------------------
@@ -283,10 +285,10 @@ void CAimAngles::Unload( void )
 {
 	hookevents->UnregisterListener( this, kCL_CreateMove_HookEvent, kHookPostCall );
 
-	FEATURE_UNREGISTER_CCMD( sc_st_follow_point );
-	FEATURE_UNREGISTER_CCMD( sc_st_follow_point_stop );
-	FEATURE_UNREGISTER_CCMD( sc_st_setangles );
-	FEATURE_UNREGISTER_CCMD( sc_st_setangles_stop );
-	FEATURE_UNREGISTER_CCMD( sc_st_setangles2 );
-	FEATURE_UNREGISTER_CCMD( sc_st_setangles2_stop );
+	FEATURE_UNREGISTER_CCMD( st_follow_point );
+	FEATURE_UNREGISTER_CCMD( st_follow_point_stop );
+	FEATURE_UNREGISTER_CCMD( st_setangles );
+	FEATURE_UNREGISTER_CCMD( st_setangles_stop );
+	FEATURE_UNREGISTER_CCMD( st_setangles2 );
+	FEATURE_UNREGISTER_CCMD( st_setangles2_stop );
 }

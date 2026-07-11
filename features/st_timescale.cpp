@@ -38,12 +38,12 @@ static bool gNotifyTimescaleChanged = false;
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-ConVar sc_st_ignore_fps_change( "sc_st_ignore_fps_change", "0", FCVAR_EXTDLL, "Ignore FPS change" );
-ConVar sc_st_ignore_timescale( "sc_st_ignore_timescale", "0", FCVAR_EXTDLL, "Ignore timescale set/change" );
-ConVar sc_st_min_frametime( "sc_st_min_frametime", "0", FCVAR_EXTDLL, "Min frametime to run a frame" );
-ConVar sc_st_transmit_timescale( "sc_st_transmit_timescale", "1", FCVAR_EXTDLL, "Transmit to all clients current timescale" );
+ConVar st_ignore_fps_change( "st_ignore_fps_change", "0", FCVAR_EXTDLL, "Ignore FPS change" );
+ConVar st_ignore_timescale( "st_ignore_timescale", "0", FCVAR_EXTDLL, "Ignore timescale set/change" );
+ConVar st_min_frametime( "st_min_frametime", "0", FCVAR_EXTDLL, "Min frametime to run a frame" );
+ConVar st_transmit_timescale( "st_transmit_timescale", "1", FCVAR_EXTDLL, "Transmit to all clients current timescale" );
 
-CON_COMMAND( sc_st_timescale, "Set timescale" )
+CON_COMMAND( st_timescale, "Set timescale" )
 {
 	if ( args.ArgC() >= 2 )
 	{
@@ -52,8 +52,8 @@ CON_COMMAND( sc_st_timescale, "Set timescale" )
 	}
 	else
 	{
-		if ( sc_st_min_frametime.GetFloat() != 0.f )
-			Msg( "Current timescale: %.3f\n", 1.f / ( sc_st_min_frametime.GetFloat() * GameData::Cvars::fps_max->value ) );
+		if ( st_min_frametime.GetFloat() != 0.f )
+			Msg( "Current timescale: %.3f\n", 1.f / ( st_min_frametime.GetFloat() * GameData::Cvars::fps_max->value ) );
 		else
 			Msg( "Current timescale: 1.000\n" );
 	}
@@ -61,15 +61,15 @@ CON_COMMAND( sc_st_timescale, "Set timescale" )
 
 static void CvarChangeHook_fps_max( cvar_t *pCvar, const char *pszOldValue, float flOldValue )
 {
-	if ( sc_st_ignore_fps_change.GetBool() || gIgnoreCvarChange || flOldValue == pCvar->value )
+	if ( st_ignore_fps_change.GetBool() || gIgnoreCvarChange || flOldValue == pCvar->value )
 		return;
 
-	if ( sc_st_min_frametime.GetFloat() != 0.f )
+	if ( st_min_frametime.GetFloat() != 0.f )
 	{
-		float timescale = 1.f / ( sc_st_min_frametime.GetFloat() * flOldValue );
+		float timescale = 1.f / ( st_min_frametime.GetFloat() * flOldValue );
 		float multiplier = 1.f / timescale;
 
-		sc_st_min_frametime.SetValue( multiplier / pCvar->value );
+		st_min_frametime.SetValue( multiplier / pCvar->value );
 		cvar->SetValue( GameData::Cvars::host_framerate, 1.f / pCvar->value );
 
 		gameutils->PrintChatText( "<SvenInt> Automatically adjusted timescale %.2f for %d fps\n", timescale, (int)pCvar->value );
@@ -82,17 +82,17 @@ static void CvarChangeHook_fps_max( cvar_t *pCvar, const char *pszOldValue, floa
 
 void CTimescale::BroadcastTimescale( void )
 {
-	if ( cls->state != ca_active || Modules::server->Host_IsServerActive() || GameData::Cvars::fps_max->value == 20.f )
+	if ( cls->state != ca_active || !Modules::server->Host_IsServerActive() || GameData::Cvars::fps_max->value == 20.f )
 		return;
 
-	if ( sc_st_transmit_timescale.GetBool() )
+	if ( st_transmit_timescale.GetBool() )
 	{
 		sv_enginefuncs->pfnMessageBegin( MSG_BROADCAST, SVC_SVENINT, NULL, NULL );
 			sv_enginefuncs->pfnWriteByte( SVENINT_COMM_TIMESCALE );
 			sv_enginefuncs->pfnWriteByte( gNotifyTimescaleChanged ? 1 : 0 );
 			sv_enginefuncs->pfnWriteLong( FloatToLong32( GameData::Cvars::host_framerate->value ) );
 			sv_enginefuncs->pfnWriteLong( FloatToLong32( GameData::Cvars::fps_max->value ) );
-			sv_enginefuncs->pfnWriteLong( FloatToLong32( sc_st_min_frametime.GetFloat() ) );
+			sv_enginefuncs->pfnWriteLong( FloatToLong32( st_min_frametime.GetFloat() ) );
 		sv_enginefuncs->pfnMessageEnd();
 	}
 
@@ -113,7 +113,7 @@ void CTimescale::SendTimescale( edict_t *pPlayer )
 		sv_enginefuncs->pfnWriteByte( 1 );
 		sv_enginefuncs->pfnWriteLong( FloatToLong32( GameData::Cvars::host_framerate->value ) );
 		sv_enginefuncs->pfnWriteLong( FloatToLong32( GameData::Cvars::fps_max->value ) );
-		sv_enginefuncs->pfnWriteLong( FloatToLong32( sc_st_min_frametime.GetFloat() ) );
+		sv_enginefuncs->pfnWriteLong( FloatToLong32( st_min_frametime.GetFloat() ) );
 	sv_enginefuncs->pfnMessageEnd();
 
 	gNotifyTimescaleChanged = false;
@@ -127,7 +127,7 @@ void CTimescale::SetTimescale( float timescale )
 {
 	if ( timescale == 1.f )
 	{
-		sc_st_min_frametime.SetValue( 0.f );
+		st_min_frametime.SetValue( 0.f );
 		cvar->SetValue( GameData::Cvars::host_framerate, 0.f );
 		return;
 	}
@@ -144,7 +144,7 @@ void CTimescale::SetTimescale( float timescale )
 
 	float multiplier = 1.f / timescale;
 
-	sc_st_min_frametime.SetValue( multiplier / GameData::Cvars::fps_max->value );
+	st_min_frametime.SetValue( multiplier / GameData::Cvars::fps_max->value );
 	cvar->SetValue( GameData::Cvars::host_framerate, 1.f / GameData::Cvars::fps_max->value );
 
 	gameutils->PrintChatText( "<SvenInt> Timescale has been set to %.2f\n", timescale );
@@ -161,7 +161,7 @@ void CTimescale::SetTimescale_Comm( bool notify, float framerate, float fpsmax, 
 	cvar->SetValue( GameData::Cvars::host_framerate, framerate );
 	cvar->SetValue( GameData::Cvars::fps_max, fpsmax );
 
-	sc_st_min_frametime.SetValue( min_frametime );
+	st_min_frametime.SetValue( min_frametime );
 
 	if ( notify )
 	{
@@ -183,7 +183,7 @@ EHookResult CTimescale::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	auto time = pEvent->GetArg<float>( "time" );
 	auto simulate = pEvent->GetReturn<qboolean>();
 
-	const float flMinFrametime = sc_st_min_frametime.GetFloat();
+	const float flMinFrametime = st_min_frametime.GetFloat();
 
 	if ( !bPostCall )
 	{
@@ -263,9 +263,10 @@ bool CTimescale::Load( void )
 	#endif
 
 		FEATURE_CHECK_SYMBOL_PATTERN( m_pJumpOpCode, "host_framerate (Patch)" );
-
-		m_PatchedJumpOpCode = *m_pJumpOpCode;
 	}
+
+	if ( m_pJumpOpCode != NULL )
+		m_PatchedJumpOpCode = *m_pJumpOpCode;
 
 	GAMEDATA_DUMP_FILE_OFFSET( "host_framerate (Patch)", m_pJumpOpCode, GameData::Modules::Engine );
 	return true;
@@ -285,11 +286,11 @@ void CTimescale::PostLoad( void )
 	MemoryUtils()->VirtualProtect( m_pJumpOpCode, sizeof( uint16_t ), PAGE_EXECUTE_READWRITE, NULL );
 	*m_pJumpOpCode = 0x9090; // nopu nopu
 
-	FEATURE_REGISTER_CCMD( sc_st_timescale );
-	FEATURE_REGISTER_CVAR( sc_st_ignore_fps_change );
-	FEATURE_REGISTER_CVAR( sc_st_ignore_timescale );
-	FEATURE_REGISTER_CVAR( sc_st_min_frametime );
-	FEATURE_REGISTER_CVAR( sc_st_transmit_timescale );
+	FEATURE_REGISTER_CCMD( st_timescale );
+	FEATURE_REGISTER_CVAR( st_ignore_fps_change );
+	FEATURE_REGISTER_CVAR( st_ignore_timescale );
+	FEATURE_REGISTER_CVAR( st_min_frametime );
+	FEATURE_REGISTER_CVAR( st_transmit_timescale );
 }
 
 //-----------------------------------------------------------------------------
@@ -305,9 +306,9 @@ void CTimescale::Unload( void )
 
 	*m_pJumpOpCode = m_PatchedJumpOpCode;
 
-	FEATURE_UNREGISTER_CCMD( sc_st_timescale );
-	FEATURE_UNREGISTER_CVAR( sc_st_ignore_fps_change );
-	FEATURE_UNREGISTER_CVAR( sc_st_ignore_timescale );
-	FEATURE_UNREGISTER_CVAR( sc_st_min_frametime );
-	FEATURE_UNREGISTER_CVAR( sc_st_transmit_timescale );
+	FEATURE_UNREGISTER_CCMD( st_timescale );
+	FEATURE_UNREGISTER_CVAR( st_ignore_fps_change );
+	FEATURE_UNREGISTER_CVAR( st_ignore_timescale );
+	FEATURE_UNREGISTER_CVAR( st_min_frametime );
+	FEATURE_UNREGISTER_CVAR( st_transmit_timescale );
 }

@@ -186,7 +186,7 @@ static int UserMsgHook_SvenInt( const char *pszUserMsg, int iSize, void *pBuffer
 	}
 	else if ( type == SVENINT_COMM_TIMESCALE )
 	{
-		extern ConVar sc_st_ignore_timescale;
+		extern ConVar st_ignore_timescale;
 
 		bool notify = !!message.ReadByte();
 
@@ -194,7 +194,7 @@ static int UserMsgHook_SvenInt( const char *pszUserMsg, int iSize, void *pBuffer
 		float fpsmax = Long32ToFloat( message.ReadLong() );
 		float min_frametime = Long32ToFloat( message.ReadLong() );
 
-		if ( !sc_st_ignore_timescale.GetBool() &&
+		if ( !st_ignore_timescale.GetBool() &&
 			 !Globals::demoplayback &&
 			 !Modules::server->Host_IsServerActive() )
 		{

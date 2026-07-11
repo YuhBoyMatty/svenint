@@ -30,11 +30,15 @@ public:
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
 public:
+	void OnRestart( void );
+	void OnFireTargets( const char *pszTargetName, void *pActivator, void *pCaller, int useType, float flValue, float flDelay );
+
 	float SegmentCurrentTime( void );
 
 	void ShowTimer( float flTime, bool bServer );
 	void StartTimer( void );
 	void StopTimer( void );
+	void ResetTimer( void );
 
 private:
 	CMenuValueFloat *m_pWidthScreenFraction;
@@ -44,6 +48,8 @@ private:
 	bool m_bSegmentStarted;
 
 	bool m_bIsC17;
+	bool m_bIsUplink;
+
 	int m_iNihilanthIndex;
 	entvars_t *m_pNihilanthVars;
 

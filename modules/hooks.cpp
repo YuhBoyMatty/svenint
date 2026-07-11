@@ -12,6 +12,7 @@
 #include "features/player_silent_angles.h"
 #include "features/exploit_action_burst.h"
 #include "features/st_input_manager.h"
+#include "features/st_timer.h"
 #include "game/hook_events.h"
 #include "game/messagebuffer.h"
 #include "utils/prof.h"
@@ -479,6 +480,52 @@ static int UserMsgHook_CurWeapon( const char *pszName, int iSize, void *pBuffer 
 	}
 
 	return ORIG_UserMsgHook_CurWeapon( pszName, iSize, pBuffer );
+}
+
+//-----------------------------------------------------------------------------
+// ClExtrasInfo usermsg
+//-----------------------------------------------------------------------------
+
+static UserMsgHookFn ORIG_UserMsgHook_ClExtrasInfo = NULL;
+static int UserMsgHook_ClExtrasInfo( const char *pszName, int iSize, void *pBuffer )
+{
+	CMessageBuffer buffer( pszName, pBuffer, iSize, true );
+	buffer.BeginReading();
+
+	decltype( Globals::cl_enginefuncs->Con_DPrintf ) pfnCon_DPrintf = Globals::cl_enginefuncs->Con_DPrintf;
+
+	pfnCon_DPrintf( const_cast<char *>( "========== ClExtrasInfo ==========\n" ) );
+
+	const int PlainDataLength = buffer.ReadLong();
+	pfnCon_DPrintf( const_cast<char *>( "PlainDataLength: %d\n" ), PlainDataLength );
+
+	const int IVLength = buffer.ReadLong();
+	if ( IVLength <= 0 )
+		return ORIG_UserMsgHook_ClExtrasInfo( pszName, iSize, pBuffer );
+	pfnCon_DPrintf( const_cast<char *>( "IVLength: %d ( " ), IVLength );
+	for ( int i = 0; i < IVLength; i++ )
+		pfnCon_DPrintf( const_cast<char *>( "%02X " ), static_cast<uint8_t>( buffer.ReadByte() ) );
+	pfnCon_DPrintf( const_cast<char *>( ")\n" ) );
+
+	const int EncryptedDataLength = buffer.ReadLong();
+	if ( EncryptedDataLength <= 0 )
+		return ORIG_UserMsgHook_ClExtrasInfo( pszName, iSize, pBuffer );
+	pfnCon_DPrintf( const_cast<char *>( "EncryptedDataLength: %d ( " ), EncryptedDataLength );
+	for ( int i = 0; i < EncryptedDataLength; i++ )
+		pfnCon_DPrintf( const_cast<char *>( "%02X " ), static_cast<uint8_t>( buffer.ReadByte() ) );
+	pfnCon_DPrintf( const_cast<char *>( ")\n" ) );
+
+	const int EncryptedDigestLength = buffer.ReadLong();
+	if ( EncryptedDigestLength <= 0 )
+		return ORIG_UserMsgHook_ClExtrasInfo( pszName, iSize, pBuffer );
+	pfnCon_DPrintf( const_cast<char *>( "EncryptedDigestLength: %d ( " ), EncryptedDigestLength );
+	for ( int i = 0; i < EncryptedDigestLength; i++ )
+		pfnCon_DPrintf( const_cast<char *>( "%02X " ), static_cast<uint8_t>( buffer.ReadByte() ) );
+	pfnCon_DPrintf( const_cast<char *>( ")\n" ) );
+
+	pfnCon_DPrintf( const_cast<char *>( "==================================\n" ) );
+
+	return ORIG_UserMsgHook_ClExtrasInfo( pszName, iSize, pBuffer );
 }
 
 //-----------------------------------------------------------------------------
@@ -1080,7 +1127,7 @@ DECLARE_FUNC( bool, CALLCONV_CDECL, HOOKED_FixPlayerStuck, edict_t *pPlayer )
 		if ( !UTIL_IsPointInsideAABB( pPlayer->v.origin, unstuckBoundsMin, unstuckBoundsMax ) )
 		{
 			Globals::cl_enginefuncs->pfnClientCmd( "say \"FixPlayerStuck: NOT LEGIT UNSTUCK DETECTED.\"" );
-			Globals::cl_enginefuncs->pfnClientCmd( "say \"FixPlayerStuck: the unstuck position is outside the largest test hull.\"" );
+			Globals::cl_enginefuncs->pfnClientCmd( "say \"FixPlayerStuck: the unstuck position is outside of the largest test hull.\"" );
 
 			Warning( "FixPlayerStuck: pre-unstuck origin %.6f %.6f %.6f\n", VectorExpand( vecRevivePreUnstuckOrigin ) );
 		}
@@ -1136,7 +1183,7 @@ DECLARE_CLASS_FUNC( void, HOOKED_CBasePlayer__SpecialSpawn, void *thisptr )
 			if ( !UTIL_IsPointInsideAABB( pPlayer->v.origin, unstuckBoundsMin, unstuckBoundsMax ) )
 			{
 				Globals::cl_enginefuncs->pfnClientCmd( "say \"CBasePlayer::SpecialSpawn -> FixPlayerStuck: NOT LEGIT REVIVE DETECTED.\"" );
-				Globals::cl_enginefuncs->pfnClientCmd( "say \"CBasePlayer::SpecialSpawn -> FixPlayerStuck: the revive position is outside the largest test hull.\"" );
+				Globals::cl_enginefuncs->pfnClientCmd( "say \"CBasePlayer::SpecialSpawn -> FixPlayerStuck: the revive position is outside of the largest test hull.\"" );
 
 				Warning( "FixPlayerStuck: pre-revive origin %.6f %.6f %.6f\n", VectorExpand( vecRevivePreUnstuckOrigin ) );
 			}
@@ -1219,6 +1266,7 @@ DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_FireTargets, const char *pszTargetNam
 {
 	ORIG_FireTargets( pszTargetName, pActivator, pCaller, useType, flValue, flDelay );
 
+	Features::timer->OnFireTargets( pszTargetName, pActivator, pCaller, useType, flValue, flDelay );
 	Modules::scripts->Callbacks()->OnFireTargets( pszTargetName, pActivator, pCaller, useType, flValue, flDelay );
 }
 
@@ -1228,6 +1276,7 @@ static DECLARE_FUNC( void, CALLCONV_CDECL, HOOKED_restart )
 	if ( !Modules::server->Host_IsServerActive() )
 		return;
 
+	Features::timer->OnRestart();
 	Modules::scripts->Callbacks()->OnRestart();
 
 	ORIG_restart();
@@ -1372,6 +1421,13 @@ void CHooksModule::AttachDetours( void )
 				  HOOKED_StudioRenderModel,
 				  GET_FUNC_PTR( ORIG_StudioRenderModel ) );
 
+	if ( false && SVEN_VERSION() == SVEN_VERSION_CHECK( 5, 26, 0 ) )
+	{
+		hDetour = Globals::gamehooks->HookUserMessage( "ClExtrasInfo", UserMsgHook_ClExtrasInfo, &ORIG_UserMsgHook_ClExtrasInfo );
+		if ( hDetour != DETOUR_INVALID_HANDLE )
+			m_hDetours.insert( m_hDetours.begin(), hDetour );
+	}
+	
 	hDetour = Globals::gamehooks->HookUserMessage( "CurWeapon", UserMsgHook_CurWeapon, &ORIG_UserMsgHook_CurWeapon );
 	if ( hDetour != DETOUR_INVALID_HANDLE )
 		m_hDetours.insert( m_hDetours.begin(), hDetour );

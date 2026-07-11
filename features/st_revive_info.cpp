@@ -47,11 +47,11 @@ EXPOSE_FEATURE_SINGLETON( CReviveInfo, reviveinfo, "Speedrun Tools", "Revive Inf
 // the discovered trick has forced us to remake almost all maps since June just in ~3 months)
 //-----------------------------------------------------------------------------
 
-CON_COMMAND( sc_st_obsclip, "Simulate observer clipping" )
+CON_COMMAND( st_obsclip, "Simulate observer clipping" )
 {
 	if ( args.ArgC() < 3 )
 	{
-		ConMsg( "Usage:  sc_st_obsclip <speed> <fps>\n" );
+		ConMsg( "Usage:  st_obsclip <speed> <fps>\n" );
 		return;
 	}
 
@@ -122,7 +122,7 @@ CON_COMMAND( sc_st_obsclip, "Simulate observer clipping" )
 //		и так для каждой X, Y и Z компоненты положения игрока. Итого 192 возможных позиций для нахождения свободного спота.
 //-----------------------------------------------------------------------------
 
-CON_COMMAND( sc_st_test_revive, "Simulate player/entity revive" )
+CON_COMMAND( st_test_revive, "Simulate player/entity revive" )
 {
 	if ( cls->state != ca_active )
 		return;
@@ -732,8 +732,8 @@ bool CReviveInfo::Load( void )
 
 void CReviveInfo::PostLoad( void )
 {
-	FEATURE_REGISTER_CCMD( sc_st_obsclip );
-	FEATURE_REGISTER_CCMD( sc_st_test_revive );
+	FEATURE_REGISTER_CCMD( st_obsclip );
+	FEATURE_REGISTER_CCMD( st_test_revive );
 }
 
 //-----------------------------------------------------------------------------
@@ -742,6 +742,6 @@ void CReviveInfo::PostLoad( void )
 
 void CReviveInfo::Unload( void )
 {
-	FEATURE_UNREGISTER_CCMD( sc_st_obsclip );
-	FEATURE_UNREGISTER_CCMD( sc_st_test_revive );
+	FEATURE_UNREGISTER_CCMD( st_obsclip );
+	FEATURE_UNREGISTER_CCMD( st_test_revive );
 }

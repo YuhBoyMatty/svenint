@@ -19,11 +19,39 @@ EXPOSE_FEATURE_SINGLETON( CSpeedrunTimer, timer, "Speedrun Tools", "Timer" );
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-ConVar sc_st_transmit_timer( "sc_st_transmit_timer", "1", FCVAR_EXTDLL, "Transmit to all clients the segment's time" );
+ConVar st_transmit_timer( "st_transmit_timer", "1", FCVAR_EXTDLL, "Transmit to all clients the segment's time" );
 
-CON_COMMAND( sc_st_reset_timer, "Reset speedrun timer" )
+CON_COMMAND( st_reset_timer, "Reset speedrun timer" )
 {
 	THIS_FEATURE()->StartTimer();
+}
+
+//-----------------------------------------------------------------------------
+// OnRestart event
+//-----------------------------------------------------------------------------
+
+void CSpeedrunTimer::OnRestart( void )
+{
+	ResetTimer();
+}
+
+//-----------------------------------------------------------------------------
+// OnFireTargets event
+//-----------------------------------------------------------------------------
+
+void CSpeedrunTimer::OnFireTargets( const char *pszTargetName, void *pActivator, void *pCaller, int useType, float flValue, float flDelay )
+{
+	if ( !m_bIsUplink )
+		return;
+
+	if ( !m_bSegmentStarted && !stricmp( pszTargetName, "gpe_0" ) ) // svenrespawn
+	{
+		StartTimer();
+	}
+	else if ( m_bSegmentStarted && !stricmp( pszTargetName, "garg_vent_break" ) )
+	{
+		StopTimer();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -116,10 +144,19 @@ void CSpeedrunTimer::StartTimer( void )
 	}
 	else
 	{
-		m_bSegmentStarted = false;
-		m_flSegmentStart = 0.f;
-		m_flSegmentTime = 0.f;
+		ResetTimer();
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Reset timer
+//-----------------------------------------------------------------------------
+
+void CSpeedrunTimer::ResetTimer( void )
+{
+	m_bSegmentStarted = false;
+	m_flSegmentStart = 0.f;
+	m_flSegmentTime = 0.f;
 }
 
 //-----------------------------------------------------------------------------
@@ -130,8 +167,7 @@ void CSpeedrunTimer::StopTimer( void )
 {
 	if ( !Modules::server->Host_IsServerActive() || demoplayback || !m_bSegmentStarted )
 	{
-		m_bSegmentStarted = false;
-		m_flSegmentStart = 0.f;
+		ResetTimer();
 		return;
 	}
 
@@ -149,7 +185,7 @@ void CSpeedrunTimer::StopTimer( void )
 				seconds / 10, seconds % 10,
 				ms / 100, ( ms / 10 ) % 10, ms % 10 );
 
-	gameutils->PrintChatText( "Finished segment in %s (%.6f) (map: %s)\n", timer_buffer, flSegmentTime, pszMapname );
+	gameutils->PrintChatText( "<SvenInt> Finished segment in %s (%.6f) (map: %s)\n", timer_buffer, flSegmentTime, pszMapname );
 
 	ConColorMsg( { 255, 165, 0, 255 }, "> Finished segment in " );
 	ConColorMsg( { 179, 255, 32, 255 }, timer_buffer );
@@ -158,8 +194,7 @@ void CSpeedrunTimer::StopTimer( void )
 
 	Features::demomessage->WriteSegmentInfo( flSegmentTime, timer_buffer, pszMapname );
 
-	m_bSegmentStarted = false;
-	m_flSegmentStart = 0.f;
+	ResetTimer();
 }
 
 //-----------------------------------------------------------------------------
@@ -170,8 +205,7 @@ EHookResult CSpeedrunTimer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 {
 	if ( pEvent->GetType() == kHUD_VidInit_HookEvent )
 	{
-		m_flTimerTime = 0.f;
-		m_flLastTimerUpdate = -1.f;
+		ResetTimer();
 	}
 	else if ( pEvent->GetType() == kHUD_Redraw_HookEvent )
 	{
@@ -186,7 +220,7 @@ EHookResult CSpeedrunTimer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 			ShowTimer( flSegmentTime, true );
 
-			if ( sc_st_transmit_timer.GetBool() )
+			if ( st_transmit_timer.GetBool() )
 			{
 				sv_enginefuncs->pfnMessageBegin( MSG_BROADCAST, SVC_SVENINT, NULL, NULL );
 					sv_enginefuncs->pfnWriteByte( SVENINT_COMM_TIMER );
@@ -202,6 +236,7 @@ EHookResult CSpeedrunTimer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	else if ( pEvent->GetType() == kSCR_BeginLoadingPlaque_HookEvent )
 	{
 		m_bIsC17 = false;
+		m_bIsUplink = false;
 
 		m_iNihilanthIndex = 0;
 		m_pNihilanthVars = NULL;
@@ -210,31 +245,35 @@ EHookResult CSpeedrunTimer::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	}
 	else if ( pEvent->GetType() == kOnFirstClientdataReceived_HookEvent )
 	{
-		StartTimer();
-
-		if ( !Modules::server->Host_IsServerActive() )
-			return kHookContinue;
-		
-		const char *pszMapname = gpGlobals->pStringBase + gpGlobals->mapname;
-
-		m_iNihilanthIndex = 0;
-		m_pNihilanthVars = NULL;
-
-		if ( !stricmp( pszMapname, "hl_c17" ) )
+		const bool bListenServer = Modules::server->Host_IsServerActive();
+		if ( bListenServer )
 		{
-			m_bIsC17 = true;
+			const char *pszMapname = gpGlobals->pStringBase + gpGlobals->mapname;
 
+			m_bIsC17 = ( stricmp( pszMapname, "hl_c17" ) == 0 );
+			m_bIsUplink = ( stricmp( pszMapname, "uplink" ) == 0 );
+		}
+		else
+		{
+			m_bIsC17 = false;
+			m_bIsUplink = false;
+		}
+
+		if ( !m_bIsUplink )
+			StartTimer();
+
+		if ( bListenServer && m_bIsC17 )
+		{
 			edict_t *pNihilanth = NULL;
+
+			m_iNihilanthIndex = 0;
+			m_pNihilanthVars = NULL;
 
 			if ( ( pNihilanth = sv_enginefuncs->pfnFindEntityByString( NULL, "targetname", "nihilanth" ) ) != NULL )
 			{
 				m_iNihilanthIndex = sv_enginefuncs->pfnIndexOfEdict( pNihilanth );
 				m_pNihilanthVars = &pNihilanth->v;
 			}
-		}
-		else
-		{
-			m_bIsC17 = false;
 		}
 	}
 	else if ( pEvent->GetType() == kHost_FilterTime_HookEvent )
@@ -283,6 +322,8 @@ CSpeedrunTimer::CSpeedrunTimer( const char *pszCategoryName, const char *pszName
 	m_bSegmentStarted = false;
 
 	m_bIsC17 = false;
+	m_bIsUplink = false;
+
 	m_iNihilanthIndex = 0;
 	m_pNihilanthVars = NULL;
 
@@ -300,6 +341,7 @@ CSpeedrunTimer::CSpeedrunTimer( const char *pszCategoryName, const char *pszName
 void CSpeedrunTimer::OnEnable( void )
 {
 	m_bIsC17 = false;
+	m_bIsUplink = false;
 
 	hookevents->RegisterListener( this, kHUD_VidInit_HookEvent );
 	hookevents->RegisterListener( this, kHUD_Redraw_HookEvent, kHookPostCall );
@@ -337,7 +379,7 @@ bool CSpeedrunTimer::Load( void )
 			   RGB_SVENISH );
 
 	m_pWidthScreenFraction = Modules::menu->AddParamFloat( this, "WidthScreenFraction", NULL, 0.01f, 0.f, 1.f );
-	m_pHeightScreenFraction = Modules::menu->AddParamFloat( this, "HeightScreenFraction", NULL, 0.35f, 0.f, 1.f );
+	m_pHeightScreenFraction = Modules::menu->AddParamFloat( this, "HeightScreenFraction", NULL, 0.37f, 0.f, 1.f );
 	m_pColor = Modules::menu->AddParamColorRGB( this, "Color", NULL, clrTimer );
 	
 	return true;
@@ -349,8 +391,8 @@ bool CSpeedrunTimer::Load( void )
 
 void CSpeedrunTimer::PostLoad( void )
 {
-	FEATURE_REGISTER_CCMD( sc_st_reset_timer );
-	FEATURE_REGISTER_CVAR( sc_st_transmit_timer );
+	FEATURE_REGISTER_CCMD( st_reset_timer );
+	FEATURE_REGISTER_CVAR( st_transmit_timer );
 }
 
 //-----------------------------------------------------------------------------
@@ -359,6 +401,6 @@ void CSpeedrunTimer::PostLoad( void )
 
 void CSpeedrunTimer::Unload( void )
 {
-	FEATURE_UNREGISTER_CCMD( sc_st_reset_timer );
-	FEATURE_UNREGISTER_CVAR( sc_st_transmit_timer );
+	FEATURE_UNREGISTER_CCMD( st_reset_timer );
+	FEATURE_UNREGISTER_CVAR( st_transmit_timer );
 }

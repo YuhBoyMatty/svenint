@@ -28,10 +28,10 @@ EXPOSE_FEATURE_SINGLETON( CSpeedrunLegitMode, legitmode, "Speedrun Tools", "Legi
 // ConVars / ConCommands
 //-----------------------------------------------------------------------------
 
-FEATURE_CON_COMMAND_TOGGLE( sc_st_legit_mode, "Toggle legit mode" );
+FEATURE_CON_COMMAND_TOGGLE( st_legit_mode, "Toggle legit mode" );
 
-ConVar sc_st_legit_mode_ignore_freeze( "sc_st_legit_mode_ignore_freeze", "0", FCVAR_EXTDLL, "Don't block freeze of the host when legit mode is on" );
-ConVar sc_st_legit_mode_block_freeze_mouse_input( "sc_st_legit_mode_block_freeze_mouse_input", "1", FCVAR_EXTDLL, "When frozen, disable mouse input" );
+ConVar st_legit_mode_ignore_freeze( "st_legit_mode_ignore_freeze", "0", FCVAR_EXTDLL, "Don't block freeze of the host when legit mode is on" );
+ConVar st_legit_mode_block_freeze_mouse_input( "st_legit_mode_block_freeze_mouse_input", "1", FCVAR_EXTDLL, "When frozen, disable mouse input" );
 
 //-----------------------------------------------------------------------------
 // Legit mode
@@ -59,7 +59,7 @@ EHookResult CSpeedrunLegitMode::OnEvent( CHookEvent *pEvent, bool bPostCall )
 	}
 	else if ( pEvent->GetType() == kIN_Move_HookEvent )
 	{
-		if ( sc_st_legit_mode_block_freeze_mouse_input.GetBool() &&
+		if ( st_legit_mode_block_freeze_mouse_input.GetBool() &&
 			 ( Features::freeze->IsTransmitCanceled() || Features::freeze->IsPacketCanceled() ) )
 		{
 			return kHookSupercede;
@@ -129,9 +129,9 @@ bool CSpeedrunLegitMode::Load( void )
 
 void CSpeedrunLegitMode::PostLoad( void )
 {
-	FEATURE_REGISTER_CCMD( sc_st_legit_mode );
-	FEATURE_REGISTER_CVAR( sc_st_legit_mode_ignore_freeze );
-	FEATURE_REGISTER_CVAR( sc_st_legit_mode_block_freeze_mouse_input );
+	FEATURE_REGISTER_CCMD( st_legit_mode );
+	FEATURE_REGISTER_CVAR( st_legit_mode_ignore_freeze );
+	FEATURE_REGISTER_CVAR( st_legit_mode_block_freeze_mouse_input );
 }
 
 //-----------------------------------------------------------------------------
@@ -140,7 +140,7 @@ void CSpeedrunLegitMode::PostLoad( void )
 
 void CSpeedrunLegitMode::Unload( void )
 {
-	FEATURE_UNREGISTER_CCMD( sc_st_legit_mode );
-	FEATURE_UNREGISTER_CVAR( sc_st_legit_mode_ignore_freeze );
-	FEATURE_UNREGISTER_CVAR( sc_st_legit_mode_block_freeze_mouse_input );
+	FEATURE_UNREGISTER_CCMD( st_legit_mode );
+	FEATURE_UNREGISTER_CVAR( st_legit_mode_ignore_freeze );
+	FEATURE_UNREGISTER_CVAR( st_legit_mode_block_freeze_mouse_input );
 }
