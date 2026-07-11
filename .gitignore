@@ -4,6 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 opus
+fmodex
 features/private/
 replace_private_features.bat
 
