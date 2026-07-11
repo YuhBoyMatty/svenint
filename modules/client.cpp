@@ -31,6 +31,26 @@ ConVar sc_debug_show_playermove( "sc_debug_show_playermove", "0", FCVAR_EXTDLL, 
 ConVar sc_debug_show_prof( "sc_debug_show_prof", "0", FCVAR_EXTDLL, "Shows on the screen profiling" );
 ConVar sc_debug_show_netmsg_buffer( "sc_debug_show_netmsg_buffer", "0", FCVAR_EXTDLL, "Shows buffer usage of network messages" );
 
+CON_COMMAND( sc_print_cvar_value, "Prints a value of a ConVar to the chat" )
+{
+	if ( args.ArgC() < 2 )
+	{
+		Msg( "Usage:  sc_print_cvar_value <cvarname>\n" );
+		return;
+	}
+
+	cvar_t *pCvar = NULL;
+	const char *pszCvarname = args[ 1 ];
+
+	if ( ( pCvar = Globals::cvar->FindCvar( pszCvarname ) ) == NULL )
+	{
+		Warning( "sc_print_cvar_value:  no such cvar\n" );
+		return;
+	}
+
+	Globals::gameutils->PrintChatText( "<SvenInt> Value of cvar '%s' is %s\n", pszCvarname, pCvar->string );
+}
+
 CON_COMMAND( sc_print_cvars, "Print registered ConVars / ConCommands" )
 {
 	const int argCount = args.ArgC();
@@ -703,6 +723,7 @@ bool CClientModule::Init( void )
 	Globals::cvar->RegisterConCommand( &sc_debug_show_prof );
 	Globals::cvar->RegisterConCommand( &sc_debug_show_netmsg_buffer );
 
+	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvar_value ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
 	Globals::cvar->RegisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm ) );
@@ -754,6 +775,7 @@ void CClientModule::Shutdown( void )
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_prof );
 	Globals::cvar->UnregisterConCommand( &sc_debug_show_netmsg_buffer );
 
+	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvar_value ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_cvars ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_print_features ) );
 	Globals::cvar->UnregisterConCommand( &EXPAND_CON_COMMAND( sc_dump_disasm ) );
