@@ -1,5 +1,20 @@
 SvenInt v3 Changelog
 
+12/07/2026 - Version 3.2.5:
+- Decreased injection delay to 3 seconds when loading via a SvenMod emulator, added launch option '-sint_svenmod_sleep_time <ms>'
+- [Dev] Added macro DEFINE_PATTERNS to auto select macros DEFINE_PATTERNS_N
+- [Client Module] Added command 'sc_print_cvar_value <cvarname>'
+- [Scripts Module] The VM is now always started under Linux
+- [Shaders] Fixed 'res' uniform not being used in the SSAO shader
+- [Anti Slowhack] Added command 'httpstop' to the whitelist
+- [Aimbot] Fixed inability of aimbot to detect enemies sometimes
+- [Strafer] Fixed speed loss when ducking in mid air
+- [Ducktap] Added new no friction method, works on local server only: sc_ducktap_adjust_fps_with_speedhack <0/1>
+- [Draw Context] Diagonals of wireframed boxes are not rendered anymore
+- [Projectile Prediction] Trace against world only to prevent huge perfomance loss
+- [Speedrun Tools] Prefix of commands and cvars has been renamed from 'sc_st_' to 'st_'
+- [Speedrun Timer] Added support of Uplink
+
 17/05/2026 - Version 3.2.4:
 - Added SvenMod emulation with 5 seconds injection delay
 - [Config Module] Fixed ConCommand 'sc_config_toggle_param' not able to toggle any feature;
