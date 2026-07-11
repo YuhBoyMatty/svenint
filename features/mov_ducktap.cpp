@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "mov_ducktap.h"
+#include "player_speedhack.h"
 #include "st_input_manager.h"
 #include "modules/server.h"
 
@@ -21,51 +22,38 @@ EXPOSE_FEATURE_SINGLETON( CDucktap, ducktap, "Movement", "Ducktap" );
 FEATURE_CON_COMMAND_HOLD( sc_ducktap, "" );
 
 ConVar sc_ducktap_adjust_fps( "sc_ducktap_adjust_fps", "0", FCVAR_EXTDLL, "Change FPS to the given value when ducktapping to minimize ground friction" );
+ConVar sc_ducktap_adjust_fps_with_speedhack( "sc_ducktap_adjust_fps_with_speedhack", "0", FCVAR_EXTDLL, "Use speedhack feature to change FPS" );
 
 //-----------------------------------------------------------------------------
-// Hook event
+// Execute auto ducktap
 //-----------------------------------------------------------------------------
 
-EHookResult CDucktap::OnEvent( CHookEvent *pEvent, bool bPostCall )
+bool CDucktap::Execute( usercmd_t *cmd )
 {
-	// CL_CreateMove post event
 	if ( localplayer->IsDead() )
-		return kHookContinue;
+		return false;
 
-	static char fps_buffer[ 64 ];
-	static int onground_prev = 0;
-	static int fps_prev = 200;
-	static bool must_return_fps = false;
+	char rgszCmdBuffer[ 64 ];
 
-	// Change fps back to normal
-	if ( must_return_fps )
+	// Change FPS back to normal
+	if ( m_bReturnFPS )
 	{
-		CVar()->SetValue( GameData::Cvars::fps_max, fps_prev );
-
-		// Record fps change
-		if ( Features::inputmanager->IsRecording() && Features::inputmanager->GetInputContext().FrameCounter() - 1 >= 0 )
+		if ( !sc_ducktap_adjust_fps_with_speedhack.GetBool() )
 		{
-			snprintf( fps_buffer, Q_ARRAYSIZE( fps_buffer ), "fps_max %d\n", fps_prev );
+			CVar()->SetValue( GameData::Cvars::fps_max, m_iSavedFPS );
 
-			std::vector<im_frame_t> &frames = Features::inputmanager->GetInputContext().Frames();
-			int prevframe = Features::inputmanager->GetInputContext().FrameCounter() - 1;
-
-			if ( frames[ prevframe ].commands != NULL )
-			{
-				std::string sCommandsBuffer = frames[ prevframe ].commands;
-				sCommandsBuffer += fps_buffer;
-
-				free( (void *)( frames[ prevframe ].commands ) );
-
-				frames[ prevframe ].commands = strdup( sCommandsBuffer.c_str() );
-			}
-			else
-			{
-				frames[ prevframe ].commands = strdup( fps_buffer );
-			}
+			// Record FPS change
+			snprintf( rgszCmdBuffer, Q_ARRAYSIZE( rgszCmdBuffer ), "fps_max %d\n", m_iSavedFPS );
+			Features::inputmanager->RecordCommandNow( rgszCmdBuffer );
+		}
+		else
+		{
+			const int iNoFrictionFPS = sc_ducktap_adjust_fps.GetInt();
+			const float flCurrentFPS = GameData::Cvars::fps_max->value;
+			Features::speedhack->SetGameSpeed( ( 1.f / flCurrentFPS ) * ( flCurrentFPS / iNoFrictionFPS ) * 1000.f );
 		}
 
-		must_return_fps = false;
+		m_bReturnFPS = false;
 	}
 
 	// No friction
@@ -122,45 +110,45 @@ EHookResult CDucktap::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 			if ( bPredictedOnGround )
 			{
-				fps_prev = int( GameData::Cvars::fps_max->value );
-
-				CVar()->SetValue( GameData::Cvars::fps_max, sc_ducktap_adjust_fps.GetInt() );
-
-				// Record fps change
-				if ( Features::inputmanager->IsRecording() && Features::inputmanager->GetInputContext().FrameCounter() - 1 >= 0 )
+				if ( !sc_ducktap_adjust_fps_with_speedhack.GetBool() )
 				{
-					snprintf( fps_buffer, Q_ARRAYSIZE( fps_buffer ), "fps_max %d\n", sc_ducktap_adjust_fps.GetInt() );
+					m_iSavedFPS = int( GameData::Cvars::fps_max->value );
 
-					std::vector<im_frame_t> &frames = Features::inputmanager->GetInputContext().Frames();
-					int prevframe = Features::inputmanager->GetInputContext().FrameCounter() - 1;
+					CVar()->SetValue( GameData::Cvars::fps_max, sc_ducktap_adjust_fps.GetInt() );
 
-					if ( frames[ prevframe ].commands != NULL )
-					{
-						std::string sCommandsBuffer = frames[ prevframe ].commands;
-						sCommandsBuffer += fps_buffer;
-
-						free( (void *)( frames[ prevframe ].commands ) );
-
-						frames[ prevframe ].commands = strdup( sCommandsBuffer.c_str() );
-					}
-					else
-					{
-						frames[ prevframe ].commands = strdup( fps_buffer );
-					}
+					// Record FPS change
+					snprintf( rgszCmdBuffer, Q_ARRAYSIZE( rgszCmdBuffer ), "fps_max %d\n", sc_ducktap_adjust_fps.GetInt() );
+					Features::inputmanager->RecordCommandNow( rgszCmdBuffer );
 				}
 
-				must_return_fps = true;
-				return kHookContinue;
+				m_bReturnFPS = true;
+				return false;
 			}
 		}
 	}
 
-	if ( playermove->onground() != -1 && m_prevground == -1 && !playermove->bInDuck() )
+	bool bDuckTapped = false;
+	const bool bOnGround = ( playermove->onground() != -1 );
+
+	if ( bOnGround && !m_bWasOnGround && !playermove->bInDuck() )
 	{
-		pEvent->GetArg<usercmd_t *>( "cmd" )->buttons |= IN_DUCK;
+		cmd->buttons |= IN_DUCK;
+		bDuckTapped = true;
 	}
 
-	m_prevground = playermove->onground();
+	m_bWasOnGround = bOnGround;
+	return bDuckTapped;
+}
+
+//-----------------------------------------------------------------------------
+// Hook event
+//-----------------------------------------------------------------------------
+
+EHookResult CDucktap::OnEvent( CHookEvent *pEvent, bool bPostCall )
+{
+	// CL_CreateMove post event
+	Execute( pEvent->GetArg<usercmd_t *>( "cmd" ) );
+	
 	return kHookContinue;
 }
 
@@ -170,7 +158,9 @@ EHookResult CDucktap::OnEvent( CHookEvent *pEvent, bool bPostCall )
 
 CDucktap::CDucktap( const char *pszCategoryName, const char *pszName ) : CBaseFeature( pszCategoryName, pszName )
 {
-	m_prevground = 0;
+	m_bWasOnGround = true;
+	m_bReturnFPS = false;
+	m_iSavedFPS = 200;
 }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +202,7 @@ void CDucktap::PostLoad( void )
 	FEATURE_REGISTER_CCMD( sc_ducktap_down );
 	FEATURE_REGISTER_CCMD( sc_ducktap_up );
 	FEATURE_REGISTER_CVAR( sc_ducktap_adjust_fps );
+	FEATURE_REGISTER_CVAR( sc_ducktap_adjust_fps_with_speedhack );
 
 	cl_enginefuncs->pfnClientCmd( "-sc_ducktap" );
 }
@@ -225,4 +216,5 @@ void CDucktap::Unload( void )
 	FEATURE_UNREGISTER_CCMD( sc_ducktap_down );
 	FEATURE_UNREGISTER_CCMD( sc_ducktap_up );
 	FEATURE_UNREGISTER_CVAR( sc_ducktap_adjust_fps );
+	FEATURE_UNREGISTER_CVAR( sc_ducktap_adjust_fps_with_speedhack );
 }

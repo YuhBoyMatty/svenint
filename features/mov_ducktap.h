@@ -28,8 +28,13 @@ public:
 
 	virtual EHookResult OnEvent( CHookEvent *pEvent, bool bPostCall ) override;
 
+public:
+	bool	Execute( usercmd_t *cmd );
+
 private:
-	int m_prevground;
+	bool	m_bWasOnGround;
+	bool	m_bReturnFPS;
+	int		m_iSavedFPS;
 };
 
 EXTERN_FEATURE( CDucktap, ducktap );
