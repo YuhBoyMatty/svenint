@@ -322,6 +322,22 @@ void CWireframeBox::Draw( void )
 	glColor4ub( m_color.r, m_color.g, m_color.b, m_color.a );
 	glLineWidth( m_flWidth );
 
+#if 1
+    int edges[12][2] =
+    {
+        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+        { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
+        { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }
+    };
+
+    glBegin( GL_LINES );
+    for ( int i = 0; i < 12; i++ )
+    {
+        glVertex3fv( vecPoints[ edges[ i ][ 0 ] ] );
+        glVertex3fv( vecPoints[ edges[ i ][ 1 ] ] );
+    }
+    glEnd();
+#else
 	for ( int i = 0; i < 4; i++ )
 	{
 		int j = ( i + 1 ) % 4;
@@ -349,6 +365,7 @@ void CWireframeBox::Draw( void )
 		glVertex3f( VectorExpand( vecPoints[ 4 ] ) );
 		glVertex3f( VectorExpand( vecPoints[ 6 ] ) );
 	glEnd();
+#endif
 
 	/*
 	// Turn on wireframe mode
@@ -496,6 +513,23 @@ void CWireframeBoxAngles::Draw( void )
 	glColor4ub( m_color.r, m_color.g, m_color.b, m_color.a );
 	glLineWidth( m_flWidth );
 
+
+#if 1
+    int edges[12][2] =
+    {
+        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+        { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
+        { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }
+    };
+
+    glBegin( GL_LINES );
+    for ( int i = 0; i < 12; i++ )
+    {
+        glVertex3fv( vecPoints[ edges[ i ][ 0 ] ] );
+        glVertex3fv( vecPoints[ edges[ i ][ 1 ] ] );
+    }
+    glEnd();
+#else
 	for ( int i = 0; i < 4; i++ )
 	{
 		int j = ( i + 1 ) % 4;
@@ -523,6 +557,7 @@ void CWireframeBoxAngles::Draw( void )
 		glVertex3f( VectorExpand( vecPoints[ 4 ] ) );
 		glVertex3f( VectorExpand( vecPoints[ 6 ] ) );
 	glEnd();
+#endif
 
 	glLineWidth( 1.f );
 
@@ -790,7 +825,7 @@ const Vector &CDrawPoint::GetDrawOrigin( void ) const
 class CDrawLine : public IDrawContext
 {
 public:
-	CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width );
+	CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width, bool bIgnoreDepthBuffer );
 	virtual ~CDrawLine() {}
 
 	virtual void Draw( void ) override;
@@ -814,19 +849,26 @@ private:
 
 	Color m_color;
 	float m_flWidth;
+
+	bool m_bIgnoreDepthBuffer;
 };
 
-CDrawLine::CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width ) : m_color( color )
+CDrawLine::CDrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width, bool bIgnoreDepthBuffer ) : m_color( color )
 {
 	m_vecOrigin = vStart + ( vEnd - vStart ) * 0.5f;
 	m_vecStart = vStart;
 	m_vecEnd = vEnd;
 	m_flWidth = width;
+	m_bIgnoreDepthBuffer = bIgnoreDepthBuffer;
 }
 
 void CDrawLine::Draw( void )
 {
 	glEnable( GL_BLEND );
+
+	if ( m_bIgnoreDepthBuffer )
+		glDisable( GL_DEPTH_TEST );
+
 	glDisable( GL_ALPHA_TEST );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
@@ -846,6 +888,9 @@ void CDrawLine::Draw( void )
 
 	glDisable( GL_BLEND );
 	glDisable( GL_ALPHA_TEST );
+
+	if ( m_bIgnoreDepthBuffer )
+		glEnable( GL_DEPTH_TEST );
 }
 
 bool CDrawLine::ShouldStopDraw( void )
@@ -1184,7 +1229,23 @@ void CDrawContext::DrawLine( const Vector &vStart, const Vector &vEnd, const Col
 
 	draw_context_t draw_context;
 
-	IDrawContext *pDrawContext = new CDrawLine( vStart, vEnd, color, width );
+	IDrawContext *pDrawContext = new CDrawLine( vStart, vEnd, color, width, false );
+
+	draw_context.pDrawContext = pDrawContext;
+	draw_context.flDuration = static_cast<float>( *realtime ) + duration;
+	draw_context.flDistanceSqr = 0.f;
+
+	m_vDrawContext.push_back( draw_context );
+}
+
+void CDrawContext::DrawLineNoDepthBuffer( const Vector &vStart, const Vector &vEnd, const Color &color, float width, float duration )
+{
+	if ( duration < 0.f )
+		duration = 0.f;
+
+	draw_context_t draw_context;
+
+	IDrawContext *pDrawContext = new CDrawLine( vStart, vEnd, color, width, true );
 
 	draw_context.pDrawContext = pDrawContext;
 	draw_context.flDuration = static_cast<float>( *realtime ) + duration;
@@ -1312,7 +1373,7 @@ bool CDrawContext::Load( void )
 
 void CDrawContext::PostLoad( void )
 {
-	hookevents->RegisterListener( this, kHUD_DrawTransparentTriangles_HookEvent, kHookPostCall );
+	hookevents->RegisterListener( this, kHUD_DrawTransparentTriangles_HookEvent, kHookPostCall, kHookPriorityLow );
 	hookevents->RegisterListener( this, kV_CalcRefdef_HookEvent, kHookPostCall );
 
 	FEATURE_REGISTER_CCMD( sc_debug_draw_point );

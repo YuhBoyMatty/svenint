@@ -188,6 +188,7 @@ public:
 
 	void DrawPoint( const Vector &vPoint, const Color &color, float size = 24.f, float duration = 0.f );
 	void DrawLine( const Vector &vStart, const Vector &vEnd, const Color &color, float width = 2.f, float duration = 0.f );
+	void DrawLineNoDepthBuffer( const Vector &vStart, const Vector &vEnd, const Color &color, float width = 2.f, float duration = 0.f );
 	void DrawBox( const Vector &vOrigin, const Vector &vMins, const Vector &vMaxs, const Color &color, float duration = 0.f );
 	void DrawBoxAngles( const Vector &vOrigin, const Vector &vMins, const Vector &vMaxs, const Vector &vAngles, const Color &color, float duration = 0.f );
 	void DrawClear( void );
