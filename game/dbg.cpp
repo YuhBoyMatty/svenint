@@ -532,7 +532,7 @@ void ConColorMsgNoFormat( const Color &clr, const char *pszMessage )
 		gConsolePrinting.AddQueuedMessage( kColorPrint, clr, pszMessage );
 
 	if ( gpDbgConsoleFile != NULL )
-		fprintf( (FILE *)gpDbgConsoleFile, pszMessage );
+		fprintf( (FILE *)gpDbgConsoleFile, "%s", pszMessage);
 
 #ifdef LINUX
 	printf( "%s", pszMessage );
